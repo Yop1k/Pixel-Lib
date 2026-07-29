@@ -3,70 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой Mini App</title>
+    <title>RPS Батл</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            color: #fff;
             margin: 0;
-            background: #f0f2f5;
+            padding: 16px;
         }
-        .container {
+        .game-container {
+            background: #1a1a2e;
+            border-radius: 48px;
+            padding: 30px 25px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            border: 1px solid #2a2a40;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
             text-align: center;
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
         }
-        button {
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 18px;
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            background: #12121f;
+            padding: 15px 20px;
+            border-radius: 60px;
+            margin: 15px 0 25px;
+            border: 1px solid #2c2c44;
+        }
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .score-label {
+            font-size: 12px;
+            color: #8888aa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .score-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+        }
+        .score-value.win { color: #4ade80; }
+        .score-value.lose { color: #f87171; }
+        .score-value.draw { color: #fbbf24; }
+
+        .battle-zone {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0 30px;
+        }
+        .choice-box {
+            background: #12121f;
+            border-radius: 30px;
+            padding: 15px 5px;
+            width: 45%;
+            text-align: center;
+            border: 2px solid #2c2c44;
+            transition: 0.3s;
+        }
+        .choice-box.active-bot {
+            border-color: #f87171;
+            box-shadow: 0 0 20px rgba(248, 113, 113, 0.2);
+        }
+        .choice-box.active-user {
+            border-color: #4ade80;
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.2);
+        }
+        .choice-emoji {
+            font-size: 52px;
+            line-height: 1.2;
+        }
+        .choice-text {
+            font-size: 14px;
+            color: #aab;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        .vs-text {
+            font-size: 22px;
+            font-weight: 900;
+            color: #4a4a6a;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .result-text {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #12121f;
+            border-radius: 60px;
+            margin: 15px 0 25px;
+            border: 1px solid #2c2c44;
+            padding: 8px;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .game-btn {
+            background: #12121f;
+            border: 2px solid #2c2c44;
+            border-radius: 30px;
+            padding: 18px 0;
+            font-size: 38px;
             cursor: pointer;
-            margin-top: 10px;
+            transition: all 0.15s ease;
+            color: #fff;
+            box-shadow: 0 4px 0 #0a0a12;
         }
-        button:hover {
-            background: #006699;
+        .game-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .game-btn:hover {
+            background: #1f1f38;
+            border-color: #5a5a8a;
+        }
+
+        .reset-btn {
+            width: 100%;
+            margin-top: 18px;
+            background: #2c2c44;
+            border: none;
+            border-radius: 60px;
+            padding: 14px;
+            color: #ccd;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            letter-spacing: 1px;
+        }
+        .reset-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Стили для кнопки Telegram */
+        .tg-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #4a4a6a;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🚀 Привет из Mini App!</h1>
-        <p>ID пользователя: <span id="userId">Не известно</span></p>
-        <button id="closeBtn">Закрыть приложение</button>
+    <div class="game-container">
+        <h1>🗿 БАТЛ</h1>
+
+        <div class="score-board">
+            <div class="score-item">
+                <span class="score-label">Ты</span>
+                <span class="score-value win" id="userScore">0</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">Ничья</span>
+                <span class="score-value draw" id="drawScore">0</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">Бот</span>
+                <span class="score-value lose" id="botScore">0</span>
+            </div>
+        </div>
+
+        <div class="battle-zone">
+            <div class="choice-box active-user" id="userBox">
+                <div class="choice-emoji" id="userEmoji">🤖</div>
+                <div class="choice-text" id="userLabel">Ты</div>
+            </div>
+            <div class="vs-text">⚡</div>
+            <div class="choice-box active-bot" id="botBox">
+                <div class="choice-emoji" id="botEmoji">💻</div>
+                <div class="choice-text" id="botLabel">Бот</div>
+            </div>
+        </div>
+
+        <div class="result-text" id="resultDisplay">Нажми на кнопку!</div>
+
+        <div class="buttons-grid">
+            <button class="game-btn" data-move="rock">🗻</button>
+            <button class="game-btn" data-move="paper">📄</button>
+            <button class="game-btn" data-move="scissors">✂️</button>
+        </div>
+
+        <button class="reset-btn" id="resetGame">🔄 Новая игра</button>
+        <div class="tg-footer">⚡ Mini App by Telegram</div>
     </div>
 
-    <!-- Подключаем SDK Telegram -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        // Получаем объект Telegram
+        // Подключаем Telegram SDK
         const tg = window.Telegram.WebApp;
-        
-        // Показываем, что приложение запущено
         tg.ready();
 
-        // Выводим ID пользователя (если открыто внутри Telegram)
-        const userId = tg.initDataUnsafe?.user?.id || 'Не в Telegram';
-        document.getElementById('userId').textContent = userId;
+        // --- Игровая логика ---
+        const state = {
+            userScore: 0,
+            botScore: 0,
+            drawScore: 0,
+            userMove: null,
+            botMove: null
+        };
 
-        // Кнопка закрытия
-        document.getElementById('closeBtn').addEventListener('click', function() {
-            tg.close();
+        const emojis = {
+            rock: '🗻',
+            paper: '📄',
+            scissors: '✂️'
+        };
+
+        const labels = {
+            rock: 'Камень',
+            paper: 'Бумага',
+            scissors: 'Ножницы'
+        };
+
+        // DOM элементы
+        const userScoreEl = document.getElementById('userScore');
+        const botScoreEl = document.getElementById('botScore');
+        const drawScoreEl = document.getElementById('drawScore');
+        const userEmoji = document.getElementById('userEmoji');
+        const botEmoji = document.getElementById('botEmoji');
+        const userLabel = document.getElementById('userLabel');
+        const botLabel = document.getElementById('botLabel');
+        const resultDisplay = document.getElementById('resultDisplay');
+
+        function updateScoreUI() {
+            userScoreEl.textContent = state.userScore;
+            botScoreEl.textContent = state.botScore;
+            drawScoreEl.textContent = state.drawScore;
+        }
+
+        function getBotMove() {
+            const moves = ['rock', 'paper', 'scissors'];
+            return moves[Math.floor(Math.random() * moves.length)];
+        }
+
+        function determineWinner(user, bot) {
+            if (user === bot) return 'draw';
+            if (
+                (user === 'rock' && bot === 'scissors') ||
+                (user === 'paper' && bot === 'rock') ||
+                (user === 'scissors' && bot === 'paper')
+            ) {
+                return 'user';
+            }
+            return 'bot';
+        }
+
+        function playRound(userMove) {
+            const botMove = getBotMove();
+            state.userMove = userMove;
+            state.botMove = botMove;
+
+            // Обновляем UI выбора
+            userEmoji.textContent = emojis[userMove];
+            userLabel.textContent = `Ты (${labels[userMove]})`;
+            botEmoji.textContent = emojis[botMove];
+            botLabel.textContent = `Бот (${labels[botMove]})`;
+
+            const result = determineWinner(userMove, botMove);
+            let resultMessage = '';
+
+            switch (result) {
+                case 'user':
+                    state.userScore++;
+                    resultMessage = '🎉 Ты победил!';
+                    break;
+                case 'bot':
+                    state.botScore++;
+                    resultMessage = '💔 Бот победил...';
+                    break;
+                case 'draw':
+                    state.drawScore++;
+                    resultMessage = '🤝 Ничья!';
+                    break;
+            }
+
+            resultDisplay.textContent = resultMessage;
+            updateScoreUI();
+
+            // Вибрация (если есть)
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        function resetGame() {
+            state.userScore = 0;
+            state.botScore = 0;
+            state.drawScore = 0;
+            state.userMove = null;
+            state.botMove = null;
+            
+            userEmoji.textContent = '🤖';
+            userLabel.textContent = 'Ты';
+            botEmoji.textContent = '💻';
+            botLabel.textContent = 'Бот';
+            resultDisplay.textContent = 'Новая игра! 👊';
+            updateScoreUI();
+        }
+
+        // --- Обработчики ---
+        document.querySelectorAll('.game-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const move = btn.dataset.move;
+                playRound(move);
+            });
         });
 
-        // Меняем цвет кнопки внизу экрана (если есть)
-        tg.MainButton.setText('Привет!');
+        document.getElementById('resetGame').addEventListener('click', resetGame);
+
+        // Кнопка Telegram (большая синяя внизу)
+        tg.MainButton.setText('🎮 Играть');
         tg.MainButton.show();
         tg.MainButton.onClick(() => {
-            alert('Вы нажали главную кнопку Telegram!');
+            tg.showAlert('🗿 Камень-Ножницы-Бумага! Выбирай свой ход!');
         });
+
+        // Инициализация
+        resetGame();
     </script>
 </body>
 </html>
