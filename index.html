@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MageClash RPG</title>
+    
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js">
+    </script>
+    
     <style>
         /* ===== RESET & BASE ===== */
         * {
@@ -15,10 +20,12 @@
 
         :root {
             --neon-color: #00f0ff;
-            --glass-bg: rgba(255, 255, 255, 0.07);
-            --glass-border: rgba(255, 255, 255, 0.15);
+            --neon-glow: 0 0 30px rgba(0, 240, 255, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.4);
         }
 
         body {
@@ -28,67 +35,99 @@
             justify-content: center;
             align-items: center;
             padding: 12px;
+            overflow-x: hidden;
         }
 
-        /* ===== MAIN APP CONTAINER ===== */
+        /* ===== ULTRA NEON + LIQUID GLASS CONTAINER ===== */
         .app {
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             min-height: 700px;
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(40px) saturate(1.4);
+            -webkit-backdrop-filter: blur(40px) saturate(1.4);
             border-radius: 32px;
-            border: 1px solid var(--glass-border);
+            border: 1.5px solid var(--glass-border);
             box-shadow: 
-                0 0 30px rgba(0, 240, 255, 0.15),
-                inset 0 0 30px rgba(0, 240, 255, 0.05);
+                var(--neon-glow),
+                inset 0 0 60px rgba(0, 240, 255, 0.05);
             padding: 20px;
             position: relative;
             overflow: hidden;
-            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+            transition: border-color 0.6s ease, box-shadow 0.6s ease;
         }
 
-        /* Liquid Glass Effect */
+        /* Liquid Glass - Основной слой */
         .app::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(ellipse at 30% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(138, 43, 226, 0.06) 0%, transparent 50%);
+            top: -60%;
+            left: -60%;
+            width: 220%;
+            height: 220%;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(0, 240, 255, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(138, 43, 226, 0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
             pointer-events: none;
             z-index: 0;
-            animation: liquidGlass 12s ease-in-out infinite alternate;
+            animation: liquidGlassFlow 20s ease-in-out infinite alternate;
+            filter: blur(2px);
         }
 
-        @keyframes liquidGlass {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            100% { transform: translate(2%, 2%) rotate(3deg); }
+        @keyframes liquidGlassFlow {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            25% { transform: translate(2%, -2%) rotate(2deg) scale(1.02); }
+            50% { transform: translate(-1%, 3%) rotate(-1deg) scale(0.98); }
+            75% { transform: translate(3%, 1%) rotate(3deg) scale(1.01); }
+            100% { transform: translate(-2%, -2%) rotate(-2deg) scale(1); }
         }
 
-        /* Ultra Neon Glow */
-        .app::after {
-            content: '';
+        /* Ultra Neon */
+        .app .neon-border {
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border-radius: 34px;
-            background: linear-gradient(45deg, var(--neon-color), #b026ff, var(--neon-color), #b026ff);
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 35px;
+            background: linear-gradient(45deg, 
+                var(--neon-color), 
+                #b026ff, 
+                var(--neon-color), 
+                #ff6b6b,
+                var(--neon-color),
+                #b026ff);
+            background-size: 400% 400%;
+            z-index: -1;
+            opacity: 0.5;
+            animation: neonPulse 6s ease-in-out infinite;
+            filter: blur(8px);
+        }
+
+        .app .neon-border-strong {
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: 33px;
+            background: linear-gradient(45deg, 
+                var(--neon-color), 
+                #b026ff, 
+                var(--neon-color));
             background-size: 300% 300%;
             z-index: -1;
-            opacity: 0.3;
+            opacity: 0.8;
             animation: neonPulse 4s ease-in-out infinite;
-            filter: blur(4px);
+            filter: blur(3px);
         }
 
         @keyframes neonPulse {
-            0%, 100% { background-position: 0% 50%; opacity: 0.3; }
-            50% { background-position: 100% 50%; opacity: 0.6; }
+            0%, 100% { background-position: 0% 50%; opacity: 0.5; }
+            25% { background-position: 50% 100%; opacity: 0.7; }
+            50% { background-position: 100% 50%; opacity: 0.5; }
+            75% { background-position: 50% 0%; opacity: 0.7; }
         }
 
         /* ===== HEADER ===== */
@@ -96,20 +135,28 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 16px;
+            padding-bottom: 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             position: relative;
             z-index: 1;
         }
 
         .header-title {
-            font-size: 20px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--neon-color), #b026ff);
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--neon-color), #b026ff, var(--neon-color));
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
-            letter-spacing: 1px;
+            animation: titleGradient 4s ease-in-out infinite;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        @keyframes titleGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
 
         .header-actions {
@@ -127,24 +174,21 @@
             cursor: pointer;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            position: relative;
         }
 
         .header-btn:hover {
             background: rgba(0, 240, 255, 0.15);
             border-color: var(--neon-color);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
-        }
-
-        .header-btn.active {
-            background: rgba(0, 240, 255, 0.2);
-            border-color: var(--neon-color);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+            transform: translateY(-1px);
         }
 
         /* ===== NAVIGATION ===== */
         .nav {
             display: flex;
-            gap: 6px;
-            padding: 12px 0 16px;
+            gap: 4px;
+            padding: 12px 0 14px;
             flex-wrap: wrap;
             position: relative;
             z-index: 1;
@@ -152,13 +196,13 @@
 
         .nav-btn {
             flex: 1;
-            min-width: 50px;
-            padding: 8px 4px;
+            min-width: 44px;
+            padding: 8px 2px;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
+            border-radius: 14px;
             color: var(--text-secondary);
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -167,33 +211,37 @@
         }
 
         .nav-btn:hover {
-            background: rgba(0, 240, 255, 0.1);
+            background: rgba(0, 240, 255, 0.08);
             color: var(--text-primary);
+            transform: translateY(-1px);
         }
 
         .nav-btn.active {
-            background: rgba(0, 240, 255, 0.15);
+            background: rgba(0, 240, 255, 0.12);
             border-color: var(--neon-color);
             color: var(--text-primary);
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
         }
 
         .nav-btn .icon {
             display: block;
-            font-size: 18px;
+            font-size: 20px;
             margin-bottom: 2px;
         }
 
-        /* ===== CONTENT AREA ===== */
+        /* ===== CONTENT ===== */
         .content {
             position: relative;
             z-index: 1;
-            min-height: 500px;
+            min-height: 480px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
 
         .page {
             display: none;
-            animation: fadeSlide 0.4s ease;
+            animation: fadeSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .page.active {
@@ -201,37 +249,56 @@
         }
 
         @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(16px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* ===== PROFILE CARD ===== */
-        .profile-card {
+        /* ===== GLASS CARD ===== */
+        .glass-card {
             background: var(--glass-bg);
-            border-radius: 24px;
-            padding: 20px;
+            border-radius: 20px;
+            padding: 18px;
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(10px);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 240, 255, 0.2);
         }
 
         .profile-header {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
         .profile-avatar {
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--neon-color), #b026ff);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+            font-size: 26px;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.2);
             flex-shrink: 0;
+            position: relative;
+        }
+
+        .profile-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--neon-color), #b026ff);
+            z-index: -1;
+            opacity: 0.3;
+            filter: blur(8px);
         }
 
         .profile-info {
@@ -245,16 +312,16 @@
         }
 
         .profile-nick {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-secondary);
         }
 
         .profile-stats {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-top: 16px;
-            padding-top: 16px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 14px;
+            padding-top: 14px;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
@@ -263,76 +330,98 @@
         }
 
         .stat-value {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             color: var(--neon-color);
         }
 
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
-        /* ===== CHARACTERS GRID ===== */
+        /* ===== CHARACTERS ===== */
         .chars-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 12px;
+            gap: 8px;
+            margin-top: 10px;
         }
 
         .char-card {
             background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 12px 8px;
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 10px 6px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            position: relative;
         }
 
-        .char-card:hover {
-            transform: translateY(-2px);
+        .char-card:hover:not(.locked) {
+            transform: translateY(-3px);
             border-color: var(--neon-color);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
         }
 
         .char-card.selected {
             border-color: var(--neon-color);
-            background: rgba(0, 240, 255, 0.1);
+            background: rgba(0, 240, 255, 0.08);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
         }
 
         .char-card.locked {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
+            filter: grayscale(0.5);
         }
 
         .char-name {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-primary);
         }
 
         .char-rarity {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--text-secondary);
+            margin-top: 2px;
         }
 
         .char-level {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--neon-color);
+            margin-top: 2px;
+        }
+
+        .char-level-up {
+            font-size: 9px;
+            color: #ffd700;
+            cursor: pointer;
+            margin-top: 4px;
+            padding: 2px 8px;
+            border: 1px solid #ffd70044;
+            border-radius: 10px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .char-level-up:hover {
+            background: #ffd70022;
+            border-color: #ffd700;
         }
 
         /* ===== SHOP ===== */
         .shop-item {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -341,7 +430,7 @@
         }
 
         .shop-item:hover {
-            border-color: var(--neon-color);
+            border-color: rgba(0, 240, 255, 0.2);
         }
 
         .shop-item-info {
@@ -351,38 +440,42 @@
         .shop-item-name {
             font-weight: 600;
             color: var(--text-primary);
+            font-size: 14px;
         }
 
         .shop-item-desc {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-secondary);
         }
 
         .shop-item-price {
             font-weight: 700;
             color: #ffd700;
-            font-size: 14px;
+            font-size: 13px;
+            margin-right: 10px;
         }
 
         .shop-btn {
-            padding: 6px 16px;
-            border-radius: 20px;
+            padding: 6px 14px;
+            border-radius: 16px;
             border: 1px solid var(--neon-color);
-            background: rgba(0, 240, 255, 0.1);
+            background: rgba(0, 240, 255, 0.08);
             color: var(--neon-color);
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 12px;
+            font-size: 11px;
+            white-space: nowrap;
         }
 
-        .shop-btn:hover {
+        .shop-btn:hover:not(.bought) {
             background: rgba(0, 240, 255, 0.2);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+            transform: scale(1.02);
         }
 
         .shop-btn.bought {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: default;
             border-color: var(--text-secondary);
             color: var(--text-secondary);
@@ -394,7 +487,7 @@
         }
 
         .settings-label {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-secondary);
             display: block;
@@ -406,7 +499,7 @@
             padding: 12px 16px;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
+            border-radius: 14px;
             color: var(--text-primary);
             font-size: 14px;
             outline: none;
@@ -416,7 +509,7 @@
 
         .settings-input:focus {
             border-color: var(--neon-color);
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
         }
 
         .color-options {
@@ -426,8 +519,8 @@
         }
 
         .color-option {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             border: 2px solid transparent;
             cursor: pointer;
@@ -441,7 +534,7 @@
 
         .color-option.active {
             border-color: #ffffff;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
         }
 
         .color-option .check {
@@ -450,79 +543,81 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: white;
-            font-size: 16px;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            font-size: 14px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
         }
 
         .save-btn {
             width: 100%;
             padding: 14px;
-            border-radius: 20px;
+            border-radius: 18px;
             border: none;
             background: linear-gradient(135deg, var(--neon-color), #b026ff);
             color: white;
             font-weight: 700;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
         }
 
         .save-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.25);
         }
 
         /* ===== LUCKY BLOCK ===== */
         .lucky-block {
             background: var(--glass-bg);
-            border-radius: 24px;
+            border-radius: 20px;
             padding: 24px;
             border: 1px solid var(--glass-border);
             text-align: center;
             backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
         }
 
         .lucky-block .big-emoji {
             font-size: 64px;
             display: block;
-            margin: 8px 0;
+            margin: 4px 0;
             animation: float 3s ease-in-out infinite;
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(5deg); }
         }
 
         .lucky-block .count {
-            font-size: 32px;
-            font-weight: 700;
+            font-size: 34px;
+            font-weight: 800;
             color: var(--neon-color);
         }
 
         .lucky-block .label {
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .open-btn {
-            margin-top: 16px;
-            padding: 14px 40px;
-            border-radius: 30px;
+            margin-top: 14px;
+            padding: 14px 44px;
+            border-radius: 28px;
             border: none;
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
             font-weight: 700;
-            font-size: 18px;
+            font-size: 17px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 0 30px rgba(238, 90, 36, 0.3);
+            box-shadow: 0 0 40px rgba(238, 90, 36, 0.25);
         }
 
-        .open-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 50px rgba(238, 90, 36, 0.4);
+        .open-btn:hover:not(:disabled) {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 0 60px rgba(238, 90, 36, 0.35);
         }
 
         .open-btn:disabled {
@@ -531,7 +626,64 @@
             transform: none;
         }
 
-        /* ===== ANIMATED REWARD ===== */
+        /* ===== ADMIN ===== */
+        .admin-section {
+            margin-top: 12px;
+            border-top: 1px solid rgba(255, 215, 0, 0.15);
+            padding-top: 12px;
+        }
+
+        .admin-btn {
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 1px solid #ffd70044;
+            background: rgba(255, 215, 0, 0.05);
+            color: #ffd700;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            margin: 3px;
+        }
+
+        .admin-btn:hover {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: all 0.3s ease;
+            margin-bottom: 6px;
+        }
+
+        .admin-input:focus {
+            border-color: #ffd700;
+        }
+
+        #adminLog {
+            color: var(--text-secondary);
+            font-size: 11px;
+            margin-top: 6px;
+            max-height: 80px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ===== REWARD OVERLAY ===== */
         .reward-overlay {
             display: none;
             position: fixed;
@@ -539,12 +691,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.4s ease;
         }
 
         .reward-overlay.show {
@@ -558,24 +710,27 @@
 
         .reward-content {
             text-align: center;
-            padding: 40px;
+            padding: 36px;
             background: var(--glass-bg);
-            border-radius: 32px;
+            border-radius: 28px;
             border: 1px solid var(--glass-border);
-            max-width: 320px;
+            max-width: 340px;
             width: 90%;
             animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 60px rgba(0, 240, 255, 0.1);
         }
 
         @keyframes popIn {
-            from { transform: scale(0.5); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from { transform: scale(0.6) rotate(-5deg); opacity: 0; }
+            to { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
         .reward-content .emoji {
             font-size: 72px;
             display: block;
             margin-bottom: 12px;
+            animation: float 2s ease-in-out infinite;
         }
 
         .reward-content .title {
@@ -586,14 +741,14 @@
 
         .reward-content .sub {
             color: var(--text-secondary);
-            font-size: 16px;
+            font-size: 15px;
             margin-top: 4px;
         }
 
         .reward-close {
-            margin-top: 20px;
+            margin-top: 18px;
             padding: 10px 32px;
-            border-radius: 20px;
+            border-radius: 18px;
             border: 1px solid var(--neon-color);
             background: transparent;
             color: var(--neon-color);
@@ -604,52 +759,80 @@
 
         .reward-close:hover {
             background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
         }
 
-        /* ===== NOTIFICATIONS ===== */
+        /* ===== TOAST ===== */
         .toast {
             position: fixed;
-            bottom: 20px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 14px 24px;
+            border-radius: 18px;
+            padding: 12px 24px;
             color: var(--text-primary);
             font-size: 14px;
             z-index: 999;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-            animation: slideUp 0.4s ease;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             max-width: 90%;
             text-align: center;
         }
 
         @keyframes slideUp {
-            from { transform: translateX(-50%) translateY(40px); opacity: 0; }
+            from { transform: translateX(-50%) translateY(50px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* ===== LOADING ===== */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--glass-border);
+            border-top-color: var(--neon-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 420px) {
-            .app { padding: 14px; border-radius: 24px; }
-            .profile-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-            .chars-grid { grid-template-columns: repeat(3, 1fr); }
-            .nav-btn { font-size: 10px; padding: 6px 2px; }
-            .nav-btn .icon { font-size: 16px; }
+            .app { padding: 14px; border-radius: 24px; min-height: 600px; }
+            .profile-stats { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+            .chars-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            .nav-btn { font-size: 9px; padding: 6px 2px; }
+            .nav-btn .icon { font-size: 17px; }
+            .content { max-height: 500px; }
         }
     </style>
 </head>
 <body>
 
 <div class="app" id="app">
+    <!-- Ultra Neon Borders -->
+    <div class="neon-border"></div>
+    <div class="neon-border-strong"></div>
+
     <!-- HEADER -->
     <div class="header">
-        <div class="header-title">✦ MageClash</div>
+        <div class="header-title" id="logoTitle">✦ MageClash</div>
         <div class="header-actions">
-            <button class="header-btn" onclick="showToast('⚔️ Бой')">⚔️</button>
-            <button class="header-btn" onclick="showToast('🎮 В игре')">🎮</button>
+            <button class="header-btn" onclick="showToast('⚔️ Поиск боя...')">⚔️</button>
+            <button class="header-btn" onclick="refreshData()">🔄</button>
         </div>
     </div>
 
@@ -673,11 +856,16 @@
     </div>
 
     <!-- CONTENT -->
-    <div class="content">
+    <div class="content" id="contentArea">
+        <!-- Loading -->
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <div>Загрузка данных...</div>
+        </div>
 
         <!-- ===== PROFILE PAGE ===== -->
-        <div class="page active" id="page-profile">
-            <div class="profile-card">
+        <div class="page" id="page-profile">
+            <div class="glass-card">
                 <div class="profile-header">
                     <div class="profile-avatar">👾</div>
                     <div class="profile-info">
@@ -698,16 +886,6 @@
                         <div class="stat-value" id="statTrophies">0</div>
                         <div class="stat-label">Кубки</div>
                     </div>
-                </div>
-                <div class="profile-stats" style="border-top: none; padding-top: 4px;">
-                    <div class="stat-item">
-                        <div class="stat-value" id="statBattles">0</div>
-                        <div class="stat-label">Боёв</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statWinrate">0%</div>
-                        <div class="stat-label">Винрейт</div>
-                    </div>
                     <div class="stat-item">
                         <div class="stat-value" id="statElo">0</div>
                         <div class="stat-label">ELO</div>
@@ -715,40 +893,56 @@
                 </div>
             </div>
 
-            <div style="background: var(--glass-bg); border-radius: 16px; padding: 14px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px);">
+            <div class="glass-card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-secondary); font-size: 13px;">Текущий персонаж</span>
                     <span style="color: var(--neon-color); font-weight: 700;" id="currentChar">Мейдж</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                     <span style="color: var(--text-secondary); font-size: 13px;">Уровень</span>
                     <span style="color: #ffd700; font-weight: 700;" id="currentCharLevel">1</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                     <span style="color: var(--text-secondary); font-size: 13px;">Редкость</span>
                     <span style="color: #00ff88; font-weight: 600;" id="currentCharRarity">Обычный</span>
                 </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                    <span style="color: var(--text-secondary); font-size: 13px;">Боёв / Побед</span>
+                    <span style="color: var(--text-primary); font-weight: 600;" id="statBattlesWin">0 / 0</span>
+                </div>
+            </div>
+
+            <!-- ADMIN PANEL -->
+            <div class="admin-section" id="adminPanel" style="display: none;">
+                <div style="color: #ffd700; font-weight: 700; font-size: 14px; margin-bottom: 8px;">🛠️ Админ-панель</div>
+                <div>
+                    <button class="admin-btn" onclick="adminRefresh()">🔄 /refresh</button>
+                    <button class="admin-btn" onclick="adminAddOffer()">➕ /add_offer</button>
+                    <button class="admin-btn" onclick="adminAddCategory()">📁 /add</button>
+                    <button class="admin-btn" onclick="adminDelCategory()">🗑️ /del</button>
+                    <button class="admin-btn" onclick="adminSync()">📤 /sync</button>
+                </div>
+                <div style="margin-top: 6px;">
+                    <input class="admin-input" id="adminInput" placeholder="Введите параметры..." style="font-size:12px;">
+                </div>
+                <div id="adminLog"></div>
             </div>
         </div>
 
         <!-- ===== CHARACTERS PAGE ===== -->
         <div class="page" id="page-chars">
-            <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">
-                Выберите персонажа для боя. Разблокируйте новых через лаки-блоки!
+            <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 10px;">
+                👆 Выберите персонажа. Уровень можно повысить за монеты и опыт.
             </div>
-            <div class="chars-grid" id="charsGrid">
-                <!-- Динамически из JS -->
-            </div>
+            <div class="chars-grid" id="charsGrid"></div>
         </div>
 
         <!-- ===== SHOP PAGE ===== -->
         <div class="page" id="page-shop">
-            <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">
-                Приобретайте уникальные предметы за гемы и жетоны.
+            <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 10px;">
+                💰 Приобретайте предметы за гемы и жетоны.
             </div>
-            <div id="shopItems">
-                <!-- Динамически из JS -->
-            </div>
+            <div id="shopItems"></div>
         </div>
 
         <!-- ===== LUCKY BLOCKS PAGE ===== -->
@@ -758,8 +952,8 @@
                 <div class="count" id="lbCount">0</div>
                 <div class="label">Доступно лаки-блоков</div>
                 <button class="open-btn" id="openLbBtn" onclick="openLuckyBlock()">✨ Открыть ✨</button>
-                <div style="margin-top: 12px; color: var(--text-secondary); font-size: 12px;">
-                    Ежедневный лимит: <span id="dailyLb">0</span>/15
+                <div style="margin-top: 10px; color: var(--text-secondary); font-size: 12px;">
+                    📅 Ежедневный лимит: <span id="dailyLb">0</span>/15
                 </div>
             </div>
         </div>
@@ -782,13 +976,14 @@
                     <div class="color-option" style="background: #6bcb77;" data-color="#6bcb77"></div>
                     <div class="color-option" style="background: #a66cff;" data-color="#a66cff"></div>
                     <div class="color-option" style="background: #ff8a5c;" data-color="#ff8a5c"></div>
+                    <div class="color-option" style="background: #ff6bff;" data-color="#ff6bff"></div>
                 </div>
             </div>
 
             <button class="save-btn" onclick="saveSettings()">💾 Сохранить настройки</button>
 
-            <div style="margin-top: 16px; text-align: center; color: var(--text-secondary); font-size: 12px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
-                MageClash v2.0 • Ultra Neon + Liquid Glass
+            <div style="margin-top: 16px; text-align: center; color: var(--text-muted); font-size: 11px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px;">
+                MageClash v3.0 • Ultra Neon + Liquid Glass
             </div>
         </div>
 
@@ -801,357 +996,932 @@
         <span class="emoji" id="rewardEmoji">🎉</span>
         <div class="title" id="rewardTitle">Поздравляем!</div>
         <div class="sub" id="rewardSub">Вы получили награду</div>
-        <button class="reward-close" onclick="closeReward()">Отлично!</button>
+        <button class="reward-close" onclick="closeReward()">✨ Отлично!</button>
     </div>
 </div>
 
 <script>
-// ============================================================
-// DATA
-// ============================================================
-const CHARACTERS_DATA = {
-    "Мейдж": { rarity: "Обычный", ult: "Следующие атаки +15% урона" },
-    "Глитч": { rarity: "Обычный", ult: "Крадёт заряды ульты" },
-    "Вибл": { rarity: "Обычный", ult: "Ставит стены на ульту" },
-    "Миззи": { rarity: "Обычный", ult: "Крадёт все баффы" },
-    "Рэтч": { rarity: "Редкий", ult: "Повышает защиту на 2.5%" },
-    "Оми": { rarity: "Редкий", ult: "Сбрасывает баффы" },
-    "Пайнэ": { rarity: "Редкий", ult: "Даёт случайный бафф" },
-    "Трики": { rarity: "Эпический", ult: "Гарантированный промах" },
-    "Блитцо": { rarity: "Эпический", ult: "+5% к макс. HP" },
-    "Мантикор": { rarity: "Эпический", ult: "Сбрасывает ульту" },
-    "Глим": { rarity: "Эпический", ult: "Снижает урон на 50%" },
-    "Фламшен": { rarity: "Мифический", ult: "Отражает 5% урона" },
-    "Линкс": { rarity: "Мифический", ult: "Гарантированное попадание" },
-    "Сталин": { rarity: "Легендарный", ult: "Призывает солдата" },
-    "Дринг": { rarity: "Мифический", ult: "Ставит метку" }
-};
+    // ============================================================
+    // 🔧 НАСТРОЙКИ - ИЗМЕНИТЕ ЭТИ ЗНАЧЕНИЯ!
+    // ============================================================
+    const SUPABASE_URL = 'https://ваш-проект.supabase.co';
+    const SUPABASE_KEY = 'ваш-anon-ключ';
+    const BOT_TOKEN = 'ваш_токен_бота'; // для верификации
+    const OWNER_ID = 123456789; // ваш Telegram ID
 
-const SHOP_ITEMS = [
-    { id: 1, name: "Набор монет", desc: "+500 монет", price: 10, currency: "gems", type: "coins", value: 500 },
-    { id: 2, name: "Набор опыта", desc: "+300 опыта", price: 15, currency: "gems", type: "exp", value: 300 },
-    { id: 3, name: "Лаки-блок", desc: "+1 лаки-блок", price: 5, currency: "gems", type: "lucky_blocks", value: 1 },
-    { id: 4, name: "Персонаж: Трики", desc: "Эпический персонаж", price: 50, currency: "gems", type: "character", value: "Трики" },
-    { id: 5, name: "Персонаж: Сталин", desc: "Легендарный персонаж", price: 200, currency: "gems", type: "character", value: "Сталин" },
-];
+    // ============================================================
+    // ИНИЦИАЛИЗАЦИЯ SUPABASE
+    // ============================================================
+    const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ============================================================
-// STATE
-// ============================================================
-let state = {
-    user: {
-        id: 1,
-        name: "Игрок",
-        nick: "@player",
-        coins: 1250,
-        gems: 75,
-        trophies: 420,
-        battles: 37,
-        wins: 22,
-        elo: 850,
-        luckBlocks: 3,
-        dailyLb: 2,
-        selectedChar: "Мейдж",
-        chars: {
-            "Мейдж": { level: 3, owned: true },
-            "Глитч": { level: 1, owned: true },
-            "Вибл": { level: 1, owned: false },
-            "Миззи": { level: 2, owned: true },
-            "Рэтч": { level: 1, owned: false },
-            "Оми": { level: 1, owned: false },
-            "Пайнэ": { level: 1, owned: false },
-            "Трики": { level: 1, owned: false },
-            "Блитцо": { level: 1, owned: false },
-            "Мантикор": { level: 1, owned: false },
-            "Глим": { level: 1, owned: false },
-            "Фламшен": { level: 1, owned: false },
-            "Линкс": { level: 1, owned: false },
-            "Сталин": { level: 1, owned: false },
-            "Дринг": { level: 1, owned: false }
-        },
-        purchases: []
-    },
-    color: "#00f0ff"
-};
+    // ============================================================
+    // ДАННЫЕ
+    // ============================================================
+    const CHARACTERS_DATA = {
+        "Мейдж": { rarity: "Обычный", ult: "Следующие атаки +15% урона" },
+        "Глитч": { rarity: "Обычный", ult: "Крадёт заряды ульты" },
+        "Вибл": { rarity: "Обычный", ult: "Ставит стены на ульту" },
+        "Миззи": { rarity: "Обычный", ult: "Крадёт все баффы" },
+        "Рэтч": { rarity: "Редкий", ult: "Повышает защиту на 2.5%" },
+        "Оми": { rarity: "Редкий", ult: "Сбрасывает баффы" },
+        "Пайнэ": { rarity: "Редкий", ult: "Даёт случайный бафф" },
+        "Трики": { rarity: "Эпический", ult: "Гарантированный промах" },
+        "Блитцо": { rarity: "Эпический", ult: "+5% к макс. HP" },
+        "Мантикор": { rarity: "Эпический", ult: "Сбрасывает ульту" },
+        "Глим": { rarity: "Эпический", ult: "Снижает урон на 50%" },
+        "Фламшен": { rarity: "Мифический", ult: "Отражает 5% урона" },
+        "Линкс": { rarity: "Мифический", ult: "Гарантированное попадание" },
+        "Сталин": { rarity: "Легендарный", ult: "Призывает солдата" },
+        "Дринг": { rarity: "Мифический", ult: "Ставит метку" }
+    };
 
-// ============================================================
-// RENDER FUNCTIONS
-// ============================================================
+    const LEVEL_UP_COSTS = {
+        2: { coins: 75, exp: 40 },
+        3: { coins: 200, exp: 120 },
+        4: { coins: 480, exp: 300 },
+        5: { coins: 1100, exp: 700 },
+        6: { coins: 2350, exp: 1550 },
+        7: { coins: 4900, exp: 3275 },
+        8: { coins: 10000, exp: 6800 },
+        9: { coins: 22000, exp: 14000 }
+    };
 
-function renderProfile() {
-    const u = state.user;
-    document.getElementById('displayName').textContent = u.name;
-    document.getElementById('gameNick').textContent = u.nick;
-    document.getElementById('statCoins').textContent = u.coins;
-    document.getElementById('statGems').textContent = u.gems;
-    document.getElementById('statTrophies').textContent = u.trophies;
-    document.getElementById('statBattles').textContent = u.battles;
-    document.getElementById('statElo').textContent = u.elo;
-    const wr = u.battles > 0 ? Math.round((u.wins / u.battles) * 100) : 0;
-    document.getElementById('statWinrate').textContent = wr + '%';
+    // ============================================================
+    // СОСТОЯНИЕ
+    // ============================================================
+    let state = {
+        user: null,
+        tgUser: null,
+        isOwner: false,
+        color: "#00f0ff",
+        shopItems: [],
+        loaded: false
+    };
 
-    const char = u.chars[u.selectedChar];
-    document.getElementById('currentChar').textContent = u.selectedChar;
-    document.getElementById('currentCharLevel').textContent = char ? char.level : 1;
-    const rarity = CHARACTERS_DATA[u.selectedChar]?.rarity || "Обычный";
-    document.getElementById('currentCharRarity').textContent = rarity;
-}
+    // ============================================================
+    // ФУНКЦИИ БАЗЫ ДАННЫХ
+    // ============================================================
 
-function renderChars() {
-    const grid = document.getElementById('charsGrid');
-    grid.innerHTML = '';
-    for (const [name, data] of Object.entries(CHARACTERS_DATA)) {
-        const owned = state.user.chars[name]?.owned || false;
-        const level = state.user.chars[name]?.level || 1;
-        const div = document.createElement('div');
-        div.className = `char-card ${owned ? '' : 'locked'} ${state.user.selectedChar === name ? 'selected' : ''}`;
-        div.innerHTML = `
-            <div class="char-name">${name}</div>
-            <div class="char-rarity">${data.rarity} ${owned ? '✅' : '🔒'}</div>
-            <div class="char-level">${owned ? 'Ур. ' + level : 'Не разблок.'}</div>
-        `;
-        div.onclick = () => selectChar(name);
-        grid.appendChild(div);
-    }
-}
+    // Получение пользователя
+    async function getUserData(telegramId) {
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('telegram_id', telegramId)
+                .single();
 
-function selectChar(name) {
-    if (!state.user.chars[name]?.owned) {
-        showToast('❌ Персонаж не разблокирован!');
-        return;
-    }
-    state.user.selectedChar = name;
-    renderChars();
-    renderProfile();
-    showToast('✅ Выбран ' + name);
-}
+            if (error && error.code === 'PGRST116') {
+                return await createUser(telegramId);
+            }
 
-function renderShop() {
-    const container = document.getElementById('shopItems');
-    container.innerHTML = '';
-    for (const item of SHOP_ITEMS) {
-        const bought = state.user.purchases.includes(item.id);
-        const div = document.createElement('div');
-        div.className = 'shop-item';
-        const priceLabel = item.currency === 'gems' ? '💎' : '🪙';
-        div.innerHTML = `
-            <div class="shop-item-info">
-                <div class="shop-item-name">${item.name}</div>
-                <div class="shop-item-desc">${item.desc}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;">
-                <span class="shop-item-price">${priceLabel} ${item.price}</span>
-                <button class="shop-btn ${bought ? 'bought' : ''}" onclick="buyItem(${item.id})">
-                    ${bought ? '✅ Куплено' : 'Купить'}
-                </button>
-            </div>
-        `;
-        container.appendChild(div);
-    }
-}
-
-function buyItem(id) {
-    const item = SHOP_ITEMS.find(i => i.id === id);
-    if (!item) return;
-    if (state.user.purchases.includes(id)) {
-        showToast('Уже куплено!');
-        return;
-    }
-    const balance = item.currency === 'gems' ? state.user.gems : state.user.coins;
-    if (balance < item.price) {
-        showToast('❌ Не хватает ' + (item.currency === 'gems' ? 'гемов' : 'монет'));
-        return;
-    }
-    if (item.currency === 'gems') state.user.gems -= item.price;
-    else state.user.coins -= item.price;
-    state.user.purchases.push(id);
-    // Apply reward
-    if (item.type === 'coins') state.user.coins += item.value;
-    else if (item.type === 'gems') state.user.gems += item.value;
-    else if (item.type === 'exp') showToast('✨ +' + item.value + ' опыта');
-    else if (item.type === 'lucky_blocks') {
-        state.user.luckBlocks += item.value;
-        showToast('🎁 +' + item.value + ' лаки-блок');
-    } else if (item.type === 'character') {
-        if (!state.user.chars[item.value]) {
-            state.user.chars[item.value] = { level: 1, owned: true };
-        } else {
-            state.user.chars[item.value].owned = true;
+            if (error) throw error;
+            return data;
+        } catch (err) {
+            console.error('Error getting user:', err);
+            return null;
         }
-        showToast('🎉 Получен ' + item.value);
-    }
-    renderShop();
-    renderProfile();
-    renderChars();
-    renderLucky();
-}
-
-function renderLucky() {
-    document.getElementById('lbCount').textContent = state.user.luckBlocks;
-    document.getElementById('dailyLb').textContent = state.user.dailyLb;
-    document.getElementById('openLbBtn').disabled = state.user.luckBlocks <= 0;
-}
-
-function renderSettings() {
-    document.getElementById('nickInput').value = state.user.nick.replace('@', '');
-    // Highlight active color
-    document.querySelectorAll('.color-option').forEach(el => {
-        el.classList.toggle('active', el.dataset.color === state.color);
-        const check = el.querySelector('.check');
-        if (check) check.style.display = el.dataset.color === state.color ? 'block' : 'none';
-    });
-    applyColor(state.color);
-}
-
-function applyColor(color) {
-    document.documentElement.style.setProperty('--neon-color', color);
-    const app = document.getElementById('app');
-    app.style.borderColor = color + '44';
-    app.style.boxShadow = `0 0 40px ${color}22, inset 0 0 40px ${color}11`;
-}
-
-// ============================================================
-// LUCKY BLOCK OPENING WITH ANIMATION
-// ============================================================
-function openLuckyBlock() {
-    if (state.user.luckBlocks <= 0) {
-        showToast('❌ Нет лаки-блоков!');
-        return;
-    }
-    if (state.user.dailyLb >= 15) {
-        showToast('❌ Дневной лимит (15) исчерпан!');
-        return;
-    }
-    state.user.luckBlocks--;
-    state.user.dailyLb++;
-
-    // Random reward
-    const rewards = [
-        { emoji: '🪙', label: 'Монеты', value: () => Math.floor(Math.random() * 100) + 50 },
-        { emoji: '⭐', label: 'Опыт', value: () => Math.floor(Math.random() * 80) + 30 },
-        { emoji: '💎', label: 'Гемы', value: () => Math.floor(Math.random() * 5) + 1 },
-        { emoji: '🎭', label: 'Персонаж', value: () => {
-            const locked = Object.entries(state.user.chars).filter(([k,v]) => !v.owned);
-            if (locked.length === 0) return null;
-            return locked[Math.floor(Math.random() * locked.length)][0];
-        }},
-    ];
-    const reward = rewards[Math.floor(Math.random() * rewards.length)];
-    let result = reward.value();
-    let label = reward.label;
-
-    if (reward.emoji === '🎭' && result) {
-        state.user.chars[result] = { level: 1, owned: true };
-        showReward('🎭', 'Новый персонаж!', result + ' разблокирован!');
-    } else if (reward.emoji === '🪙') {
-        state.user.coins += result;
-        showReward('🪙', '+' + result + ' монет', 'Отличный улов!');
-    } else if (reward.emoji === '⭐') {
-        showReward('⭐', '+' + result + ' опыта', 'Продолжай в том же духе!');
-    } else if (reward.emoji === '💎') {
-        state.user.gems += result;
-        showReward('💎', '+' + result + ' гемов', 'Драгоценная находка!');
-    } else {
-        showReward('🎁', 'Удача!', 'Ты получил награду!');
     }
 
-    renderLucky();
-    renderProfile();
-    renderChars();
-}
+    // Создание пользователя
+    async function createUser(telegramId) {
+        const newUser = {
+            telegram_id: telegramId,
+            username: state.tgUser?.username || 'player',
+            display_name: state.tgUser?.first_name || 'Игрок',
+            game_nick: `Игрок_${Math.floor(Math.random() * 10000)}`,
+            coins: 100,
+            exp: 0,
+            gems: 10,
+            tokens: 0,
+            total_battles: 0,
+            total_wins: 0,
+            total_losses: 0,
+            current_elo: 0,
+            max_elo: 0,
+            selected_character: 'Мейдж',
+            luck_block_count: 3,
+            daily_lucky_blocks: 0,
+            last_lucky_block_date: new Date().toISOString().split('T')[0],
+            is_partner: false,
+            partner_emoji_id: '5861786805988234706',
+            created_at: new Date().toISOString(),
+            last_seen: new Date().toISOString()
+        };
 
-function showReward(emoji, title, sub) {
-    document.getElementById('rewardEmoji').textContent = emoji;
-    document.getElementById('rewardTitle').textContent = title;
-    document.getElementById('rewardSub').textContent = sub;
-    document.getElementById('rewardOverlay').classList.add('show');
-}
+        const { data, error } = await supabase
+            .from('users')
+            .insert([newUser])
+            .select()
+            .single();
 
-function closeReward() {
-    document.getElementById('rewardOverlay').classList.remove('show');
-}
+        if (error) {
+            console.error('Error creating user:', error);
+            return null;
+        }
 
-// ============================================================
-// SETTINGS
-// ============================================================
-function saveSettings() {
-    const nick = document.getElementById('nickInput').value.trim();
-    if (nick) {
-        state.user.nick = '@' + nick;
-        renderProfile();
-        showToast('✅ Ник изменён!');
+        // Создаём начального персонажа
+        await addCharacter(data.id, 'Мейдж', 1);
+
+        return data;
     }
-    // Color is saved via click
-}
 
-// Color selection
-document.querySelectorAll('.color-option').forEach(el => {
-    el.addEventListener('click', function() {
-        document.querySelectorAll('.color-option').forEach(e => {
-            e.classList.remove('active');
-            const c = e.querySelector('.check');
-            if (c) c.style.display = 'none';
+    // Получение персонажей
+    async function getUserCharacters(userId) {
+        const { data, error } = await supabase
+            .from('user_characters')
+            .select('*')
+            .eq('user_id', userId);
+
+        if (error) {
+            console.error('Error getting characters:', error);
+            return {};
+        }
+
+        const chars = {};
+        data.forEach(row => {
+            chars[row.character_name] = {
+                level: row.level || 1,
+                trophies: row.trophies || 0
+            };
         });
-        this.classList.add('active');
-        const c = this.querySelector('.check');
-        if (c) c.style.display = 'block';
-        state.color = this.dataset.color;
+        return chars;
+    }
+
+    // Добавление персонажа
+    async function addCharacter(userId, characterName, level = 1) {
+        const { error } = await supabase
+            .from('user_characters')
+            .insert([{
+                user_id: userId,
+                character_name: characterName,
+                level: level,
+                trophies: 0
+            }]);
+
+        if (error) console.error('Error adding character:', error);
+    }
+
+    // Обновление пользователя
+    async function updateUser(telegramId, updates) {
+        const { error } = await supabase
+            .from('users')
+            .update(updates)
+            .eq('telegram_id', telegramId);
+
+        if (error) console.error('Error updating user:', error);
+        return !error;
+    }
+
+    // Получение товаров магазина
+    async function getShopItems() {
+        const { data, error } = await supabase
+            .from('shop_offers')
+            .select('*')
+            .order('id');
+
+        if (error) {
+            console.error('Error getting shop items:', error);
+            return [];
+        }
+        return data;
+    }
+
+    // Получение покупок пользователя
+    async function getUserPurchases(userId) {
+        const { data, error } = await supabase
+            .from('shop_purchases')
+            .select('offer_id')
+            .eq('user_id', userId);
+
+        if (error) {
+            console.error('Error getting purchases:', error);
+            return [];
+        }
+        return data.map(p => p.offer_id);
+    }
+
+    // Добавление покупки
+    async function addPurchase(userId, offerId) {
+        const { error } = await supabase
+            .from('shop_purchases')
+            .insert([{
+                user_id: userId,
+                offer_id: offerId,
+                purchased_at: new Date().toISOString()
+            }]);
+
+        if (error) console.error('Error adding purchase:', error);
+        return !error;
+    }
+
+    // Добавление товара в магазин (админ)
+    async function addShopItem(item) {
+        const { data, error } = await supabase
+            .from('shop_offers')
+            .insert([item])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error adding shop item:', error);
+            return null;
+        }
+        return data;
+    }
+
+    // ============================================================
+    // ЗАГРУЗКА ДАННЫХ
+    // ============================================================
+
+    async function loadData() {
+        try {
+            // Получаем пользователя из Telegram
+            const tgUser = getTelegramUser();
+            if (!tgUser) {
+                showToast('⚠️ Ошибка: не удалось получить данные пользователя');
+                return;
+            }
+
+            state.tgUser = tgUser;
+
+            // Загружаем данные пользователя
+            const userData = await getUserData(tgUser.id);
+            if (!userData) {
+                showToast('❌ Ошибка загрузки данных');
+                return;
+            }
+
+            // Загружаем персонажей
+            const characters = await getUserCharacters(userData.id);
+
+            // Загружаем магазин
+            const shopItems = await getShopItems();
+
+            // Загружаем покупки
+            const purchases = await getUserPurchases(userData.id);
+
+            // Формируем state
+            state.user = {
+                id: userData.id,
+                telegram_id: userData.telegram_id,
+                name: userData.display_name || tgUser.first_name,
+                nick: userData.game_nick || '@' + (tgUser.username || 'player'),
+                coins: userData.coins || 0,
+                exp: userData.exp || 0,
+                gems: userData.gems || 0,
+                tokens: userData.tokens || 0,
+                trophies: 0,
+                battles: userData.total_battles || 0,
+                wins: userData.total_wins || 0,
+                elo: userData.current_elo || 0,
+                luckBlocks: userData.luck_block_count || 3,
+                dailyLb: userData.daily_lucky_blocks || 0,
+                selectedChar: userData.selected_character || 'Мейдж',
+                chars: characters,
+                purchases: purchases,
+                isPartner: userData.is_partner || false,
+                partnerEmojiId: userData.partner_emoji_id || '5861786805988234706'
+            };
+
+            // Считаем общие трофеи
+            let totalTrophies = 0;
+            for (const [name, data] of Object.entries(state.user.chars)) {
+                totalTrophies += data.trophies || 0;
+            }
+            state.user.trophies = totalTrophies;
+
+            state.shopItems = shopItems;
+            state.isOwner = (tgUser.id === OWNER_ID);
+            state.loaded = true;
+
+            // Скрываем загрузку
+            document.getElementById('loadingIndicator').style.display = 'none';
+
+            // Показываем страницы
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelector('.page#page-profile').classList.add('active');
+
+            // Рендерим
+            renderAll();
+
+            // Показываем админ-панель если владелец
+            if (state.isOwner) {
+                document.getElementById('adminPanel').style.display = 'block';
+                adminLog('👑 Админ-панель активирована');
+            }
+
+            showToast('✅ Данные загружены!');
+
+        } catch (err) {
+            console.error('Load error:', err);
+            showToast('❌ Ошибка загрузки данных');
+        }
+    }
+
+    // ============================================================
+    // RENDER ФУНКЦИИ
+    // ============================================================
+
+    function renderAll() {
+        renderProfile();
+        renderChars();
+        renderShop();
+        renderLucky();
+        renderSettings();
+    }
+
+    function renderProfile() {
+        const u = state.user;
+        if (!u) return;
+        document.getElementById('displayName').textContent = u.name || 'Игрок';
+        document.getElementById('gameNick').textContent = u.nick || '@player';
+        document.getElementById('statCoins').textContent = u.coins || 0;
+        document.getElementById('statGems').textContent = u.gems || 0;
+        document.getElementById('statTrophies').textContent = u.trophies || 0;
+        document.getElementById('statElo').textContent = u.elo || 0;
+
+        const char = u.chars[u.selectedChar];
+        document.getElementById('currentChar').textContent = u.selectedChar || 'Мейдж';
+        document.getElementById('currentCharLevel').textContent = char ? char.level : 1;
+        const rarity = CHARACTERS_DATA[u.selectedChar]?.rarity || 'Обычный';
+        document.getElementById('currentCharRarity').textContent = rarity;
+        document.getElementById('statBattlesWin').textContent = `${u.battles || 0} / ${u.wins || 0}`;
+    }
+
+    function renderChars() {
+        const grid = document.getElementById('charsGrid');
+        grid.innerHTML = '';
+        const u = state.user;
+        if (!u) return;
+
+        for (const [name, data] of Object.entries(CHARACTERS_DATA)) {
+            const charData = u.chars[name];
+            const owned = charData?.owned !== undefined ? charData.owned : !!charData;
+            const level = charData?.level || 1;
+            const isSelected = u.selectedChar === name;
+
+            const div = document.createElement('div');
+            div.className = `char-card ${owned ? '' : 'locked'} ${isSelected ? 'selected' : ''}`;
+
+            const canUpgrade = owned && level < 9;
+            const cost = LEVEL_UP_COSTS[level + 1];
+
+            div.innerHTML = `
+                <div class="char-name">${name}</div>
+                <div class="char-rarity">${data.rarity} ${owned ? '✅' : '🔒'}</div>
+                <div class="char-level">${owned ? 'Ур. ' + level : 'Не разблок.'}</div>
+                ${owned && canUpgrade && cost ? `
+                    <div class="char-level-up" onclick="event.stopPropagation(); upgradeChar('${name}')">
+                        ⬆ ${cost.coins}🪙 ${cost.exp}⭐
+                    </div>
+                ` : ''}
+                ${owned && level >= 9 ? `<div style="font-size:9px;color:#ffd700;margin-top:2px;">⭐ MAX</div>` : ''}
+            `;
+            div.onclick = () => selectChar(name);
+            grid.appendChild(div);
+        }
+    }
+
+    function renderShop() {
+        const container = document.getElementById('shopItems');
+        container.innerHTML = '';
+        const u = state.user;
+        if (!u) return;
+
+        const items = state.shopItems || [];
+        if (items.length === 0) {
+            container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 20px;">Магазин пуст</div>';
+            return;
+        }
+
+        for (const item of items) {
+            const bought = u.purchases?.includes(item.id) || false;
+            const div = document.createElement('div');
+            div.className = 'shop-item';
+            const priceLabel = item.currency === 'gems' ? '💎' : item.currency === 'tokens' ? '🪙' : '🪙';
+            div.innerHTML = `
+                <div class="shop-item-info">
+                    <div class="shop-item-name">${item.name || 'Товар'}</div>
+                    <div class="shop-item-desc">${item.description || item.item_type || ''}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="shop-item-price">${priceLabel} ${item.price || 0}</span>
+                    <button class="shop-btn ${bought ? 'bought' : ''}" onclick="buyItem(${item.id})">
+                        ${bought ? '✅' : 'Купить'}
+                    </button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    function renderLucky() {
+        const u = state.user;
+        if (!u) return;
+        document.getElementById('lbCount').textContent = u.luckBlocks || 0;
+        document.getElementById('dailyLb').textContent = u.dailyLb || 0;
+        const btn = document.getElementById('openLbBtn');
+        btn.disabled = (u.luckBlocks || 0) <= 0 || (u.dailyLb || 0) >= 15;
+    }
+
+    function renderSettings() {
+        const u = state.user;
+        if (!u) return;
+        document.getElementById('nickInput').value = (u.nick || '').replace('@', '');
+        document.querySelectorAll('.color-option').forEach(el => {
+            el.classList.toggle('active', el.dataset.color === state.color);
+            const check = el.querySelector('.check');
+            if (check) check.style.display = el.dataset.color === state.color ? 'block' : 'none';
+        });
         applyColor(state.color);
+    }
+
+    function applyColor(color) {
+        document.documentElement.style.setProperty('--neon-color', color);
+        const app = document.getElementById('app');
+        app.style.setProperty('--neon-glow', `0 0 40px ${color}55, 0 0 80px ${color}22`);
+    }
+
+    // ============================================================
+    // ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ
+    // ============================================================
+
+    async function selectChar(name) {
+        if (!state.user.chars[name]?.owned && !state.user.chars[name]) {
+            showToast('❌ Персонаж не разблокирован!');
+            return;
+        }
+        state.user.selectedChar = name;
+        await updateUser(state.user.telegram_id, { selected_character: name });
+        renderAll();
+        showToast('✅ Выбран ' + name);
+    }
+
+    async function upgradeChar(name) {
+        const u = state.user;
+        const charData = u.chars[name];
+        if (!charData?.owned) {
+            showToast('❌ Персонаж не разблокирован!');
+            return;
+        }
+        if (charData.level >= 9) {
+            showToast('⭐ Максимальный уровень!');
+            return;
+        }
+        const nextLevel = charData.level + 1;
+        const cost = LEVEL_UP_COSTS[nextLevel];
+        if (!cost) {
+            showToast('❌ Ошибка данных');
+            return;
+        }
+        if (u.coins < cost.coins) {
+            showToast(`❌ Не хватает монет! Нужно: ${cost.coins}`);
+            return;
+        }
+        if (u.exp < cost.exp) {
+            showToast(`❌ Не хватает опыта! Нужно: ${cost.exp}`);
+            return;
+        }
+
+        // Обновляем в БД
+        const success = await updateUser(u.telegram_id, {
+            coins: u.coins - cost.coins,
+            exp: u.exp - cost.exp
+        });
+
+        if (!success) {
+            showToast('❌ Ошибка обновления');
+            return;
+        }
+
+        // Обновляем уровень персонажа
+        const { error } = await supabase
+            .from('user_characters')
+            .update({ level: nextLevel })
+            .eq('user_id', u.id)
+            .eq('character_name', name);
+
+        if (error) {
+            showToast('❌ Ошибка обновления уровня');
+            return;
+        }
+
+        u.coins -= cost.coins;
+        u.exp -= cost.exp;
+        charData.level = nextLevel;
+
+        renderAll();
+        showToast(`⬆ ${name} повышен до ${nextLevel} уровня!`);
+    }
+
+    async function buyItem(id) {
+        const u = state.user;
+        const item = state.shopItems.find(i => i.id === id);
+        if (!item) {
+            showToast('❌ Товар не найден');
+            return;
+        }
+        if (u.purchases?.includes(id)) {
+            showToast('Уже куплено!');
+            return;
+        }
+
+        const balance = item.currency === 'gems' ? u.gems :
+            item.currency === 'tokens' ? u.tokens : u.coins;
+
+        if (balance < item.price) {
+            showToast('❌ Не хватает ' + (item.currency === 'gems' ? 'гемов' : item.currency === 'tokens' ? 'жетонов' : 'монет'));
+            return;
+        }
+
+        // Списываем средства
+        const updates = {};
+        if (item.currency === 'gems') {
+            updates.gems = u.gems - item.price;
+            u.gems -= item.price;
+        } else if (item.currency === 'tokens') {
+            updates.tokens = u.tokens - item.price;
+            u.tokens -= item.price;
+        } else {
+            updates.coins = u.coins - item.price;
+            u.coins -= item.price;
+        }
+
+        await updateUser(u.telegram_id, updates);
+
+        // Добавляем покупку
+        await addPurchase(u.id, id);
+        if (!u.purchases) u.purchases = [];
+        u.purchases.push(id);
+
+        // Применяем награду
+        if (item.type === 'coins') {
+            u.coins += item.value;
+            await updateUser(u.telegram_id, { coins: u.coins });
+        } else if (item.type === 'gems') {
+            u.gems += item.value;
+            await updateUser(u.telegram_id, { gems: u.gems });
+        } else if (item.type === 'tokens') {
+            u.tokens += item.value;
+            await updateUser(u.telegram_id, { tokens: u.tokens });
+        } else if (item.type === 'exp') {
+            u.exp += item.value;
+            await updateUser(u.telegram_id, { exp: u.exp });
+            showToast('✨ +' + item.value + ' опыта');
+        } else if (item.type === 'lucky_blocks') {
+            u.luckBlocks += item.value;
+            await updateUser(u.telegram_id, { luck_block_count: u.luckBlocks });
+            showToast('🎁 +' + item.value + ' лаки-блок');
+        } else if (item.type === 'character') {
+            if (!u.chars[item.value]) {
+                u.chars[item.value] = { level: 1, owned: true };
+                await addCharacter(u.id, item.value);
+            } else {
+                u.chars[item.value].owned = true;
+                await supabase
+                    .from('user_characters')
+                    .update({ owned: true })
+                    .eq('user_id', u.id)
+                    .eq('character_name', item.value);
+            }
+            showToast('🎉 Получен ' + item.value);
+        }
+
+        renderAll();
+        showToast('✅ Покупка успешна!');
+    }
+
+    async function openLuckyBlock() {
+        const u = state.user;
+        if (!u || u.luckBlocks <= 0) {
+            showToast('❌ Нет лаки-блоков!');
+            return;
+        }
+        if (u.dailyLb >= 15) {
+            showToast('❌ Дневной лимит (15) исчерпан!');
+            return;
+        }
+
+        // Открываем блок
+        u.luckBlocks--;
+        u.dailyLb++;
+
+        // Сохраняем в БД
+        await updateUser(u.telegram_id, {
+            luck_block_count: u.luckBlocks,
+            daily_lucky_blocks: u.dailyLb,
+            last_lucky_block_date: new Date().toISOString().split('T')[0]
+        });
+
+        // Генерируем награду
+        const rewards = [
+            { emoji: '🪙', label: 'Монеты', value: () => Math.floor(Math.random() * 100) + 50, type: 'coins' },
+            { emoji: '⭐', label: 'Опыт', value: () => Math.floor(Math.random() * 80) + 30, type: 'exp' },
+            { emoji: '💎', label: 'Гемы', value: () => Math.floor(Math.random() * 5) + 1, type: 'gems' },
+            { emoji: '🎭', label: 'Персонаж', value: () => {
+                    const locked = Object.entries(u.chars).filter(([k, v]) => !v.owned);
+                    if (locked.length === 0) return null;
+                    return locked[Math.floor(Math.random() * locked.length)][0];
+                }, type: 'character' },
+        ];
+
+        const reward = rewards[Math.floor(Math.random() * rewards.length)];
+        let result = reward.value();
+
+        if (reward.type === 'coins') {
+            u.coins += result;
+            await updateUser(u.telegram_id, { coins: u.coins });
+            showReward('🪙', '+' + result + ' монет', 'Отличный улов! 💰');
+        } else if (reward.type === 'exp') {
+            u.exp += result;
+            await updateUser(u.telegram_id, { exp: u.exp });
+            showReward('⭐', '+' + result + ' опыта', 'Продолжай в том же духе! ⚡');
+        } else if (reward.type === 'gems') {
+            u.gems += result;
+            await updateUser(u.telegram_id, { gems: u.gems });
+            showReward('💎', '+' + result + ' гемов', 'Драгоценная находка! ✨');
+        } else if (reward.type === 'character' && result) {
+            if (!u.chars[result]) {
+                u.chars[result] = { level: 1, owned: true };
+                await addCharacter(u.id, result);
+            } else {
+                u.chars[result].owned = true;
+                await supabase
+                    .from('user_characters')
+                    .update({ owned: true })
+                    .eq('user_id', u.id)
+                    .eq('character_name', result);
+            }
+            showReward('🎭', 'Новый персонаж!', result + ' разблокирован! 🎉');
+        } else {
+            showReward('🎁', 'Удача!', 'Ты получил награду!');
+        }
+
+        renderAll();
+    }
+
+    // ============================================================
+    // НАСТРОЙКИ
+    // ============================================================
+
+    async function saveSettings() {
+        const nick = document.getElementById('nickInput').value.trim();
+        if (nick) {
+            state.user.nick = '@' + nick;
+            await updateUser(state.user.telegram_id, { game_nick: nick });
+            renderProfile();
+            showToast('✅ Ник изменён!');
+        }
+    }
+
+    // ============================================================
+    // АДМИН-ФУНКЦИИ
+    // ============================================================
+
+    function adminLog(msg) {
+        const log = document.getElementById('adminLog');
+        const time = new Date().toLocaleTimeString();
+        log.innerHTML += `[${time}] ${msg}\n`;
+        log.scrollTop = log.scrollHeight;
+    }
+
+    async function adminRefresh() {
+        adminLog('🔄 Выполнение /refresh (сброс сезона)...');
+        const u = state.user;
+
+        // Сбрасываем трофеи
+        let totalReset = 0;
+        for (const [name, data] of Object.entries(u.chars)) {
+            if (data.owned && data.trophies > 1500) {
+                const old = data.trophies;
+                data.trophies = Math.max(0, old - 500);
+                totalReset += old - data.trophies;
+                u.tokens += old - data.trophies;
+                await supabase
+                    .from('user_characters')
+                    .update({ trophies: data.trophies })
+                    .eq('user_id', u.id)
+                    .eq('character_name', name);
+            }
+        }
+
+        u.elo = 0;
+        await updateUser(u.telegram_id, { current_elo: 0, tokens: u.tokens });
+
+        // Добавляем лаки-блоки за ранг
+        const rankBonus = Math.floor(u.elo / 100) * 2 + 2;
+        u.luckBlocks += rankBonus;
+        await updateUser(u.telegram_id, { luck_block_count: u.luckBlocks });
+
+        adminLog(`✅ Сброс выполнен! Сброшено ${totalReset} трофеев, выдано ${totalReset} жетонов, +${rankBonus} лаки-блоков`);
+        renderAll();
+        showToast('🔄 Сезон обновлён!');
+    }
+
+    async function adminAddOffer() {
+        const input = document.getElementById('adminInput');
+        const params = input.value.trim().split(' ');
+        if (params.length < 4) {
+            adminLog('❌ Использование: /add_offer <название> <тип> <количество> <цена> [валюта]');
+            adminLog('Пример: "Набор монет coins 500 10 gems"');
+            return;
+        }
+        const name = params.slice(0, -3).join(' ');
+        const type = params[params.length - 3];
+        const value = parseInt(params[params.length - 2]);
+        const price = parseInt(params[params.length - 1]);
+        const currency = params.length > 4 ? params[params.length] : 'gems';
+
+        if (!name || isNaN(value) || isNaN(price)) {
+            adminLog('❌ Неверные параметры!');
+            return;
+        }
+
+        const item = {
+            name: name,
+            description: `${type}: ${value}`,
+            item_type: type,
+            item_value: String(value),
+            price: price,
+            currency: currency,
+            category: 'Акции',
+            end_date: null,
+            is_purchased: false
+        };
+
+        const result = await addShopItem(item);
+        if (result) {
+            state.shopItems.push(result);
+            adminLog(`✅ Акция "${name}" добавлена! ID: ${result.id}`);
+            renderShop();
+            showToast('✅ Акция добавлена!');
+        } else {
+            adminLog('❌ Ошибка добавления акции');
+        }
+        input.value = '';
+    }
+
+    function adminAddCategory() {
+        const input = document.getElementById('adminInput');
+        const name = input.value.trim();
+        if (!name) {
+            adminLog('❌ Введите название категории');
+            return;
+        }
+        adminLog(`✅ Категория "${name}" создана! (только локально, для БД нужно добавить в таблицу)`);
+        input.value = '';
+        showToast('📁 Категория создана');
+    }
+
+    function adminDelCategory() {
+        const input = document.getElementById('adminInput');
+        const name = input.value.trim();
+        if (!name) {
+            adminLog('❌ Введите название категории для удаления');
+            return;
+        }
+        adminLog(`🗑️ Категория "${name}" удалена! (только локально)`);
+        input.value = '';
+        showToast('🗑️ Категория удалена');
+    }
+
+    async function adminSync() {
+        adminLog('🔄 Синхронизация с БД...');
+        await loadData();
+        adminLog('✅ Синхронизация завершена');
+        showToast('🔄 Данные обновлены');
+    }
+
+    // ============================================================
+    // TELEGRAM INTEGRATION
+    // ============================================================
+
+    function getTelegramUser() {
+        if (window.Telegram && window.Telegram.WebApp) {
+            const user = window.Telegram.WebApp.initDataUnsafe?.user;
+            if (user) {
+                return {
+                    id: user.id,
+                    username: user.username || 'player',
+                    first_name: user.first_name || 'Игрок',
+                    last_name: user.last_name || ''
+                };
+            }
+        }
+        // Для локальной разработки (заглушка)
+        return {
+            id: 123456789,
+            username: 'test_player',
+            first_name: 'Тестовый',
+            last_name: 'Игрок'
+        };
+    }
+
+    // ============================================================
+    // UI HELPERS
+    // ============================================================
+
+    function showToast(message) {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => toast.remove(), 400);
+        }, 2500);
+    }
+
+    function showReward(emoji, title, sub) {
+        document.getElementById('rewardEmoji').textContent = emoji;
+        document.getElementById('rewardTitle').textContent = title;
+        document.getElementById('rewardSub').textContent = sub;
+        document.getElementById('rewardOverlay').classList.add('show');
+    }
+
+    function closeReward() {
+        document.getElementById('rewardOverlay').classList.remove('show');
+    }
+
+    function refreshData() {
+        if (state.loaded) {
+            adminSync();
+        } else {
+            loadData();
+        }
+    }
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!state.loaded) return;
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const page = this.dataset.page;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+        });
     });
-});
 
-// ============================================================
-// NAVIGATION
-// ============================================================
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        const page = this.dataset.page;
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + page).classList.add('active');
+    // ============================================================
+    // COLOR SELECTION
+    // ============================================================
+
+    document.querySelectorAll('.color-option').forEach(el => {
+        el.addEventListener('click', function() {
+            document.querySelectorAll('.color-option').forEach(e => {
+                e.classList.remove('active');
+                const c = e.querySelector('.check');
+                if (c) c.style.display = 'none';
+            });
+            this.classList.add('active');
+            const c = this.querySelector('.check');
+            if (c) c.style.display = 'block';
+            state.color = this.dataset.color;
+            applyColor(state.color);
+            showToast('🎨 Цвет изменён');
+        });
     });
-});
 
-// ============================================================
-// TOAST NOTIFICATIONS
-// ============================================================
-function showToast(message) {
-    const existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(-50%) translateY(20px)';
-        setTimeout(() => toast.remove(), 400);
-    }, 2500);
-}
+    // ============================================================
+    // ADMIN TOGGLE (двойной клик по логотипу)
+    // ============================================================
 
-// ============================================================
-// INIT
-// ============================================================
-function init() {
-    renderProfile();
-    renderChars();
-    renderShop();
-    renderLucky();
-    renderSettings();
-    // Auto-open first page
-    document.querySelector('.nav-btn.active')?.click();
-}
+    document.getElementById('logoTitle').addEventListener('dblclick', function() {
+        if (!state.loaded) return;
+        state.isOwner = !state.isOwner;
+        document.getElementById('adminPanel').style.display = state.isOwner ? 'block' : 'none';
+        if (state.isOwner) {
+            adminLog('👑 Админ-панель активирована');
+            showToast('👑 Режим админа');
+        } else {
+            showToast('👤 Режим игрока');
+        }
+    });
 
-init();
+    // ============================================================
+    // ЗАПУСК
+    // ============================================================
 
-// ============================================================
-// SIMULATE DATA FROM BOT (for demo)
-// ============================================================
-// In real app, this would come from Telegram Mini App initData
-console.log('🚀 MageClash Mini App loaded');
-console.log('📦 State:', state);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, что Supabase настроен
+        if (SUPABASE_URL === 'https://ваш-проект.supabase.co') {
+            console.warn('⚠️ Настройте SUPABASE_URL и SUPABASE_KEY!');
+            showToast('⚠️ Настройте подключение к БД!');
+        }
+        loadData();
+    });
+
+    console.log('🚀 MageClash v3.0 with Supabase');
+    console.log('📦 Все функции интегрированы с БД');
+    console.log('👑 Двойной клик по логотипу для админ-панели');
 </script>
-
 </body>
 </html>
