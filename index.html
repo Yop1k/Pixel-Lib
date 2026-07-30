@@ -1,837 +1,791 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Поле Чудес 3D</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* Глобальные стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
         body {
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            background: radial-gradient(circle at 20% 30%, #1a2a3a, #0b1219);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0b0e1a;
+            color: #fff;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
-            padding: 12px;
+            overflow: hidden;
+            touch-action: pan-y;
         }
-        .app-container {
-            max-width: 500px;
+        #app {
             width: 100%;
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 48px 48px 32px 32px;
-            padding: 20px 16px 26px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,215,0,0.15);
-            border: 1px solid rgba(255,215,0,0.2);
-        }
-        h1 {
-            text-align: center;
-            font-weight: 600;
-            letter-spacing: 2px;
-            font-size: 24px;
-            color: #f5e56b;
-            text-shadow: 0 0 15px #f5b81b55, 0 4px 10px #00000055;
-            margin-bottom: 6px;
+            max-width: 430px;
+            height: 100vh;
+            max-height: 860px;
+            background: radial-gradient(circle at 20% 20%, #1a1f33, #0b0e1a);
+            position: relative;
+            overflow: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            flex-direction: column;
+            box-shadow: 0 0 60px rgba(0, 20, 255, 0.2);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
         }
-        h1 span { background: #ffd966; color: #1e2a36; font-size: 14px; padding: 2px 14px; border-radius: 40px; font-weight: 700; }
-        .status-bar {
+
+        /* Верхняя панель */
+        .header {
             display: flex;
             justify-content: space-between;
-            background: #00000033;
-            padding: 10px 16px;
-            border-radius: 60px;
+            padding: 16px 20px 8px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(4px);
-            margin: 10px 0 14px;
-            border: 1px solid #ffffff15;
-            font-weight: 500;
-            font-size: 14px;
-            flex-wrap: wrap;
-            gap: 6px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            z-index: 10;
         }
         .currency {
-            background: #f5c542;
-            color: #1d1f2b;
-            padding: 4px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 215, 0, 0.15);
+            padding: 6px 16px 6px 12px;
             border-radius: 40px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 0 20px #f5b81b55;
+            border: 1px solid #f0b90b;
         }
-        .currency::before { content: "⭐"; font-size: 18px; }
-        .score-display { background: #2a3a4a; padding: 4px 14px; border-radius: 40px; border: 1px solid #f5d74244; }
-        .word-display {
-            background: #0d1820cc;
-            padding: 16px 10px;
-            border-radius: 60px;
-            margin: 8px 0 14px;
-            text-align: center;
-            letter-spacing: 6px;
-            font-size: 28px;
-            font-weight: 700;
-            color: #f0e9d0;
-            text-shadow: 0 0 10px #b8a86b;
-            border: 1px solid #f5d74255;
-            box-shadow: inset 0 0 30px #00000066;
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            word-break: break-all;
-        }
-        .word-display .letter {
-            display: inline-block;
-            min-width: 26px;
-            border-bottom: 3px solid #f5d742;
-            margin: 0 2px;
-            transition: all 0.2s;
-        }
-        .keyboard {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px;
-            margin: 16px 0 12px;
-        }
-        .key {
-            width: 38px;
-            height: 38px;
-            background: #2c3e4e;
-            border: 1px solid #6a7f94;
-            border-radius: 12px;
-            color: #f5f0e1;
+        .currency span {
             font-weight: 700;
             font-size: 18px;
+            color: #f5d742;
+        }
+        .currency img {
+            width: 24px;
+            height: 24px;
+            filter: drop-shadow(0 0 6px #f0b90b);
+        }
+        .profile {
             display: flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.08s;
-            box-shadow: 0 4px 0 #0b141c, 0 6px 12px #00000044;
-            text-transform: uppercase;
-        }
-        .key:active { transform: translateY(5px); box-shadow: 0 1px 0 #0b141c; }
-        .key.disabled { opacity: 0.3; filter: grayscale(0.8); transform: translateY(4px); box-shadow: 0 1px 0 #0b141c; pointer-events: none; }
-        .key.correct { background: #2a7a4a; border-color: #7bcb8b; }
-        .key.wrong { background: #7a2a2a; border-color: #cb7b7b; }
-        .action-row {
-            display: flex;
             gap: 10px;
-            margin: 12px 0 14px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            background: #24323f;
-            border: none;
-            border-radius: 60px;
-            padding: 10px 16px;
-            font-weight: 700;
-            color: #ece3d0;
-            font-size: 14px;
-            flex: 1;
-            min-width: 80px;
-            box-shadow: 0 6px 0 #0f171f, 0 6px 12px #00000055;
-            transition: all 0.08s linear;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            border: 1px solid #6d7e8d55;
-        }
-        .btn:active { transform: translateY(6px); box-shadow: 0 1px 0 #0f171f; }
-        .btn-primary { background: #d4a02b; color: #141a22; border-color: #f5d742; box-shadow: 0 6px 0 #7a5f1a; }
-        .btn-primary:active { box-shadow: 0 1px 0 #7a5f1a; }
-        .btn-success { background: #2d7a4a; border-color: #6bb87a; box-shadow: 0 6px 0 #13442a; }
-        .btn-success:active { box-shadow: 0 1px 0 #13442a; }
-        .btn-danger { background: #8a2a2a; border-color: #cb6b6b; box-shadow: 0 6px 0 #4a1414; }
-        .btn-danger:active { box-shadow: 0 1px 0 #4a1414; }
-        .scene-box {
-            background: #101b24;
-            border-radius: 50px;
-            padding: 6px 0 0 0;
-            margin: 4px 0 10px;
-            border: 1px solid #f5d74233;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-        canvas { display: block; width: 100% !important; height: 100% !important; border-radius: 50px; }
-        .characters {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin: 8px 0 10px;
-            flex-wrap: wrap;
-        }
-        .char-card {
-            background: #1f2d3b;
-            padding: 4px 14px 4px 10px;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 4px 14px 4px 6px;
             border-radius: 40px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid #f5d74244;
-            box-shadow: 0 4px 8px #00000033;
-            transition: all 0.2s;
-            cursor: pointer;
-            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .char-card.active { border-color: #f5d742; background: #2a3d4e; box-shadow: 0 0 20px #f5b81b33; }
-        .char-avatar {
-            width: 30px; height: 30px;
-            background: #d4a02b;
+        .avatar {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #ff7b2b, #ff2d55);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            color: #1d1f2b;
+            font-size: 22px;
+            box-shadow: 0 0 12px rgba(255, 45, 85, 0.5);
+            transition: 0.3s;
         }
-        .shop-btn {
-            background: #2b3b4b;
-            border: 1px solid #f5d74255;
-            border-radius: 40px;
-            padding: 4px 14px;
+        .avatar.custom {
+            background: #3a3f5c;
+        }
+        .username {
             font-weight: 600;
-            color: #f0e6c5;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+        }
+
+        /* Поле с буквами */
+        .word-area {
+            padding: 10px 12px 6px;
+            text-align: center;
+            min-height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 60px;
+            margin: 8px 16px 0;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        .letter-slot {
+            width: 34px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            border-bottom: 3px solid rgba(255, 215, 0, 0.4);
+            transition: 0.2s;
+            box-shadow: 0 2px 0 #0b0e1a;
+        }
+        .letter-slot.revealed {
+            background: rgba(255, 215, 0, 0.08);
+            border-bottom-color: #f0b90b;
+            color: #f5d742;
+            text-shadow: 0 0 12px rgba(245, 215, 66, 0.3);
+        }
+
+        /* 3D-контейнер барабана */
+        .wheel-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+            margin: -10px 0;
+            position: relative;
+        }
+        #wheel3d {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+        }
+        .segment {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%);
+            transform-origin: 50% 50%;
+            backface-visibility: visible;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            transition: 0.1s;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+        }
+        .segment span {
+            transform: rotate(0deg) translateY(-40px) scale(0.9);
+            display: block;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .center-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #f5d742, #b8860b);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            border: 3px solid #fff;
+            box-shadow: 0 0 30px #f5d742;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            color: #0b0e1a;
+        }
+
+        /* Игровая информация */
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            border-top: 1px solid rgba(255,215,0,0.15);
+            border-bottom: 1px solid rgba(255,215,0,0.15);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .info-panel div {
             display: flex;
             align-items: center;
             gap: 6px;
-            cursor: pointer;
-            font-size: 13px;
         }
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #000000bb;
-            backdrop-filter: blur(6px);
+        .badge {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 2px 14px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        /* Кнопки и ввод */
+        .controls {
+            padding: 12px 16px 16px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(2px);
+        }
+        .ctrl-btn {
+            background: linear-gradient(145deg, #2a2f4a, #1a1f33);
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-size: 16px;
+            flex: 1;
+            min-width: 80px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 0 #0b0e1a, 0 8px 16px rgba(0,0,0,0.4);
+            transition: 0.08s linear;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 100;
+            gap: 6px;
         }
-        .modal.open { display: flex; }
-        .modal-content {
-            background: #1e2c3a;
-            max-width: 360px;
-            width: 90%;
-            padding: 24px 18px;
-            border-radius: 48px;
-            border: 1px solid #f5d74255;
-            box-shadow: 0 30px 60px #000000aa;
+        .ctrl-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #0b0e1a;
+        }
+        .ctrl-btn.gold {
+            background: linear-gradient(145deg, #f5d742, #c99c0b);
+            color: #0b0e1a;
+            border-color: #f5d742;
+            text-shadow: 0 1px 2px rgba(255,255,200,0.6);
+        }
+        .ctrl-btn.gold:active {
+            background: #d4a820;
+        }
+        .input-letter {
+            width: 60px;
+            height: 50px;
             text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            color: #fff;
+            outline: none;
+            caret-color: #f5d742;
         }
-        .modal-content h2 { color: #f5d742; margin-bottom: 14px; }
-        .modal-content .shop-item {
-            background: #101b24;
-            padding: 12px;
-            border-radius: 40px;
-            margin: 8px 0;
+        .input-letter:focus {
+            border-color: #f5d742;
+            box-shadow: 0 0 20px rgba(245, 215, 66, 0.2);
+        }
+
+        /* Кастомизация (мини-панель) */
+        .customize-panel {
             display: flex;
-            justify-content: space-between;
+            gap: 12px;
+            padding: 6px 16px 12px;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid rgba(255,215,0,0.05);
+        }
+        .skin-item {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #2a2f4a;
+            display: flex;
             align-items: center;
-            border: 1px solid #ffffff22;
-            font-size: 14px;
-        }
-        .modal-content .shop-item button {
-            background: #d4a02b;
-            border: none;
-            padding: 4px 16px;
-            border-radius: 40px;
-            font-weight: 700;
+            justify-content: center;
+            font-size: 26px;
+            border: 2px solid transparent;
+            transition: 0.2s;
             cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-        .close-modal {
-            margin-top: 16px;
-            background: #4a5f72;
-            border: none;
-            padding: 10px 30px;
+        .skin-item.active {
+            border-color: #f5d742;
+            box-shadow: 0 0 20px #f5d742;
+            transform: scale(1.1);
+        }
+        .skin-item:active {
+            transform: scale(0.9);
+        }
+        .skin-cost {
+            font-size: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 0 6px;
+            border-radius: 20px;
+            margin-left: 4px;
+        }
+
+        /* сообщения */
+        .toast {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            padding: 10px 24px;
             border-radius: 60px;
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
+            border: 1px solid #f5d742;
+            font-weight: 600;
+            font-size: 16px;
+            color: #f5d742;
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+            transition: 0.25s;
+            opacity: 0;
         }
-        .message {
-            text-align: center;
-            padding: 4px;
-            font-weight: 500;
-            color: #d4c9b0;
-            min-height: 24px;
-            font-size: 14px;
-        }
-        .sector-info {
-            background: #1a2a3a77;
-            border-radius: 30px;
-            padding: 4px 14px;
-            border: 1px solid #f5d74233;
-            font-size: 12px;
-            display: inline-block;
-        }
-        @media (max-width: 460px) {
-            .word-display { font-size: 22px; letter-spacing: 4px; }
-            .key { width: 32px; height: 32px; font-size: 15px; }
-            .btn { font-size: 12px; padding: 8px 10px; }
-            .char-card { font-size: 12px; padding: 3px 10px; }
+        .toast.show {
+            opacity: 1;
+            bottom: 140px;
         }
     </style>
 </head>
 <body>
-
-<div class="app-container" id="app">
-    <h1>🎡 Поле Чудес <span>3D</span></h1>
-    <div class="status-bar">
-        <div>❤️ <span id="livesDisplay">❤️❤️❤️</span></div>
-        <div class="score-display">🏆 <span id="roundScore">0</span></div>
-        <div class="currency" id="currencyDisplay">150</div>
+<div id="app">
+    <!-- Верхняя панель -->
+    <div class="header">
+        <div class="currency">
+            <span>💰</span>
+            <span id="coinDisplay">250</span>
+        </div>
+        <div class="profile">
+            <div class="avatar" id="avatarDisplay">😎</div>
+            <span class="username" id="usernameDisplay">Игрок</span>
+        </div>
     </div>
 
-    <div class="scene-box" id="threeContainer"></div>
-
-    <div class="word-display" id="wordDisplay"></div>
-
-    <div class="keyboard" id="keyboardContainer"></div>
-
-    <div class="action-row">
-        <button class="btn btn-primary" id="newGameBtn">🔄 Новая</button>
-        <button class="btn btn-success" id="spinBtn">🎰 Крутить</button>
-        <button class="btn" id="hintBtn">💡 Подсказка</button>
+    <!-- Слово -->
+    <div class="word-area" id="wordArea">
+        <!-- буквы генерируются js -->
     </div>
 
-    <div class="characters" id="charactersContainer">
-        <div class="char-card active" data-char="0">👑 <span>Король</span></div>
-        <div class="char-card" data-char="1">🧙 <span>Маг</span></div>
-        <div class="char-card" data-char="2">⚔️ <span>Воитель</span></div>
-        <div class="shop-btn" id="openShopBtn">🛒 Магазин</div>
+    <!-- 3D Барабан -->
+    <div class="wheel-wrapper">
+        <div id="wheel3d">
+            <!-- сегменты генерируются js -->
+            <div class="center-dot">🎯</div>
+        </div>
     </div>
 
-    <div class="message" id="messageArea">🎯 Крути барабан и угадывай буквы!</div>
+    <!-- Инфо -->
+    <div class="info-panel">
+        <div>🎯 Ход: <span id="turnIndicator">Ваш</span></div>
+        <div>🏆 <span id="scoreDisplay">0</span></div>
+        <div class="badge" id="multiplierDisplay">×1</div>
+    </div>
+
+    <!-- Управление -->
+    <div class="controls">
+        <input class="input-letter" id="letterInput" maxlength="1" placeholder="А" />
+        <button class="ctrl-btn gold" id="spinBtn">🎰 Крутить</button>
+        <button class="ctrl-btn" id="guessBtn">🔍 Угадать</button>
+        <button class="ctrl-btn" id="resetBtn">🔄 Новое</button>
+    </div>
+
+    <!-- Кастомизация персонажей -->
+    <div class="customize-panel" id="skinPanel">
+        <div class="skin-item active" data-skin="😎" data-cost="0">😎</div>
+        <div class="skin-item" data-skin="🧙" data-cost="100">🧙<span class="skin-cost">100</span></div>
+        <div class="skin-item" data-skin="🦸" data-cost="150">🦸<span class="skin-cost">150</span></div>
+        <div class="skin-item" data-skin="👾" data-cost="200">👾<span class="skin-cost">200</span></div>
+        <div class="skin-item" data-skin="🤖" data-cost="250">🤖<span class="skin-cost">250</span></div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toastMsg"></div>
 </div>
 
-<!-- Модалка магазина -->
-<div class="modal" id="shopModal">
-    <div class="modal-content">
-        <h2>⭐ Магазин</h2>
-        <div class="shop-item"><span>🎨 Сменить тему (100⭐)</span> <button id="buyThemeBtn">Купить</button></div>
-        <div class="shop-item"><span>✨ Анимация победы (50⭐)</span> <button id="buyAnimBtn">Купить</button></div>
-        <div class="shop-item"><span>💀 +1 жизнь (80⭐)</span> <button id="buyLifeBtn">Купить</button></div>
-        <div class="shop-item"><span>🔮 Открыть букву (30⭐)</span> <button id="buyLetterBtn">Купить</button></div>
-        <button class="close-modal" id="closeShopBtn">Закрыть</button>
-    </div>
-</div>
-
-<!-- three.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-(function() {
-    // ----- ИГРОВОЙ СТАТУС -----
-    const WORDS = ['АНИМАЦИЯ', 'СОКРОВИЩЕ', 'ЗОЛОТО', 'ПРИКЛЮЧЕНИЕ', 'ФАНТАЗИЯ', 'КОРОНА', 'МАГИЯ', 'ДРАКОН', 'САМОЦВЕТ', 'ИМПЕРИЯ'];
-    let currentWord = '';
-    let guessedLetters = [];
-    let wrongCount = 0;
-    const MAX_WRONG = 6;
-    let lives = 3;
-    let currency = 150;
-    let roundScore = 0;
-    let activeChar = 0;
-    let selectedLetters = new Set();
-    let gameOver = false;
-    let winFlag = false;
-    let multiplier = 1; // для сектора X2
-    let canSpin = true;
-    let hintUsed = false;
+    (function(){
+        // ---------- ИГРОВЫЕ ДАННЫЕ ----------
+        const WORDS = ['АВТОМОБИЛЬ', 'ПИАНИНО', 'СОКРОВИЩЕ', 'ФАНТАСТИКА', 'ЗОЛОТО', 'КОСМОС', 'ПУТЕШЕСТВИЕ', 'МЕЛОДИЯ', 'ВДОХНОВЕНИЕ'];
+        let currentWord = '';
+        let revealed = [];
+        let score = 0;
+        let multiplier = 1;
+        let coins = 250;
+        let currentSkin = '😎';
+        let turn = 0; // 0 - игрок, 1 - соперник (имитация)
+        let gameOver = false;
 
-    // DOM
-    const wordDisplay = document.getElementById('wordDisplay');
-    const keyboardContainer = document.getElementById('keyboardContainer');
-    const livesDisplay = document.getElementById('livesDisplay');
-    const currencyDisplay = document.getElementById('currencyDisplay');
-    const roundScoreDisplay = document.getElementById('roundScore');
-    const messageArea = document.getElementById('messageArea');
-    const newGameBtn = document.getElementById('newGameBtn');
-    const spinBtn = document.getElementById('spinBtn');
-    const hintBtn = document.getElementById('hintBtn');
-    const shopModal = document.getElementById('shopModal');
-    const openShopBtn = document.getElementById('openShopBtn');
-    const closeShopBtn = document.getElementById('closeShopBtn');
+        // Элементы
+        const wheelEl = document.getElementById('wheel3d');
+        const wordArea = document.getElementById('wordArea');
+        const coinDisplay = document.getElementById('coinDisplay');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const multiplierDisplay = document.getElementById('multiplierDisplay');
+        const turnIndicator = document.getElementById('turnIndicator');
+        const avatarDisplay = document.getElementById('avatarDisplay');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const letterInput = document.getElementById('letterInput');
+        const spinBtn = document.getElementById('spinBtn');
+        const guessBtn = document.getElementById('guessBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const toast = document.getElementById('toastMsg');
 
-    // ----- 3D СЦЕНА -----
-    const container = document.getElementById('threeContainer');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x101b24);
+        // Состояние барабана
+        let currentAngle = 0;
+        let spinning = false;
+        // Сектора (8 шт)
+        const SEGMENTS = [
+            { label: '500', color: '#e74c3c', value: 500 },
+            { label: 'X2', color: '#f39c12', value: 'x2' },
+            { label: '200', color: '#2ecc71', value: 200 },
+            { label: 'БАНК', color: '#e67e22', value: 'bankrupt' },
+            { label: '100', color: '#3498db', value: 100 },
+            { label: 'ПРИЗ', color: '#9b59b6', value: 'prize' },
+            { label: '300', color: '#1abc9c', value: 300 },
+            { label: 'ШАНС', color: '#e91e63', value: 'chance' }
+        ];
+        const SEG_COUNT = SEGMENTS.length;
+        const segAngle = 360 / SEG_COUNT;
 
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-    camera.position.set(0, 2, 8);
-    camera.lookAt(0, 0, 0);
+        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+        function initGame() {
+            // случайное слово
+            currentWord = WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase();
+            revealed = new Array(currentWord.length).fill(false);
+            // открываем первую букву для подсказки (редко)
+            if (currentWord.length > 2) {
+                const idx = Math.floor(Math.random() * currentWord.length);
+                revealed[idx] = true;
+            }
+            score = 0;
+            multiplier = 1;
+            gameOver = false;
+            turn = 0;
+            updateUI();
+            renderWord();
+            renderWheel();
+            toastMsg('Новая игра! Крути барабан!');
+        }
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.shadowMap.enabled = true;
-    container.appendChild(renderer.domElement);
-
-    const ambientLight = new THREE.AmbientLight(0x404060);
-    scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
-    dirLight.position.set(2, 5, 3);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
-    const backLight = new THREE.PointLight(0x4466ff, 0.6);
-    backLight.position.set(-2, 1, -3);
-    scene.add(backLight);
-
-    const mainGroup = new THREE.Group();
-    scene.add(mainGroup);
-
-    // Барабан с секторами (разноцветный)
-    const sectorColors = [0xd4a02b, 0x2a7a4a, 0x7a2a8a, 0xcc5533, 0x2a6a8a, 0xd4a02b, 0xcc8833, 0x44aa66];
-    const drumGeo = new THREE.CylinderGeometry(1.8, 1.8, 0.7, 32);
-    const drumMat = new THREE.MeshStandardMaterial({ color: 0xd4a02b, emissive: 0x4a2f0a, roughness: 0.4, metalness: 0.7 });
-    const drum = new THREE.Mesh(drumGeo, drumMat);
-    drum.position.y = 0.0;
-    drum.castShadow = true;
-    mainGroup.add(drum);
-
-    // Секторные метки (кольцо с цветными сегментами)
-    for (let i = 0; i < 8; i++) {
-        const angle = (i / 8) * Math.PI * 2;
-        const seg = new THREE.Mesh(
-            new THREE.BoxGeometry(0.35, 0.05, 0.7),
-            new THREE.MeshStandardMaterial({ color: sectorColors[i % sectorColors.length], emissive: 0x221100 })
-        );
-        seg.position.set(Math.sin(angle) * 1.7, 0.37, Math.cos(angle) * 1.7);
-        seg.rotation.y = -angle;
-        mainGroup.add(seg);
-    }
-
-    // Ободок
-    const ringGeo = new THREE.TorusGeometry(1.9, 0.08, 16, 48);
-    const ringMat = new THREE.MeshStandardMaterial({ color: 0xf5d742, emissive: 0x4a3a0a });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = 0.36;
-    mainGroup.add(ring);
-    const ring2 = ring.clone();
-    ring2.position.y = -0.36;
-    mainGroup.add(ring2);
-
-    // Стрелка
-    const arrowGroup = new THREE.Group();
-    const coneGeo = new THREE.ConeGeometry(0.3, 0.7, 8);
-    const coneMat = new THREE.MeshStandardMaterial({ color: 0xff5555, emissive: 0x550000 });
-    const cone = new THREE.Mesh(coneGeo, coneMat);
-    cone.position.set(0, 0.9, 0);
-    cone.rotation.x = 0.2;
-    arrowGroup.add(cone);
-    const sphereInd = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0x442200 }));
-    sphereInd.position.set(0, 0.3, 0);
-    arrowGroup.add(sphereInd);
-    arrowGroup.position.set(0, 0.0, 1.9);
-    mainGroup.add(arrowGroup);
-
-    // Персонажи
-    function createCharacterMesh(emoji, color) {
-        const g = new THREE.BoxGeometry(0.7, 0.7, 0.7);
-        const m = new THREE.MeshStandardMaterial({ color: color, emissive: 0x221100, roughness: 0.3 });
-        const mesh = new THREE.Mesh(g, m);
-        const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6), eyeMat);
-        eyeL.position.set(-0.18, 0.12, 0.38);
-        mesh.add(eyeL);
-        const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6), pupilMat);
-        pupilL.position.set(-0.22, 0.12, 0.44);
-        mesh.add(pupilL);
-        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6), eyeMat);
-        eyeR.position.set(0.18, 0.12, 0.38);
-        mesh.add(eyeR);
-        const pupilR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6), pupilMat);
-        pupilR.position.set(0.22, 0.12, 0.44);
-        mesh.add(pupilR);
-        return mesh;
-    }
-
-    const charMeshes = [
-        createCharacterMesh('👑', 0xc99c2b),
-        createCharacterMesh('🧙', 0x3a5c8a),
-        createCharacterMesh('⚔️', 0x6a4a3a)
-    ];
-    charMeshes.forEach((m, i) => {
-        m.position.set(-1.0 + i * 1.0, -0.6, -1.2);
-        mainGroup.add(m);
-    });
-
-    // Анимация
-    let time = 0;
-    let isSpinning = false;
-    let spinSpeed = 0;
-
-    function animate() {
-        requestAnimationFrame(animate);
-        time += 0.01;
-
-        if (!isSpinning) {
-            mainGroup.rotation.y += 0.002;
-        } else {
-            if (spinSpeed > 0.01) {
-                mainGroup.rotation.y += spinSpeed;
-                spinSpeed *= 0.97;
-            } else {
-                isSpinning = false;
-                spinSpeed = 0;
-                handleSpinResult();
+        // Отрисовка слова
+        function renderWord() {
+            wordArea.innerHTML = '';
+            for (let i = 0; i < currentWord.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                if (revealed[i]) {
+                    slot.classList.add('revealed');
+                    slot.textContent = currentWord[i];
+                } else {
+                    slot.textContent = '_';
+                }
+                wordArea.appendChild(slot);
             }
         }
 
-        charMeshes.forEach((m, idx) => {
-            const offset = idx * 0.8;
-            m.position.y = -0.6 + Math.sin(time * 2 + offset) * 0.06;
-            m.rotation.z = Math.sin(time * 1.3 + offset) * 0.03;
-        });
+        // Обновить UI (монеты, счет, множитель, ход)
+        function updateUI() {
+            coinDisplay.textContent = coins;
+            scoreDisplay.textContent = score;
+            multiplierDisplay.textContent = `×${multiplier}`;
+            turnIndicator.textContent = turn === 0 ? 'Ваш' : 'Соперник';
+            avatarDisplay.textContent = currentSkin;
+            // подсветка активной скина
+            document.querySelectorAll('.skin-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.skin === currentSkin);
+            });
+        }
 
-        renderer.render(scene, camera);
-    }
-    animate();
+        // Toast
+        let toastTimeout = null;
+        function toastMsg(text) {
+            toast.textContent = text;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 2200);
+        }
 
-    // ----- СПЕЦСЕКТОРЫ -----
-    const SECTORS = [
-        { name: 'ОЧКИ', value: 50, color: '#d4a02b' },
-        { name: 'ПРИЗ', value: 'prize', color: '#2a7a4a' },
-        { name: 'ПЛЮС', value: 'plus', color: '#7a2a8a' },
-        { name: 'ШАНС', value: 'chance', color: '#cc5533' },
-        { name: 'БАНКРОТ', value: 'bankrupt', color: '#2a2a2a' },
-        { name: 'X2', value: 'x2', color: '#cc8833' },
-        { name: 'ОЧКИ', value: 30, color: '#44aa66' },
-        { name: 'ОЧКИ', value: 70, color: '#2a6a8a' }
-    ];
+        // ---------- 3D БАРАБАН ----------
+        function renderWheel() {
+            wheelEl.innerHTML = '';
+            // Создаем сегменты
+            for (let i = 0; i < SEG_COUNT; i++) {
+                const seg = document.createElement('div');
+                seg.className = 'segment';
+                const angle = i * segAngle;
+                // clip-path полигон для сектора
+                const deg = angle;
+                seg.style.transform = `rotate(${deg}deg)`;
+                seg.style.background = `conic-gradient(from ${deg}deg, ${SEGMENTS[i].color}, ${SEGMENTS[i].color} ${segAngle}deg, transparent ${segAngle}deg)`;
+                seg.style.clipPath = `polygon(50% 50%, 50% 0%, 100% 0%)`;
+                // текст внутри
+                const span = document.createElement('span');
+                span.textContent = SEGMENTS[i].label;
+                seg.appendChild(span);
+                wheelEl.appendChild(seg);
+            }
+            // центр
+            const center = document.createElement('div');
+            center.className = 'center-dot';
+            center.textContent = '🎯';
+            wheelEl.appendChild(center);
+        }
 
-    function getRandomSector() {
-        return SECTORS[Math.floor(Math.random() * SECTORS.length)];
-    }
+        // Вращение
+        function spinWheel() {
+            if (spinning || gameOver) return;
+            if (turn !== 0) {
+                toastMsg('Сейчас ход соперника!');
+                return;
+            }
+            spinning = true;
+            const spins = 5 + Math.floor(Math.random() * 8);
+            const extra = Math.random() * 360;
+            const targetAngle = currentAngle + spins * 360 + extra;
+            wheelEl.style.transform = `rotate(${targetAngle}deg)`;
+            currentAngle = targetAngle;
 
-    function handleSpinResult() {
-        if (gameOver) return;
-        const sector = getRandomSector();
-        messageArea.textContent = `🎯 Сектор: ${sector.name}!`;
+            // Определяем сектор через 1.2с
+            setTimeout(() => {
+                const norm = ((targetAngle % 360) + 360) % 360;
+                const segIndex = Math.floor(norm / segAngle) % SEG_COUNT;
+                const seg = SEGMENTS[segIndex];
+                handleSegment(seg);
+                spinning = false;
+            }, 1300);
+        }
 
-        switch(sector.name) {
-            case 'ОЧКИ':
-                const points = sector.value * multiplier;
-                roundScore += points;
-                messageArea.textContent += ` +${points} очков!`;
-                multiplier = 1;
-                break;
-            case 'ПРИЗ':
-                // Выбор: открыть букву или получить 30 монет
-                if (currency < 100) {
-                    currency += 30;
-                    messageArea.textContent = '🎁 +30 монет (приз)!';
-                } else {
-                    // Открываем случайную букву
-                    openRandomLetter();
-                    messageArea.textContent = '🔮 Открыта случайная буква!';
-                }
-                break;
-            case 'ПЛЮС':
-                openRandomLetter();
-                messageArea.textContent = '➕ Открыта случайная буква!';
-                break;
-            case 'ШАНС':
-                // Ведущий называет самую частую букву
-                const bestLetter = getMostFrequentLetter();
-                if (bestLetter) {
-                    guessLetter(bestLetter, true);
-                    messageArea.textContent = `🍀 Шанс! Буква "${bestLetter}" открыта!`;
-                } else {
-                    messageArea.textContent = '🍀 Шанс! Но букв не осталось...';
-                }
-                break;
-            case 'БАНКРОТ':
-                roundScore = 0;
-                multiplier = 1;
-                messageArea.textContent = '💸 Банкрот! Все очки сгорели!';
-                break;
-            case 'X2':
+        // Обработка сектора
+        function handleSegment(seg) {
+            if (gameOver) return;
+            const val = seg.value;
+            if (val === 'x2') {
                 multiplier = 2;
-                messageArea.textContent = '⚡ X2! Следующие очки удвоены!';
-                break;
-            default:
-                break;
-        }
-        updateUI();
-        checkGameOver();
-    }
-
-    function getMostFrequentLetter() {
-        const freq = {};
-        for (let ch of currentWord) {
-            if (ch !== ' ' && !guessedLetters.includes(ch)) {
-                freq[ch] = (freq[ch] || 0) + 1;
-            }
-        }
-        let best = null, max = 0;
-        for (let [ch, count] of Object.entries(freq)) {
-            if (count > max) { max = count; best = ch; }
-        }
-        return best;
-    }
-
-    function openRandomLetter() {
-        const available = currentWord.split('').filter(ch => ch !== ' ' && !guessedLetters.includes(ch));
-        if (available.length === 0) return;
-        const letter = available[Math.floor(Math.random() * available.length)];
-        if (!selectedLetters.has(letter)) {
-            guessLetter(letter, true);
-        }
-    }
-
-    // ----- ЛОГИКА ИГРЫ -----
-    function initGame() {
-        const newWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-        currentWord = newWord.toUpperCase();
-        guessedLetters = [];
-        wrongCount = 0;
-        gameOver = false;
-        winFlag = false;
-        selectedLetters = new Set();
-        roundScore = 0;
-        multiplier = 1;
-        canSpin = true;
-        hintUsed = false;
-        document.querySelectorAll('.key').forEach(k => {
-            k.classList.remove('correct', 'wrong', 'disabled');
-            k.disabled = false;
-        });
-        updateWordDisplay();
-        updateUI();
-        messageArea.textContent = '🎯 Крути барабан и угадывай буквы!';
-        if (lives <= 0) lives = 3;
-        scene.background.setHex(0x101b24);
-        updateUI();
-    }
-
-    function updateWordDisplay() {
-        let html = '';
-        for (let char of currentWord) {
-            if (char === ' ') {
-                html += '<span style="min-width: 12px;"> </span>';
-            } else if (guessedLetters.includes(char)) {
-                html += `<span class="letter">${char}</span>`;
-            } else {
-                html += `<span class="letter">_</span>`;
-            }
-        }
-        wordDisplay.innerHTML = html;
-
-        const allGuessed = currentWord.split('').every(ch => ch === ' ' || guessedLetters.includes(ch));
-        if (allGuessed && currentWord.length > 0 && !gameOver) {
-            winFlag = true;
-            gameOver = true;
-            const bonus = 50 + roundScore;
-            currency += bonus;
-            messageArea.textContent = `🏆 ПОБЕДА! +${bonus} монет! 🎉`;
-            scene.background.setHex(0x2a1a3a);
-            setTimeout(() => scene.background.setHex(0x101b24), 1000);
-            updateUI();
-        }
-    }
-
-    function guessLetter(letter, auto = false) {
-        if (gameOver || lives <= 0) return;
-        if (selectedLetters.has(letter)) return;
-        selectedLetters.add(letter);
-
-        const keyEl = document.querySelector(`.key[data-letter="${letter}"]`);
-        if (currentWord.includes(letter)) {
-            guessedLetters.push(letter);
-            keyEl?.classList.add('correct');
-            if (!auto) {
-                const earned = 10 * multiplier;
-                roundScore += earned;
-                currency += 5;
-                messageArea.textContent = `✅ Есть "${letter}"! +${earned} очков!`;
+                toastMsg('X2! Следующая буква удвоит очки!');
+                updateUI();
+                // ход продолжается (можно крутить снова)
+                return;
+            } else if (val === 'bankrupt') {
+                score = 0;
                 multiplier = 1;
-            }
-        } else {
-            wrongCount++;
-            keyEl?.classList.add('wrong');
-            if (!auto) {
-                messageArea.textContent = `❌ Нет "${letter}"`;
-                if (wrongCount >= 3) {
-                    lives--;
-                    wrongCount = 0;
-                    messageArea.textContent = `💔 -1 жизнь! Осталось ${lives}`;
-                    if (lives === 0) {
-                        gameOver = true;
-                        messageArea.textContent = '💀 Игра окончена. Начни новую.';
+                toastMsg('Банкрот! Очки сгорели!');
+                turn = 1; // переход хода
+                updateUI();
+                return;
+            } else if (val === 'prize') {
+                coins += 50;
+                toastMsg('Приз! +50 монет!');
+                // выбор: открыть букву или выбыть, но для простоты даём открыть
+                openRandomLetter();
+                updateUI();
+                return;
+            } else if (val === 'chance') {
+                // ведущий называет самую частую букву
+                const freq = getMostFrequentLetter();
+                if (freq) {
+                    revealLetter(freq);
+                    toastMsg(`Шанс! Ведущий называет "${freq}"`);
+                } else {
+                    toastMsg('Шанс! Букв нет?');
+                }
+                updateUI();
+                return;
+            } else {
+                // числовое значение
+                const points = parseInt(val, 10);
+                const earned = points * multiplier;
+                // просим ввести букву
+                toastMsg(`Выпало ${points} × ${multiplier} = ${earned} очков! Введите букву`);
+                // Ожидаем ввод буквы
+                const guessLetter = () => {
+                    const letter = letterInput.value.trim().toUpperCase();
+                    if (!letter || letter.length !== 1 || !/^[А-Я]$/.test(letter)) {
+                        toastMsg('Введите одну русскую букву');
+                        return;
                     }
+                    if (revealLetter(letter)) {
+                        score += earned;
+                        // если буква есть, ход продолжается
+                        toastMsg(`Буква "${letter}" есть! +${earned} очков`);
+                        multiplier = 1;
+                        // проверка победы
+                        if (checkWin()) {
+                            gameOver = true;
+                            toastMsg('Поздравляю! Вы угадали слово! 🎉');
+                            coins += 100;
+                            updateUI();
+                            return;
+                        }
+                    } else {
+                        toastMsg(`Буквы "${letter}" нет! Ход переходит`);
+                        turn = 1;
+                        multiplier = 1;
+                    }
+                    updateUI();
+                    letterInput.value = '';
+                    document.removeEventListener('keydown', onEnter);
+                };
+                const onEnter = (e) => {
+                    if (e.key === 'Enter') {
+                        guessLetter();
+                    }
+                };
+                document.addEventListener('keydown', onEnter);
+                // также по кнопке
+                guessBtn.onclick = () => {
+                    guessLetter();
+                    document.removeEventListener('keydown', onEnter);
+                };
+                // Если кликнуть крутить — отключаем обработку
+                spinBtn.onclick = () => {
+                    document.removeEventListener('keydown', onEnter);
+                    spinWheel();
+                };
+                return;
+            }
+        }
+
+        // Открыть случайную букву (для приза)
+        function openRandomLetter() {
+            const hidden = [];
+            for (let i = 0; i < currentWord.length; i++) {
+                if (!revealed[i]) hidden.push(i);
+            }
+            if (hidden.length === 0) {
+                toastMsg('Все буквы уже открыты!');
+                return;
+            }
+            const idx = hidden[Math.floor(Math.random() * hidden.length)];
+            revealed[idx] = true;
+            renderWord();
+            if (checkWin()) {
+                gameOver = true;
+                toastMsg('Вы угадали слово! 🎉');
+                coins += 100;
+                updateUI();
+            }
+        }
+
+        // Открыть конкретную букву
+        function revealLetter(letter) {
+            let found = false;
+            for (let i = 0; i < currentWord.length; i++) {
+                if (currentWord[i] === letter && !revealed[i]) {
+                    revealed[i] = true;
+                    found = true;
                 }
             }
+            if (found) {
+                renderWord();
+                checkWin();
+                updateUI();
+                return true;
+            }
+            return false;
         }
-        keyEl?.classList.add('disabled');
-        updateWordDisplay();
-        updateUI();
-        checkGameOver();
-    }
 
-    function checkGameOver() {
-        if (lives <= 0) {
-            gameOver = true;
-            messageArea.textContent = '💀 Игра окончена. Начни новую.';
-            document.querySelectorAll('.key').forEach(k => k.classList.add('disabled'));
+        // Самая частая буква в слове (не открытая)
+        function getMostFrequentLetter() {
+            const freq = {};
+            for (let ch of currentWord) {
+                if (!freq[ch]) freq[ch] = 0;
+                freq[ch]++;
+            }
+            let best = '';
+            let max = 0;
+            for (let ch in freq) {
+                if (freq[ch] > max && !revealed[currentWord.indexOf(ch)]) {
+                    max = freq[ch];
+                    best = ch;
+                }
+            }
+            return best;
         }
-    }
 
-    function updateUI() {
-        livesDisplay.textContent = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, 3 - lives));
-        currencyDisplay.textContent = currency;
-        roundScoreDisplay.textContent = roundScore;
-    }
+        // Проверка победы
+        function checkWin() {
+            const allRevealed = revealed.every(v => v === true);
+            if (allRevealed) {
+                gameOver = true;
+                toastMsg('🎉 Слово угадано! +100 монет');
+                coins += 100;
+                updateUI();
+                return true;
+            }
+            return false;
+        }
 
-    // ----- КЛАВИАТУРА -----
-    function buildKeyboard() {
-        keyboardContainer.innerHTML = '';
-        const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
-        letters.forEach(l => {
-            const key = document.createElement('div');
-            key.className = 'key';
-            key.dataset.letter = l;
-            key.textContent = l;
-            key.addEventListener('click', () => guessLetter(l));
-            keyboardContainer.appendChild(key);
+        // ---------- КАСТОМИЗАЦИЯ ----------
+        document.querySelectorAll('.skin-item').forEach(el => {
+            el.addEventListener('click', function() {
+                const skin = this.dataset.skin;
+                const cost = parseInt(this.dataset.cost, 10);
+                if (currentSkin === skin) return;
+                if (cost > coins) {
+                    toastMsg(`Не хватает монет! Нужно ${cost}`);
+                    return;
+                }
+                coins -= cost;
+                currentSkin = skin;
+                updateUI();
+                toastMsg(`Новый образ: ${skin}`);
+                // активный класс
+                document.querySelectorAll('.skin-item').forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
-    }
-    buildKeyboard();
 
-    // ----- СОБЫТИЯ -----
-    newGameBtn.addEventListener('click', () => {
+        // ---------- СОБЫТИЯ ----------
+        spinBtn.addEventListener('click', spinWheel);
+
+        resetBtn.addEventListener('click', function() {
+            initGame();
+            renderWheel();
+            updateUI();
+        });
+
+        // Буква по умолчанию
+        letterInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/[^А-Я]/g, '').slice(0, 1);
+        });
+
+        // Инициализация
         initGame();
-        document.querySelectorAll('.key').forEach(k => {
-            k.classList.remove('correct', 'wrong', 'disabled');
-            k.disabled = false;
-        });
-        selectedLetters = new Set();
-        wrongCount = 0;
-        multiplier = 1;
+        renderWheel();
         updateUI();
-    });
 
-    spinBtn.addEventListener('click', () => {
-        if (isSpinning) return;
-        if (gameOver) { messageArea.textContent = '❌ Игра окончена. Начни новую.'; return; }
-        if (currency < 10) {
-            messageArea.textContent = '❌ Недостаточно монет (нужно 10)';
-            return;
-        }
-        currency -= 10;
-        updateUI();
-        isSpinning = true;
-        spinSpeed = 0.2 + Math.random() * 0.15;
-        messageArea.textContent = '🎡 Крутим барабан...';
-    });
+        // Соперник (имитация хода)
+        setInterval(() => {
+            if (gameOver) return;
+            if (turn === 1 && !spinning) {
+                // соперник "ходит" через 2-4 сек
+                const letters = ['А','Е','И','О','Н','Т','С'];
+                const letter = letters[Math.floor(Math.random() * letters.length)];
+                const found = revealLetter(letter);
+                if (found) {
+                    toastMsg(`Соперник угадал "${letter}"!`);
+                    // соперник получает очки (для простоты)
+                    score += 50;
+                } else {
+                    toastMsg(`Соперник: "${letter}" нет!`);
+                    turn = 0; // ход игроку
+                }
+                updateUI();
+                if (checkWin()) {
+                    toastMsg('Соперник победил! Попробуйте снова');
+                    gameOver = true;
+                }
+            }
+        }, 5000);
 
-    hintBtn.addEventListener('click', () => {
-        if (gameOver) return;
-        if (hintUsed) { messageArea.textContent = '💡 Подсказка уже использована!'; return; }
-        if (currency < 20) { messageArea.textContent = '❌ Нужно 20 монет для подсказки'; return; }
-        currency -= 20;
-        hintUsed = true;
-        const best = getMostFrequentLetter();
-        if (best) {
-            guessLetter(best, true);
-            messageArea.textContent = `💡 Подсказка: буква "${best}"!`;
-        } else {
-            messageArea.textContent = '💡 Нет скрытых букв для подсказки.';
-        }
-        updateUI();
-    });
+        // Дополнительно: если игра окончена, кнопка "Новое"
+        window.initGame = initGame;
 
-    // Персонажи
-    document.querySelectorAll('.char-card').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.char-card').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            const idx = parseInt(this.dataset.char);
-            activeChar = idx;
-            charMeshes.forEach((m, i) => {
-                m.material.emissive.setHex(i === idx ? 0x664422 : 0x221100);
-            });
-            messageArea.textContent = `👤 ${this.innerText.trim()} выбран!`;
-        });
-    });
-    charMeshes[0].material.emissive.setHex(0x664422);
-
-    // Магазин
-    openShopBtn.addEventListener('click', () => shopModal.classList.add('open'));
-    closeShopBtn.addEventListener('click', () => shopModal.classList.remove('open'));
-    shopModal.addEventListener('click', (e) => { if (e.target === shopModal) shopModal.classList.remove('open'); });
-
-    document.getElementById('buyThemeBtn').addEventListener('click', () => {
-        if (currency >= 100) {
-            currency -= 100;
-            scene.background.setHex(Math.floor(Math.random() * 0xffffff));
-            messageArea.textContent = '🎨 Тема изменена!';
-            updateUI();
-            shopModal.classList.remove('open');
-        } else { messageArea.textContent = '❌ Не хватает монет'; }
-    });
-    document.getElementById('buyAnimBtn').addEventListener('click', () => {
-        if (currency >= 50) {
-            currency -= 50;
-            charMeshes.forEach((m, i) => {
-                m.position.y += 0.3;
-                setTimeout(() => m.position.y -= 0.3, 400 + i * 100);
-            });
-            messageArea.textContent = '✨ Анимация!';
-            updateUI();
-            shopModal.classList.remove('open');
-        } else { messageArea.textContent = '❌ Не хватает монет'; }
-    });
-    document.getElementById('buyLifeBtn').addEventListener('click', () => {
-        if (currency >= 80 && lives < 3) {
-            currency -= 80;
-            lives = Math.min(3, lives + 1);
-            messageArea.textContent = '❤️ +1 жизнь!';
-            updateUI();
-            shopModal.classList.remove('open');
-        } else { messageArea.textContent = '❌ Не хватает монет или жизни полны'; }
-    });
-    document.getElementById('buyLetterBtn').addEventListener('click', () => {
-        if (currency >= 30) {
-            currency -= 30;
-            openRandomLetter();
-            messageArea.textContent = '🔮 Буква открыта!';
-            updateUI();
-            shopModal.classList.remove('open');
-        } else { messageArea.textContent = '❌ Не хватает монет'; }
-    });
-
-    // resize
-    window.addEventListener('resize', () => {
-        const w = container.clientWidth;
-        const h = container.clientHeight;
-        renderer.setSize(w, h);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-    });
-
-    // Старт
-    initGame();
-    currency = 150;
-    updateUI();
-})();
+        // Корректировка при касании
+    })();
 </script>
 </body>
 </html>
