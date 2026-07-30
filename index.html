@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Поле Чудес 3D</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
             background: radial-gradient(circle at 20% 30%, #1a2a3a, #0b1219);
@@ -18,51 +14,46 @@
             justify-content: center;
             align-items: center;
             color: #fff;
-            padding: 16px;
+            padding: 12px;
         }
         .app-container {
             max-width: 500px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.08);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 48px 48px 32px 32px;
-            padding: 24px 20px 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 215, 0, 0.15);
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            transition: all 0.2s;
+            padding: 20px 16px 26px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,215,0,0.15);
+            border: 1px solid rgba(255,215,0,0.2);
         }
         h1 {
             text-align: center;
             font-weight: 600;
             letter-spacing: 2px;
-            font-size: 26px;
+            font-size: 24px;
             color: #f5e56b;
             text-shadow: 0 0 15px #f5b81b55, 0 4px 10px #00000055;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
-        h1 span {
-            background: #ffd966;
-            color: #1e2a36;
-            font-size: 16px;
-            padding: 2px 14px;
-            border-radius: 40px;
-            font-weight: 700;
-        }
+        h1 span { background: #ffd966; color: #1e2a36; font-size: 14px; padding: 2px 14px; border-radius: 40px; font-weight: 700; }
         .status-bar {
             display: flex;
             justify-content: space-between;
             background: #00000033;
-            padding: 12px 18px;
+            padding: 10px 16px;
             border-radius: 60px;
             backdrop-filter: blur(4px);
-            margin: 12px 0 18px;
+            margin: 10px 0 14px;
             border: 1px solid #ffffff15;
             font-weight: 500;
+            font-size: 14px;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         .currency {
             background: #f5c542;
@@ -75,24 +66,22 @@
             gap: 6px;
             box-shadow: 0 0 20px #f5b81b55;
         }
-        .currency::before {
-            content: "⭐";
-            font-size: 18px;
-        }
+        .currency::before { content: "⭐"; font-size: 18px; }
+        .score-display { background: #2a3a4a; padding: 4px 14px; border-radius: 40px; border: 1px solid #f5d74244; }
         .word-display {
             background: #0d1820cc;
-            padding: 20px 12px;
-            border-radius: 80px;
-            margin: 10px 0 18px;
+            padding: 16px 10px;
+            border-radius: 60px;
+            margin: 8px 0 14px;
             text-align: center;
-            letter-spacing: 8px;
-            font-size: 32px;
+            letter-spacing: 6px;
+            font-size: 28px;
             font-weight: 700;
             color: #f0e9d0;
             text-shadow: 0 0 10px #b8a86b;
             border: 1px solid #f5d74255;
             box-shadow: inset 0 0 30px #00000066;
-            min-height: 80px;
+            min-height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -101,151 +90,114 @@
         }
         .word-display .letter {
             display: inline-block;
-            min-width: 28px;
+            min-width: 26px;
             border-bottom: 3px solid #f5d742;
-            margin: 0 3px;
+            margin: 0 2px;
             transition: all 0.2s;
         }
         .keyboard {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 8px;
-            margin: 24px 0 16px;
+            gap: 6px;
+            margin: 16px 0 12px;
         }
         .key {
-            width: 42px;
-            height: 42px;
+            width: 38px;
+            height: 38px;
             background: #2c3e4e;
             border: 1px solid #6a7f94;
-            border-radius: 14px;
+            border-radius: 12px;
             color: #f5f0e1;
             font-weight: 700;
-            font-size: 20px;
+            font-size: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.12s;
+            transition: all 0.08s;
             box-shadow: 0 4px 0 #0b141c, 0 6px 12px #00000044;
             text-transform: uppercase;
         }
-        .key:active {
-            transform: translateY(5px);
-            box-shadow: 0 1px 0 #0b141c;
-        }
-        .key.disabled {
-            opacity: 0.35;
-            filter: grayscale(0.8);
-            transform: translateY(4px);
-            box-shadow: 0 1px 0 #0b141c;
-            pointer-events: none;
-        }
-        .key.correct {
-            background: #2a7a4a;
-            border-color: #7bcb8b;
-        }
-        .key.wrong {
-            background: #7a2a2a;
-            border-color: #cb7b7b;
-        }
+        .key:active { transform: translateY(5px); box-shadow: 0 1px 0 #0b141c; }
+        .key.disabled { opacity: 0.3; filter: grayscale(0.8); transform: translateY(4px); box-shadow: 0 1px 0 #0b141c; pointer-events: none; }
+        .key.correct { background: #2a7a4a; border-color: #7bcb8b; }
+        .key.wrong { background: #7a2a2a; border-color: #cb7b7b; }
         .action-row {
             display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            margin: 16px 0 20px;
+            gap: 10px;
+            margin: 12px 0 14px;
+            flex-wrap: wrap;
         }
         .btn {
             background: #24323f;
             border: none;
             border-radius: 60px;
-            padding: 12px 20px;
+            padding: 10px 16px;
             font-weight: 700;
             color: #ece3d0;
-            font-size: 16px;
+            font-size: 14px;
             flex: 1;
+            min-width: 80px;
             box-shadow: 0 6px 0 #0f171f, 0 6px 12px #00000055;
             transition: all 0.08s linear;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             border: 1px solid #6d7e8d55;
         }
-        .btn:active {
-            transform: translateY(6px);
-            box-shadow: 0 1px 0 #0f171f;
-        }
-        .btn-primary {
-            background: #d4a02b;
-            color: #141a22;
-            border-color: #f5d742;
-            box-shadow: 0 6px 0 #7a5f1a;
-        }
-        .btn-primary:active {
-            box-shadow: 0 1px 0 #7a5f1a;
-        }
-        .btn-success {
-            background: #2d7a4a;
-            border-color: #6bb87a;
-            box-shadow: 0 6px 0 #13442a;
-        }
-        .btn-success:active {
-            box-shadow: 0 1px 0 #13442a;
-        }
+        .btn:active { transform: translateY(6px); box-shadow: 0 1px 0 #0f171f; }
+        .btn-primary { background: #d4a02b; color: #141a22; border-color: #f5d742; box-shadow: 0 6px 0 #7a5f1a; }
+        .btn-primary:active { box-shadow: 0 1px 0 #7a5f1a; }
+        .btn-success { background: #2d7a4a; border-color: #6bb87a; box-shadow: 0 6px 0 #13442a; }
+        .btn-success:active { box-shadow: 0 1px 0 #13442a; }
+        .btn-danger { background: #8a2a2a; border-color: #cb6b6b; box-shadow: 0 6px 0 #4a1414; }
+        .btn-danger:active { box-shadow: 0 1px 0 #4a1414; }
         .scene-box {
             background: #101b24;
-            border-radius: 60px;
-            padding: 10px 0 0 0;
-            margin: 6px 0 12px;
+            border-radius: 50px;
+            padding: 6px 0 0 0;
+            margin: 4px 0 10px;
             border: 1px solid #f5d74233;
-            height: 120px;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             position: relative;
         }
-        canvas {
-            display: block;
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: 60px;
-        }
+        canvas { display: block; width: 100% !important; height: 100% !important; border-radius: 50px; }
         .characters {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
-            margin: 10px 0 12px;
+            margin: 8px 0 10px;
             flex-wrap: wrap;
         }
         .char-card {
             background: #1f2d3b;
-            padding: 6px 16px 6px 12px;
+            padding: 4px 14px 4px 10px;
             border-radius: 40px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             border: 1px solid #f5d74244;
             box-shadow: 0 4px 8px #00000033;
             transition: all 0.2s;
             cursor: pointer;
+            font-size: 13px;
         }
-        .char-card.active {
-            border-color: #f5d742;
-            background: #2a3d4e;
-            box-shadow: 0 0 20px #f5b81b33;
-        }
+        .char-card.active { border-color: #f5d742; background: #2a3d4e; box-shadow: 0 0 20px #f5b81b33; }
         .char-avatar {
-            width: 34px;
-            height: 34px;
+            width: 30px; height: 30px;
             background: #d4a02b;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 700;
             color: #1d1f2b;
         }
@@ -253,13 +205,14 @@
             background: #2b3b4b;
             border: 1px solid #f5d74255;
             border-radius: 40px;
-            padding: 6px 16px;
+            padding: 4px 14px;
             font-weight: 600;
             color: #f0e6c5;
             display: flex;
             align-items: center;
             gap: 6px;
             cursor: pointer;
+            font-size: 13px;
         }
         .modal {
             display: none;
@@ -271,60 +224,68 @@
             justify-content: center;
             z-index: 100;
         }
-        .modal.open {
-            display: flex;
-        }
+        .modal.open { display: flex; }
         .modal-content {
             background: #1e2c3a;
             max-width: 360px;
             width: 90%;
-            padding: 28px 20px;
+            padding: 24px 18px;
             border-radius: 48px;
             border: 1px solid #f5d74255;
             box-shadow: 0 30px 60px #000000aa;
             text-align: center;
         }
-        .modal-content h2 {
-            color: #f5d742;
-            margin-bottom: 16px;
-        }
+        .modal-content h2 { color: #f5d742; margin-bottom: 14px; }
         .modal-content .shop-item {
             background: #101b24;
-            padding: 14px;
+            padding: 12px;
             border-radius: 40px;
-            margin: 10px 0;
+            margin: 8px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 1px solid #ffffff22;
+            font-size: 14px;
         }
         .modal-content .shop-item button {
             background: #d4a02b;
             border: none;
-            padding: 6px 18px;
+            padding: 4px 16px;
             border-radius: 40px;
             font-weight: 700;
+            cursor: pointer;
         }
         .close-modal {
-            margin-top: 20px;
+            margin-top: 16px;
             background: #4a5f72;
             border: none;
-            padding: 12px 30px;
+            padding: 10px 30px;
             border-radius: 60px;
             color: white;
             font-weight: 700;
+            cursor: pointer;
         }
         .message {
             text-align: center;
-            padding: 6px;
+            padding: 4px;
             font-weight: 500;
             color: #d4c9b0;
-            min-height: 28px;
+            min-height: 24px;
+            font-size: 14px;
+        }
+        .sector-info {
+            background: #1a2a3a77;
+            border-radius: 30px;
+            padding: 4px 14px;
+            border: 1px solid #f5d74233;
+            font-size: 12px;
+            display: inline-block;
         }
         @media (max-width: 460px) {
-            .word-display { font-size: 24px; letter-spacing: 4px; }
-            .key { width: 36px; height: 36px; font-size: 16px; }
-            .btn { font-size: 14px; padding: 10px 12px; }
+            .word-display { font-size: 22px; letter-spacing: 4px; }
+            .key { width: 32px; height: 32px; font-size: 15px; }
+            .btn { font-size: 12px; padding: 8px 10px; }
+            .char-card { font-size: 12px; padding: 3px 10px; }
         }
     </style>
 </head>
@@ -333,7 +294,8 @@
 <div class="app-container" id="app">
     <h1>🎡 Поле Чудес <span>3D</span></h1>
     <div class="status-bar">
-        <div>❤️ Жизни: <span id="livesDisplay">❤️❤️❤️</span></div>
+        <div>❤️ <span id="livesDisplay">❤️❤️❤️</span></div>
+        <div class="score-display">🏆 <span id="roundScore">0</span></div>
         <div class="currency" id="currencyDisplay">150</div>
     </div>
 
@@ -344,8 +306,9 @@
     <div class="keyboard" id="keyboardContainer"></div>
 
     <div class="action-row">
-        <button class="btn btn-primary" id="newGameBtn">🔄 Новая игра</button>
+        <button class="btn btn-primary" id="newGameBtn">🔄 Новая</button>
         <button class="btn btn-success" id="spinBtn">🎰 Крутить</button>
+        <button class="btn" id="hintBtn">💡 Подсказка</button>
     </div>
 
     <div class="characters" id="charactersContainer">
@@ -355,7 +318,7 @@
         <div class="shop-btn" id="openShopBtn">🛒 Магазин</div>
     </div>
 
-    <div class="message" id="messageArea">Нажми "Новая игра" или крути барабан!</div>
+    <div class="message" id="messageArea">🎯 Крути барабан и угадывай буквы!</div>
 </div>
 
 <!-- Модалка магазина -->
@@ -365,6 +328,7 @@
         <div class="shop-item"><span>🎨 Сменить тему (100⭐)</span> <button id="buyThemeBtn">Купить</button></div>
         <div class="shop-item"><span>✨ Анимация победы (50⭐)</span> <button id="buyAnimBtn">Купить</button></div>
         <div class="shop-item"><span>💀 +1 жизнь (80⭐)</span> <button id="buyLifeBtn">Купить</button></div>
+        <div class="shop-item"><span>🔮 Открыть букву (30⭐)</span> <button id="buyLetterBtn">Купить</button></div>
         <button class="close-modal" id="closeShopBtn">Закрыть</button>
     </div>
 </div>
@@ -372,247 +336,339 @@
 <!-- three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-    (function() {
-        // ----- ИГРОВОЙ СТАТУС -----
-        const WORDS = ['АНИМАЦИЯ', 'СОКРОВИЩЕ', 'ЗОЛОТО', 'ПРИКЛЮЧЕНИЕ', 'ФАНТАЗИЯ', 'КОРОНА', 'МАГИЯ', 'ДРАКОН'];
-        let currentWord = '';
-        let guessedLetters = [];
-        let wrongCount = 0;
-        const MAX_WRONG = 6;
-        let lives = 3;
-        let currency = 150;
-        let activeChar = 0; // 0,1,2
-        let selectedLetters = new Set();
-        let gameOver = false;
-        let winFlag = false;
+(function() {
+    // ----- ИГРОВОЙ СТАТУС -----
+    const WORDS = ['АНИМАЦИЯ', 'СОКРОВИЩЕ', 'ЗОЛОТО', 'ПРИКЛЮЧЕНИЕ', 'ФАНТАЗИЯ', 'КОРОНА', 'МАГИЯ', 'ДРАКОН', 'САМОЦВЕТ', 'ИМПЕРИЯ'];
+    let currentWord = '';
+    let guessedLetters = [];
+    let wrongCount = 0;
+    const MAX_WRONG = 6;
+    let lives = 3;
+    let currency = 150;
+    let roundScore = 0;
+    let activeChar = 0;
+    let selectedLetters = new Set();
+    let gameOver = false;
+    let winFlag = false;
+    let multiplier = 1; // для сектора X2
+    let canSpin = true;
+    let hintUsed = false;
 
-        // DOM-ссылки
-        const wordDisplay = document.getElementById('wordDisplay');
-        const keyboardContainer = document.getElementById('keyboardContainer');
-        const livesDisplay = document.getElementById('livesDisplay');
-        const currencyDisplay = document.getElementById('currencyDisplay');
-        const messageArea = document.getElementById('messageArea');
-        const newGameBtn = document.getElementById('newGameBtn');
-        const spinBtn = document.getElementById('spinBtn');
-        const shopModal = document.getElementById('shopModal');
-        const openShopBtn = document.getElementById('openShopBtn');
-        const closeShopBtn = document.getElementById('closeShopBtn');
+    // DOM
+    const wordDisplay = document.getElementById('wordDisplay');
+    const keyboardContainer = document.getElementById('keyboardContainer');
+    const livesDisplay = document.getElementById('livesDisplay');
+    const currencyDisplay = document.getElementById('currencyDisplay');
+    const roundScoreDisplay = document.getElementById('roundScore');
+    const messageArea = document.getElementById('messageArea');
+    const newGameBtn = document.getElementById('newGameBtn');
+    const spinBtn = document.getElementById('spinBtn');
+    const hintBtn = document.getElementById('hintBtn');
+    const shopModal = document.getElementById('shopModal');
+    const openShopBtn = document.getElementById('openShopBtn');
+    const closeShopBtn = document.getElementById('closeShopBtn');
 
-        // ----- 3D СЦЕНА (базовые элементы) -----
-        const container = document.getElementById('threeContainer');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x101b24);
+    // ----- 3D СЦЕНА -----
+    const container = document.getElementById('threeContainer');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x101b24);
 
-        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-        camera.position.set(0, 2, 8);
-        camera.lookAt(0, 0, 0);
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.set(0, 2, 8);
+    camera.lookAt(0, 0, 0);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.shadowMap.enabled = true;
-        container.appendChild(renderer.domElement);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
 
-        // Свет
-        const ambientLight = new THREE.AmbientLight(0x404060);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
-        dirLight.position.set(2, 5, 3);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
-        const backLight = new THREE.PointLight(0x4466ff, 0.6);
-        backLight.position.set(-2, 1, -3);
-        scene.add(backLight);
+    const ambientLight = new THREE.AmbientLight(0x404060);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+    dirLight.position.set(2, 5, 3);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+    const backLight = new THREE.PointLight(0x4466ff, 0.6);
+    backLight.position.set(-2, 1, -3);
+    scene.add(backLight);
 
-        // Группа для вращения
-        const mainGroup = new THREE.Group();
-        scene.add(mainGroup);
+    const mainGroup = new THREE.Group();
+    scene.add(mainGroup);
 
-        // Барабан (цилиндр)
-        const drumGeo = new THREE.CylinderGeometry(1.8, 1.8, 0.7, 32);
-        const drumMat = new THREE.MeshStandardMaterial({ color: 0xd4a02b, emissive: 0x4a2f0a, roughness: 0.4, metalness: 0.7 });
-        const drum = new THREE.Mesh(drumGeo, drumMat);
-        drum.position.y = 0.0;
-        drum.castShadow = true;
-        mainGroup.add(drum);
+    // Барабан с секторами (разноцветный)
+    const sectorColors = [0xd4a02b, 0x2a7a4a, 0x7a2a8a, 0xcc5533, 0x2a6a8a, 0xd4a02b, 0xcc8833, 0x44aa66];
+    const drumGeo = new THREE.CylinderGeometry(1.8, 1.8, 0.7, 32);
+    const drumMat = new THREE.MeshStandardMaterial({ color: 0xd4a02b, emissive: 0x4a2f0a, roughness: 0.4, metalness: 0.7 });
+    const drum = new THREE.Mesh(drumGeo, drumMat);
+    drum.position.y = 0.0;
+    drum.castShadow = true;
+    mainGroup.add(drum);
 
-        // Ободок
-        const ringGeo = new THREE.TorusGeometry(1.9, 0.08, 16, 48);
-        const ringMat = new THREE.MeshStandardMaterial({ color: 0xf5d742, emissive: 0x4a3a0a });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.rotation.x = Math.PI / 2;
-        ring.position.y = 0.36;
-        mainGroup.add(ring);
-        const ring2 = ring.clone();
-        ring2.position.y = -0.36;
-        mainGroup.add(ring2);
+    // Секторные метки (кольцо с цветными сегментами)
+    for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const seg = new THREE.Mesh(
+            new THREE.BoxGeometry(0.35, 0.05, 0.7),
+            new THREE.MeshStandardMaterial({ color: sectorColors[i % sectorColors.length], emissive: 0x221100 })
+        );
+        seg.position.set(Math.sin(angle) * 1.7, 0.37, Math.cos(angle) * 1.7);
+        seg.rotation.y = -angle;
+        mainGroup.add(seg);
+    }
 
-        // Стрелка (указатель)
-        const arrowGroup = new THREE.Group();
-        const coneGeo = new THREE.ConeGeometry(0.3, 0.7, 8);
-        const coneMat = new THREE.MeshStandardMaterial({ color: 0xff5555, emissive: 0x550000 });
-        const cone = new THREE.Mesh(coneGeo, coneMat);
-        cone.position.set(0, 0.9, 0);
-        cone.rotation.x = 0.2;
-        arrowGroup.add(cone);
-        const sphereInd = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0x442200 }));
-        sphereInd.position.set(0, 0.3, 0);
-        arrowGroup.add(sphereInd);
-        arrowGroup.position.set(0, 0.0, 1.9);
-        mainGroup.add(arrowGroup);
+    // Ободок
+    const ringGeo = new THREE.TorusGeometry(1.9, 0.08, 16, 48);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0xf5d742, emissive: 0x4a3a0a });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.36;
+    mainGroup.add(ring);
+    const ring2 = ring.clone();
+    ring2.position.y = -0.36;
+    mainGroup.add(ring2);
 
-        // Персонаж (кубик с эмодзи-текстурой, упрощенно)
-        function createCharacterMesh(emoji, color) {
-            const g = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-            const m = new THREE.MeshStandardMaterial({ color: color, emissive: 0x221100, roughness: 0.3 });
-            const mesh = new THREE.Mesh(g, m);
-            // Добавим "глаза" - маленькие сферы
-            const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-            const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-            const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6), eyeMat);
-            eyeL.position.set(-0.2, 0.15, 0.42);
-            mesh.add(eyeL);
-            const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6), pupilMat);
-            pupilL.position.set(-0.25, 0.15, 0.5);
-            mesh.add(pupilL);
-            const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6), eyeMat);
-            eyeR.position.set(0.2, 0.15, 0.42);
-            mesh.add(eyeR);
-            const pupilR = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6), pupilMat);
-            pupilR.position.set(0.25, 0.15, 0.5);
-            mesh.add(pupilR);
-            return mesh;
+    // Стрелка
+    const arrowGroup = new THREE.Group();
+    const coneGeo = new THREE.ConeGeometry(0.3, 0.7, 8);
+    const coneMat = new THREE.MeshStandardMaterial({ color: 0xff5555, emissive: 0x550000 });
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.set(0, 0.9, 0);
+    cone.rotation.x = 0.2;
+    arrowGroup.add(cone);
+    const sphereInd = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0x442200 }));
+    sphereInd.position.set(0, 0.3, 0);
+    arrowGroup.add(sphereInd);
+    arrowGroup.position.set(0, 0.0, 1.9);
+    mainGroup.add(arrowGroup);
+
+    // Персонажи
+    function createCharacterMesh(emoji, color) {
+        const g = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+        const m = new THREE.MeshStandardMaterial({ color: color, emissive: 0x221100, roughness: 0.3 });
+        const mesh = new THREE.Mesh(g, m);
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6), eyeMat);
+        eyeL.position.set(-0.18, 0.12, 0.38);
+        mesh.add(eyeL);
+        const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6), pupilMat);
+        pupilL.position.set(-0.22, 0.12, 0.44);
+        mesh.add(pupilL);
+        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6), eyeMat);
+        eyeR.position.set(0.18, 0.12, 0.38);
+        mesh.add(eyeR);
+        const pupilR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6), pupilMat);
+        pupilR.position.set(0.22, 0.12, 0.44);
+        mesh.add(pupilR);
+        return mesh;
+    }
+
+    const charMeshes = [
+        createCharacterMesh('👑', 0xc99c2b),
+        createCharacterMesh('🧙', 0x3a5c8a),
+        createCharacterMesh('⚔️', 0x6a4a3a)
+    ];
+    charMeshes.forEach((m, i) => {
+        m.position.set(-1.0 + i * 1.0, -0.6, -1.2);
+        mainGroup.add(m);
+    });
+
+    // Анимация
+    let time = 0;
+    let isSpinning = false;
+    let spinSpeed = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        time += 0.01;
+
+        if (!isSpinning) {
+            mainGroup.rotation.y += 0.002;
+        } else {
+            if (spinSpeed > 0.01) {
+                mainGroup.rotation.y += spinSpeed;
+                spinSpeed *= 0.97;
+            } else {
+                isSpinning = false;
+                spinSpeed = 0;
+                handleSpinResult();
+            }
         }
 
-        const charMeshes = [
-            createCharacterMesh('👑', 0xc99c2b),
-            createCharacterMesh('🧙', 0x3a5c8a),
-            createCharacterMesh('⚔️', 0x6a4a3a)
-        ];
-        charMeshes.forEach((m, i) => {
-            m.position.set(-1.2 + i * 1.2, -0.6, -1.2);
-            mainGroup.add(m);
+        charMeshes.forEach((m, idx) => {
+            const offset = idx * 0.8;
+            m.position.y = -0.6 + Math.sin(time * 2 + offset) * 0.06;
+            m.rotation.z = Math.sin(time * 1.3 + offset) * 0.03;
         });
 
-        // Анимация вращения
-        let time = 0;
-        let spinAngle = 0;
-        let isSpinning = false;
-        let spinTarget = 0;
-        let spinSpeed = 0;
+        renderer.render(scene, camera);
+    }
+    animate();
 
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.01;
+    // ----- СПЕЦСЕКТОРЫ -----
+    const SECTORS = [
+        { name: 'ОЧКИ', value: 50, color: '#d4a02b' },
+        { name: 'ПРИЗ', value: 'prize', color: '#2a7a4a' },
+        { name: 'ПЛЮС', value: 'plus', color: '#7a2a8a' },
+        { name: 'ШАНС', value: 'chance', color: '#cc5533' },
+        { name: 'БАНКРОТ', value: 'bankrupt', color: '#2a2a2a' },
+        { name: 'X2', value: 'x2', color: '#cc8833' },
+        { name: 'ОЧКИ', value: 30, color: '#44aa66' },
+        { name: 'ОЧКИ', value: 70, color: '#2a6a8a' }
+    ];
 
-            // Вращение барабана (постоянное медленное)
-            if (!isSpinning) {
-                mainGroup.rotation.y += 0.002;
+    function getRandomSector() {
+        return SECTORS[Math.floor(Math.random() * SECTORS.length)];
+    }
+
+    function handleSpinResult() {
+        if (gameOver) return;
+        const sector = getRandomSector();
+        messageArea.textContent = `🎯 Сектор: ${sector.name}!`;
+
+        switch(sector.name) {
+            case 'ОЧКИ':
+                const points = sector.value * multiplier;
+                roundScore += points;
+                messageArea.textContent += ` +${points} очков!`;
+                multiplier = 1;
+                break;
+            case 'ПРИЗ':
+                // Выбор: открыть букву или получить 30 монет
+                if (currency < 100) {
+                    currency += 30;
+                    messageArea.textContent = '🎁 +30 монет (приз)!';
+                } else {
+                    // Открываем случайную букву
+                    openRandomLetter();
+                    messageArea.textContent = '🔮 Открыта случайная буква!';
+                }
+                break;
+            case 'ПЛЮС':
+                openRandomLetter();
+                messageArea.textContent = '➕ Открыта случайная буква!';
+                break;
+            case 'ШАНС':
+                // Ведущий называет самую частую букву
+                const bestLetter = getMostFrequentLetter();
+                if (bestLetter) {
+                    guessLetter(bestLetter, true);
+                    messageArea.textContent = `🍀 Шанс! Буква "${bestLetter}" открыта!`;
+                } else {
+                    messageArea.textContent = '🍀 Шанс! Но букв не осталось...';
+                }
+                break;
+            case 'БАНКРОТ':
+                roundScore = 0;
+                multiplier = 1;
+                messageArea.textContent = '💸 Банкрот! Все очки сгорели!';
+                break;
+            case 'X2':
+                multiplier = 2;
+                messageArea.textContent = '⚡ X2! Следующие очки удвоены!';
+                break;
+            default:
+                break;
+        }
+        updateUI();
+        checkGameOver();
+    }
+
+    function getMostFrequentLetter() {
+        const freq = {};
+        for (let ch of currentWord) {
+            if (ch !== ' ' && !guessedLetters.includes(ch)) {
+                freq[ch] = (freq[ch] || 0) + 1;
+            }
+        }
+        let best = null, max = 0;
+        for (let [ch, count] of Object.entries(freq)) {
+            if (count > max) { max = count; best = ch; }
+        }
+        return best;
+    }
+
+    function openRandomLetter() {
+        const available = currentWord.split('').filter(ch => ch !== ' ' && !guessedLetters.includes(ch));
+        if (available.length === 0) return;
+        const letter = available[Math.floor(Math.random() * available.length)];
+        if (!selectedLetters.has(letter)) {
+            guessLetter(letter, true);
+        }
+    }
+
+    // ----- ЛОГИКА ИГРЫ -----
+    function initGame() {
+        const newWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+        currentWord = newWord.toUpperCase();
+        guessedLetters = [];
+        wrongCount = 0;
+        gameOver = false;
+        winFlag = false;
+        selectedLetters = new Set();
+        roundScore = 0;
+        multiplier = 1;
+        canSpin = true;
+        hintUsed = false;
+        document.querySelectorAll('.key').forEach(k => {
+            k.classList.remove('correct', 'wrong', 'disabled');
+            k.disabled = false;
+        });
+        updateWordDisplay();
+        updateUI();
+        messageArea.textContent = '🎯 Крути барабан и угадывай буквы!';
+        if (lives <= 0) lives = 3;
+        scene.background.setHex(0x101b24);
+        updateUI();
+    }
+
+    function updateWordDisplay() {
+        let html = '';
+        for (let char of currentWord) {
+            if (char === ' ') {
+                html += '<span style="min-width: 12px;"> </span>';
+            } else if (guessedLetters.includes(char)) {
+                html += `<span class="letter">${char}</span>`;
             } else {
-                // Спин
-                if (spinSpeed > 0.01) {
-                    mainGroup.rotation.y += spinSpeed;
-                    spinSpeed *= 0.98;
-                } else {
-                    isSpinning = false;
-                    spinSpeed = 0;
-                    // рандомный результат
-                    const result = Math.floor(Math.random() * 3);
-                    if (result === 0) {
-                        messageArea.textContent = '🎉 +30 монет!';
-                        currency += 30;
-                        updateUI();
-                    } else if (result === 1) {
-                        messageArea.textContent = '💀 -1 жизнь!';
-                        lives = Math.max(0, lives - 1);
-                        updateUI();
-                        if (lives === 0) { gameOver = true; messageArea.textContent = '💔 Игра окончена!'; }
-                    } else {
-                        messageArea.textContent = '❌ Ничего...';
-                    }
-                    updateUI();
-                    checkGameOver();
-                }
+                html += `<span class="letter">_</span>`;
             }
-
-            // Анимация персонажей (покачивание)
-            charMeshes.forEach((m, idx) => {
-                const offset = idx * 0.8;
-                m.position.y = -0.6 + Math.sin(time * 2 + offset) * 0.06;
-                m.rotation.z = Math.sin(time * 1.3 + offset) * 0.03;
-            });
-
-            renderer.render(scene, camera);
         }
-        animate();
+        wordDisplay.innerHTML = html;
 
-        // ----- ЛОГИКА ИГРЫ -----
-        function initGame() {
-            const newWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-            currentWord = newWord.toUpperCase();
-            guessedLetters = [];
-            wrongCount = 0;
-            gameOver = false;
-            winFlag = false;
-            selectedLetters = new Set();
-            // сброс клавиатуры
-            document.querySelectorAll('.key').forEach(k => {
-                k.classList.remove('correct', 'wrong', 'disabled');
-                k.disabled = false;
-            });
-            updateWordDisplay();
-            updateUI();
-            messageArea.textContent = 'Угадай слово!';
-            // обновить 3D сцену (смена цвета фона)
-            scene.background.setHex(0x101b24);
-            // сброс жизней если 0
-            if (lives <= 0) lives = 3;
+        const allGuessed = currentWord.split('').every(ch => ch === ' ' || guessedLetters.includes(ch));
+        if (allGuessed && currentWord.length > 0 && !gameOver) {
+            winFlag = true;
+            gameOver = true;
+            const bonus = 50 + roundScore;
+            currency += bonus;
+            messageArea.textContent = `🏆 ПОБЕДА! +${bonus} монет! 🎉`;
+            scene.background.setHex(0x2a1a3a);
+            setTimeout(() => scene.background.setHex(0x101b24), 1000);
             updateUI();
         }
+    }
 
-        function updateWordDisplay() {
-            let html = '';
-            for (let char of currentWord) {
-                if (char === ' ') {
-                    html += '<span style="min-width: 12px;"> </span>';
-                } else if (guessedLetters.includes(char)) {
-                    html += `<span class="letter">${char}</span>`;
-                } else {
-                    html += `<span class="letter">_</span>`;
-                }
-            }
-            wordDisplay.innerHTML = html;
-            // проверить победу
-            const allGuessed = currentWord.split('').every(ch => ch === ' ' || guessedLetters.includes(ch));
-            if (allGuessed && currentWord.length > 0 && !gameOver) {
-                winFlag = true;
-                gameOver = true;
-                messageArea.textContent = '🏆 ПОБЕДА! +50 монет! 🎉';
-                currency += 50;
-                updateUI();
-                // 3D-эффект победы
-                scene.background.setHex(0x2a1a3a);
-                // анимация (мелкая)
-                setTimeout(() => scene.background.setHex(0x101b24), 800);
-            }
-        }
+    function guessLetter(letter, auto = false) {
+        if (gameOver || lives <= 0) return;
+        if (selectedLetters.has(letter)) return;
+        selectedLetters.add(letter);
 
-        function guessLetter(letter) {
-            if (gameOver || lives <= 0) return;
-            if (selectedLetters.has(letter)) return;
-            selectedLetters.add(letter);
-
-            const keyEl = document.querySelector(`.key[data-letter="${letter}"]`);
-            if (currentWord.includes(letter)) {
-                guessedLetters.push(letter);
-                keyEl?.classList.add('correct');
-                messageArea.textContent = `✅ Есть буква "${letter}"!`;
-                // +5 монет
+        const keyEl = document.querySelector(`.key[data-letter="${letter}"]`);
+        if (currentWord.includes(letter)) {
+            guessedLetters.push(letter);
+            keyEl?.classList.add('correct');
+            if (!auto) {
+                const earned = 10 * multiplier;
+                roundScore += earned;
                 currency += 5;
-                updateUI();
-            } else {
-                wrongCount++;
-                keyEl?.classList.add('wrong');
-                messageArea.textContent = `❌ Нет буквы "${letter}"`;
+                messageArea.textContent = `✅ Есть "${letter}"! +${earned} очков!`;
+                multiplier = 1;
+            }
+        } else {
+            wrongCount++;
+            keyEl?.classList.add('wrong');
+            if (!auto) {
+                messageArea.textContent = `❌ Нет "${letter}"`;
                 if (wrongCount >= 3) {
                     lives--;
                     wrongCount = 0;
@@ -622,136 +678,160 @@
                         messageArea.textContent = '💀 Игра окончена. Начни новую.';
                     }
                 }
-                updateUI();
-            }
-            keyEl?.classList.add('disabled');
-            updateWordDisplay();
-            checkGameOver();
-        }
-
-        function checkGameOver() {
-            if (lives <= 0) {
-                gameOver = true;
-                messageArea.textContent = '💀 Игра окончена. Начни новую.';
-                document.querySelectorAll('.key').forEach(k => k.classList.add('disabled'));
             }
         }
-
-        function updateUI() {
-            livesDisplay.textContent = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, 3 - lives));
-            currencyDisplay.textContent = currency;
-        }
-
-        // ----- СОБЫТИЯ КЛАВИАТУРЫ -----
-        function buildKeyboard() {
-            keyboardContainer.innerHTML = '';
-            const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
-            letters.forEach(l => {
-                const key = document.createElement('div');
-                key.className = 'key';
-                key.dataset.letter = l;
-                key.textContent = l;
-                key.addEventListener('click', () => guessLetter(l));
-                keyboardContainer.appendChild(key);
-            });
-        }
-        buildKeyboard();
-
-        // ----- НОВАЯ ИГРА -----
-        newGameBtn.addEventListener('click', () => {
-            initGame();
-            document.querySelectorAll('.key').forEach(k => {
-                k.classList.remove('correct', 'wrong', 'disabled');
-                k.disabled = false;
-            });
-            selectedLetters = new Set();
-            wrongCount = 0;
-            updateUI();
-        });
-
-        // ----- КРУТИТЬ (СПИН) -----
-        spinBtn.addEventListener('click', () => {
-            if (isSpinning) return;
-            if (currency < 20) {
-                messageArea.textContent = '❌ Недостаточно монет (нужно 20)';
-                return;
-            }
-            currency -= 20;
-            updateUI();
-            isSpinning = true;
-            spinSpeed = 0.25 + Math.random() * 0.15;
-            messageArea.textContent = '🎡 Крутим барабан...';
-        });
-
-        // ----- ПЕРСОНАЖИ (кастомизация) -----
-        document.querySelectorAll('.char-card').forEach(card => {
-            card.addEventListener('click', function() {
-                document.querySelectorAll('.char-card').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                const idx = parseInt(this.dataset.char);
-                activeChar = idx;
-                // меняем цвет подсветки в 3D
-                charMeshes.forEach((m, i) => {
-                    m.material.emissive.setHex(i === idx ? 0x664422 : 0x221100);
-                });
-                messageArea.textContent = `Персонаж ${this.innerText.trim()} выбран!`;
-            });
-        });
-        // активируем первого
-        charMeshes[0].material.emissive.setHex(0x664422);
-
-        // ----- МАГАЗИН -----
-        openShopBtn.addEventListener('click', () => shopModal.classList.add('open'));
-        closeShopBtn.addEventListener('click', () => shopModal.classList.remove('open'));
-        shopModal.addEventListener('click', (e) => { if (e.target === shopModal) shopModal.classList.remove('open'); });
-
-        document.getElementById('buyThemeBtn').addEventListener('click', () => {
-            if (currency >= 100) {
-                currency -= 100;
-                scene.background.setHex(0x1a2a3a);
-                messageArea.textContent = '🎨 Тема изменена!';
-                updateUI();
-                shopModal.classList.remove('open');
-            } else { messageArea.textContent = '❌ Не хватает монет'; }
-        });
-        document.getElementById('buyAnimBtn').addEventListener('click', () => {
-            if (currency >= 50) {
-                currency -= 50;
-                // простая анимация: все персонажи подпрыгнут
-                charMeshes.forEach((m, i) => {
-                    m.position.y += 0.2;
-                    setTimeout(() => m.position.y -= 0.2, 400 + i * 100);
-                });
-                messageArea.textContent = '✨ Анимация активирована!';
-                updateUI();
-                shopModal.classList.remove('open');
-            } else { messageArea.textContent = '❌ Не хватает монет'; }
-        });
-        document.getElementById('buyLifeBtn').addEventListener('click', () => {
-            if (currency >= 80 && lives < 3) {
-                currency -= 80;
-                lives = Math.min(3, lives + 1);
-                messageArea.textContent = '❤️ +1 жизнь!';
-                updateUI();
-                shopModal.classList.remove('open');
-            } else { messageArea.textContent = '❌ Не хватает монет или жизни полны'; }
-        });
-
-        // resize 3D
-        window.addEventListener('resize', () => {
-            const w = container.clientWidth;
-            const h = container.clientHeight;
-            renderer.setSize(w, h);
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-        });
-
-        // Старт
-        initGame();
-        // добавляем пару монет для теста
-        currency = 150;
+        keyEl?.classList.add('disabled');
+        updateWordDisplay();
         updateUI();
-    })();
+        checkGameOver();
+    }
+
+    function checkGameOver() {
+        if (lives <= 0) {
+            gameOver = true;
+            messageArea.textContent = '💀 Игра окончена. Начни новую.';
+            document.querySelectorAll('.key').forEach(k => k.classList.add('disabled'));
+        }
+    }
+
+    function updateUI() {
+        livesDisplay.textContent = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, 3 - lives));
+        currencyDisplay.textContent = currency;
+        roundScoreDisplay.textContent = roundScore;
+    }
+
+    // ----- КЛАВИАТУРА -----
+    function buildKeyboard() {
+        keyboardContainer.innerHTML = '';
+        const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
+        letters.forEach(l => {
+            const key = document.createElement('div');
+            key.className = 'key';
+            key.dataset.letter = l;
+            key.textContent = l;
+            key.addEventListener('click', () => guessLetter(l));
+            keyboardContainer.appendChild(key);
+        });
+    }
+    buildKeyboard();
+
+    // ----- СОБЫТИЯ -----
+    newGameBtn.addEventListener('click', () => {
+        initGame();
+        document.querySelectorAll('.key').forEach(k => {
+            k.classList.remove('correct', 'wrong', 'disabled');
+            k.disabled = false;
+        });
+        selectedLetters = new Set();
+        wrongCount = 0;
+        multiplier = 1;
+        updateUI();
+    });
+
+    spinBtn.addEventListener('click', () => {
+        if (isSpinning) return;
+        if (gameOver) { messageArea.textContent = '❌ Игра окончена. Начни новую.'; return; }
+        if (currency < 10) {
+            messageArea.textContent = '❌ Недостаточно монет (нужно 10)';
+            return;
+        }
+        currency -= 10;
+        updateUI();
+        isSpinning = true;
+        spinSpeed = 0.2 + Math.random() * 0.15;
+        messageArea.textContent = '🎡 Крутим барабан...';
+    });
+
+    hintBtn.addEventListener('click', () => {
+        if (gameOver) return;
+        if (hintUsed) { messageArea.textContent = '💡 Подсказка уже использована!'; return; }
+        if (currency < 20) { messageArea.textContent = '❌ Нужно 20 монет для подсказки'; return; }
+        currency -= 20;
+        hintUsed = true;
+        const best = getMostFrequentLetter();
+        if (best) {
+            guessLetter(best, true);
+            messageArea.textContent = `💡 Подсказка: буква "${best}"!`;
+        } else {
+            messageArea.textContent = '💡 Нет скрытых букв для подсказки.';
+        }
+        updateUI();
+    });
+
+    // Персонажи
+    document.querySelectorAll('.char-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.char-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            const idx = parseInt(this.dataset.char);
+            activeChar = idx;
+            charMeshes.forEach((m, i) => {
+                m.material.emissive.setHex(i === idx ? 0x664422 : 0x221100);
+            });
+            messageArea.textContent = `👤 ${this.innerText.trim()} выбран!`;
+        });
+    });
+    charMeshes[0].material.emissive.setHex(0x664422);
+
+    // Магазин
+    openShopBtn.addEventListener('click', () => shopModal.classList.add('open'));
+    closeShopBtn.addEventListener('click', () => shopModal.classList.remove('open'));
+    shopModal.addEventListener('click', (e) => { if (e.target === shopModal) shopModal.classList.remove('open'); });
+
+    document.getElementById('buyThemeBtn').addEventListener('click', () => {
+        if (currency >= 100) {
+            currency -= 100;
+            scene.background.setHex(Math.floor(Math.random() * 0xffffff));
+            messageArea.textContent = '🎨 Тема изменена!';
+            updateUI();
+            shopModal.classList.remove('open');
+        } else { messageArea.textContent = '❌ Не хватает монет'; }
+    });
+    document.getElementById('buyAnimBtn').addEventListener('click', () => {
+        if (currency >= 50) {
+            currency -= 50;
+            charMeshes.forEach((m, i) => {
+                m.position.y += 0.3;
+                setTimeout(() => m.position.y -= 0.3, 400 + i * 100);
+            });
+            messageArea.textContent = '✨ Анимация!';
+            updateUI();
+            shopModal.classList.remove('open');
+        } else { messageArea.textContent = '❌ Не хватает монет'; }
+    });
+    document.getElementById('buyLifeBtn').addEventListener('click', () => {
+        if (currency >= 80 && lives < 3) {
+            currency -= 80;
+            lives = Math.min(3, lives + 1);
+            messageArea.textContent = '❤️ +1 жизнь!';
+            updateUI();
+            shopModal.classList.remove('open');
+        } else { messageArea.textContent = '❌ Не хватает монет или жизни полны'; }
+    });
+    document.getElementById('buyLetterBtn').addEventListener('click', () => {
+        if (currency >= 30) {
+            currency -= 30;
+            openRandomLetter();
+            messageArea.textContent = '🔮 Буква открыта!';
+            updateUI();
+            shopModal.classList.remove('open');
+        } else { messageArea.textContent = '❌ Не хватает монет'; }
+    });
+
+    // resize
+    window.addEventListener('resize', () => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+    });
+
+    // Старт
+    initGame();
+    currency = 150;
+    updateUI();
+})();
 </script>
 </body>
 </html>
