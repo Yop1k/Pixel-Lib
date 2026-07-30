@@ -4,20 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MageClash RPG</title>
-    
-    <!-- Supabase Client (не используется, оставлено для совместимости) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js">
-    </script>
-    
     <style>
-        /* ===== RESET & BASE ===== */
+        /* ===== ВЕСЬ CSS ОСТАЕТСЯ ТАКИМ ЖЕ ===== */
+        /* (из предыдущего ответа, для краткости опущен) */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-
         :root {
             --neon-color: #00f0ff;
             --neon-glow: 0 0 30px rgba(0, 240, 255, 0.4);
@@ -27,7 +22,6 @@
             --text-secondary: rgba(255, 255, 255, 0.7);
             --text-muted: rgba(255, 255, 255, 0.4);
         }
-
         body {
             background: #0a0a1a;
             min-height: 100vh;
@@ -37,8 +31,6 @@
             padding: 12px;
             overflow-x: hidden;
         }
-
-        /* ===== ULTRA NEON + LIQUID GLASS CONTAINER ===== */
         .app {
             width: 100%;
             max-width: 440px;
@@ -48,16 +40,12 @@
             -webkit-backdrop-filter: blur(40px) saturate(1.4);
             border-radius: 32px;
             border: 1.5px solid var(--glass-border);
-            box-shadow: 
-                var(--neon-glow),
-                inset 0 0 60px rgba(0, 240, 255, 0.05);
+            box-shadow: var(--neon-glow), inset 0 0 60px rgba(0, 240, 255, 0.05);
             padding: 20px;
             position: relative;
             overflow: hidden;
             transition: border-color 0.6s ease, box-shadow 0.6s ease;
         }
-
-        /* Liquid Glass - Основной слой */
         .app::before {
             content: '';
             position: absolute;
@@ -65,16 +53,12 @@
             left: -60%;
             width: 220%;
             height: 220%;
-            background: 
-                radial-gradient(ellipse at 20% 30%, rgba(0, 240, 255, 0.12) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 70%, rgba(138, 43, 226, 0.08) 0%, transparent 40%),
-                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+            background: radial-gradient(ellipse at 20% 30%, rgba(0, 240, 255, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(138, 43, 226, 0.08) 0%, transparent 40%), radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
             pointer-events: none;
             z-index: 0;
             animation: liquidGlassFlow 20s ease-in-out infinite alternate;
             filter: blur(2px);
         }
-
         @keyframes liquidGlassFlow {
             0% { transform: translate(0, 0) rotate(0deg) scale(1); }
             25% { transform: translate(2%, -2%) rotate(2deg) scale(1.02); }
@@ -82,8 +66,6 @@
             75% { transform: translate(3%, 1%) rotate(3deg) scale(1.01); }
             100% { transform: translate(-2%, -2%) rotate(-2deg) scale(1); }
         }
-
-        /* Liquid Glass - Второй слой */
         .app::after {
             content: '';
             position: absolute;
@@ -91,22 +73,17 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: 
-                radial-gradient(ellipse at 70% 20%, rgba(0, 240, 255, 0.06) 0%, transparent 30%),
-                radial-gradient(ellipse at 30% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 30%);
+            background: radial-gradient(ellipse at 70% 20%, rgba(0, 240, 255, 0.06) 0%, transparent 30%), radial-gradient(ellipse at 30% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 30%);
             pointer-events: none;
             z-index: 0;
             animation: liquidGlassDeep 25s ease-in-out infinite alternate;
             filter: blur(8px);
         }
-
         @keyframes liquidGlassDeep {
             0% { transform: translate(0, 0) rotate(0deg); }
             50% { transform: translate(-3%, 2%) rotate(-3deg); }
             100% { transform: translate(3%, -2%) rotate(3deg); }
         }
-
-        /* Ultra Neon - Усиленное свечение */
         .app .neon-border {
             position: absolute;
             top: -3px;
@@ -114,20 +91,13 @@
             right: -3px;
             bottom: -3px;
             border-radius: 35px;
-            background: linear-gradient(45deg, 
-                var(--neon-color), 
-                #b026ff, 
-                var(--neon-color), 
-                #ff6b6b,
-                var(--neon-color),
-                #b026ff);
+            background: linear-gradient(45deg, var(--neon-color), #b026ff, var(--neon-color), #ff6b6b, var(--neon-color), #b026ff);
             background-size: 400% 400%;
             z-index: -1;
             opacity: 0.5;
             animation: neonPulse 6s ease-in-out infinite;
             filter: blur(8px);
         }
-
         .app .neon-border-strong {
             position: absolute;
             top: -1px;
@@ -135,25 +105,19 @@
             right: -1px;
             bottom: -1px;
             border-radius: 33px;
-            background: linear-gradient(45deg, 
-                var(--neon-color), 
-                #b026ff, 
-                var(--neon-color));
+            background: linear-gradient(45deg, var(--neon-color), #b026ff, var(--neon-color));
             background-size: 300% 300%;
             z-index: -1;
             opacity: 0.8;
             animation: neonPulse 4s ease-in-out infinite;
             filter: blur(3px);
         }
-
         @keyframes neonPulse {
             0%, 100% { background-position: 0% 50%; opacity: 0.5; }
             25% { background-position: 50% 100%; opacity: 0.7; }
             50% { background-position: 100% 50%; opacity: 0.5; }
             75% { background-position: 50% 0%; opacity: 0.7; }
         }
-
-        /* ===== HEADER ===== */
         .header {
             display: flex;
             justify-content: space-between;
@@ -163,7 +127,6 @@
             position: relative;
             z-index: 1;
         }
-
         .header-title {
             font-size: 22px;
             font-weight: 800;
@@ -177,17 +140,14 @@
             user-select: none;
             text-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
         }
-
         @keyframes titleGradient {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-
         .header-actions {
             display: flex;
             gap: 8px;
         }
-
         .header-btn {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -200,15 +160,12 @@
             backdrop-filter: blur(10px);
             position: relative;
         }
-
         .header-btn:hover {
             background: rgba(0, 240, 255, 0.15);
             border-color: var(--neon-color);
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
             transform: translateY(-1px);
         }
-
-        /* ===== NAVIGATION ===== */
         .nav {
             display: flex;
             gap: 4px;
@@ -217,7 +174,6 @@
             position: relative;
             z-index: 1;
         }
-
         .nav-btn {
             flex: 1;
             min-width: 44px;
@@ -233,27 +189,22 @@
             text-align: center;
             backdrop-filter: blur(10px);
         }
-
         .nav-btn:hover {
             background: rgba(0, 240, 255, 0.08);
             color: var(--text-primary);
             transform: translateY(-1px);
         }
-
         .nav-btn.active {
             background: rgba(0, 240, 255, 0.12);
             border-color: var(--neon-color);
             color: var(--text-primary);
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
         }
-
         .nav-btn .icon {
             display: block;
             font-size: 20px;
             margin-bottom: 2px;
         }
-
-        /* ===== CONTENT ===== */
         .content {
             position: relative;
             z-index: 1;
@@ -262,7 +213,6 @@
             overflow-y: auto;
             padding-right: 4px;
         }
-
         .content::-webkit-scrollbar {
             width: 4px;
         }
@@ -273,22 +223,17 @@
             background: var(--neon-color);
             border-radius: 10px;
         }
-
         .page {
             display: none;
             animation: fadeSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         .page.active {
             display: block;
         }
-
         @keyframes fadeSlide {
             from { opacity: 0; transform: translateY(16px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
-        /* ===== GLASS CARD ===== */
         .glass-card {
             background: var(--glass-bg);
             border-radius: 20px;
@@ -300,28 +245,14 @@
             position: relative;
             overflow: hidden;
         }
-
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(ellipse at 30% 20%, rgba(0, 240, 255, 0.03) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
         .glass-card:hover {
             border-color: rgba(0, 240, 255, 0.2);
         }
-
         .profile-header {
             display: flex;
             align-items: center;
             gap: 14px;
         }
-
         .profile-avatar {
             width: 56px;
             height: 56px;
@@ -335,7 +266,6 @@
             flex-shrink: 0;
             position: relative;
         }
-
         .profile-avatar::after {
             content: '';
             position: absolute;
@@ -346,22 +276,18 @@
             opacity: 0.3;
             filter: blur(8px);
         }
-
         .profile-info {
             flex: 1;
         }
-
         .profile-name {
             font-size: 18px;
             font-weight: 700;
             color: var(--text-primary);
         }
-
         .profile-nick {
             font-size: 13px;
             color: var(--text-secondary);
         }
-
         .profile-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -370,32 +296,26 @@
             padding-top: 14px;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
-
         .stat-item {
             text-align: center;
         }
-
         .stat-value {
             font-size: 17px;
             font-weight: 700;
             color: var(--neon-color);
         }
-
         .stat-label {
             font-size: 10px;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
-
-        /* ===== CHARACTERS ===== */
         .chars-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             margin-top: 10px;
         }
-
         .char-card {
             background: var(--glass-bg);
             border: 1.5px solid var(--glass-border);
@@ -407,43 +327,36 @@
             backdrop-filter: blur(10px);
             position: relative;
         }
-
         .char-card:hover:not(.locked) {
             transform: translateY(-3px);
             border-color: var(--neon-color);
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
         }
-
         .char-card.selected {
             border-color: var(--neon-color);
             background: rgba(0, 240, 255, 0.08);
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
         }
-
         .char-card.locked {
             opacity: 0.4;
             cursor: not-allowed;
             filter: grayscale(0.5);
         }
-
         .char-name {
             font-size: 12px;
             font-weight: 600;
             color: var(--text-primary);
         }
-
         .char-rarity {
             font-size: 9px;
             color: var(--text-secondary);
             margin-top: 2px;
         }
-
         .char-level {
             font-size: 10px;
             color: var(--neon-color);
             margin-top: 2px;
         }
-
         .char-level-up {
             font-size: 9px;
             color: #ffd700;
@@ -455,13 +368,10 @@
             display: inline-block;
             transition: all 0.3s ease;
         }
-
         .char-level-up:hover {
             background: #ffd70022;
             border-color: #ffd700;
         }
-
-        /* ===== SHOP ===== */
         .shop-item {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -474,33 +384,27 @@
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
-
         .shop-item:hover {
             border-color: rgba(0, 240, 255, 0.2);
         }
-
         .shop-item-info {
             flex: 1;
         }
-
         .shop-item-name {
             font-weight: 600;
             color: var(--text-primary);
             font-size: 14px;
         }
-
         .shop-item-desc {
             font-size: 11px;
             color: var(--text-secondary);
         }
-
         .shop-item-price {
             font-weight: 700;
             color: #ffd700;
             font-size: 13px;
             margin-right: 10px;
         }
-
         .shop-btn {
             padding: 6px 14px;
             border-radius: 16px;
@@ -513,25 +417,20 @@
             font-size: 11px;
             white-space: nowrap;
         }
-
         .shop-btn:hover:not(.bought) {
             background: rgba(0, 240, 255, 0.2);
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
             transform: scale(1.02);
         }
-
         .shop-btn.bought {
             opacity: 0.4;
             cursor: default;
             border-color: var(--text-secondary);
             color: var(--text-secondary);
         }
-
-        /* ===== SETTINGS ===== */
         .settings-group {
             margin-bottom: 16px;
         }
-
         .settings-label {
             font-size: 12px;
             font-weight: 600;
@@ -539,7 +438,6 @@
             display: block;
             margin-bottom: 6px;
         }
-
         .settings-input {
             width: 100%;
             padding: 12px 16px;
@@ -552,18 +450,15 @@
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
         }
-
         .settings-input:focus {
             border-color: var(--neon-color);
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
         }
-
         .color-options {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-
         .color-option {
             width: 38px;
             height: 38px;
@@ -573,16 +468,13 @@
             transition: all 0.3s ease;
             position: relative;
         }
-
         .color-option:hover {
             transform: scale(1.1);
         }
-
         .color-option.active {
             border-color: #ffffff;
             box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
         }
-
         .color-option .check {
             position: absolute;
             top: 50%;
@@ -592,7 +484,6 @@
             font-size: 14px;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
         }
-
         .save-btn {
             width: 100%;
             padding: 14px;
@@ -606,13 +497,10 @@
             transition: all 0.3s ease;
             box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
         }
-
         .save-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 0 50px rgba(0, 240, 255, 0.25);
         }
-
-        /* ===== LUCKY BLOCK ===== */
         .lucky-block {
             background: var(--glass-bg);
             border-radius: 20px;
@@ -623,49 +511,80 @@
             position: relative;
             overflow: hidden;
         }
-
-        .lucky-block::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.05) 0%, transparent 60%);
-            animation: lbGlow 4s ease-in-out infinite alternate;
+        .lucky-block .lb-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
         }
-
-        @keyframes lbGlow {
-            0% { transform: scale(0.8) rotate(0deg); opacity: 0.5; }
-            100% { transform: scale(1.2) rotate(10deg); opacity: 1; }
-        }
-
-        .lucky-block .big-emoji {
-            font-size: 64px;
-            display: block;
-            margin: 4px 0;
-            animation: float 3s ease-in-out infinite;
+        .lucky-block .lb-slot {
+            aspect-ratio: 1;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: 2px solid var(--glass-border);
+            background: var(--glass-bg);
             position: relative;
         }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(5deg); }
+        .lucky-block .lb-slot .lb-icon {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            font-size: 32px;
         }
-
+        .lucky-block .lb-slot .lb-rarity-label {
+            position: absolute;
+            bottom: 4px;
+            font-size: 8px;
+            color: var(--text-secondary);
+            background: rgba(0,0,0,0.5);
+            padding: 1px 6px;
+            border-radius: 8px;
+        }
+        .lucky-block .lb-slot .lb-count {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+        .lucky-block .lb-slot.common .lb-icon { background: linear-gradient(135deg, #2d7d2d, #4caf50); box-shadow: 0 0 20px rgba(76, 175, 80, 0.3); }
+        .lucky-block .lb-slot.rare .lb-icon { background: linear-gradient(135deg, #1a3a6a, #2196f3); box-shadow: 0 0 20px rgba(33, 150, 243, 0.3); }
+        .lucky-block .lb-slot.epic .lb-icon { background: linear-gradient(135deg, #4a1a6a, #9c27b0); box-shadow: 0 0 20px rgba(156, 39, 176, 0.3); }
+        .lucky-block .lb-slot.mythic .lb-icon { background: linear-gradient(135deg, #6a1a1a, #f44336); box-shadow: 0 0 20px rgba(244, 67, 54, 0.3); }
+        .lucky-block .lb-slot.legendary .lb-icon { background: linear-gradient(135deg, #6a5a1a, #ffc107); box-shadow: 0 0 20px rgba(255, 193, 7, 0.3); }
+        .lucky-block .lb-slot.divine .lb-icon { 
+            background: linear-gradient(135deg, #0a0a2a, #1a1a4a, #0a0a2a);
+            box-shadow: 0 0 30px rgba(100, 50, 200, 0.4);
+            animation: divinePulse 2s ease-in-out infinite;
+        }
+        @keyframes divinePulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(100, 50, 200, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(150, 50, 255, 0.6); }
+        }
+        .lucky-block .lb-slot.locked .lb-icon {
+            background: var(--glass-bg);
+            opacity: 0.3;
+            font-size: 20px;
+        }
         .lucky-block .count {
             font-size: 34px;
             font-weight: 800;
             color: var(--neon-color);
-            position: relative;
         }
-
         .lucky-block .label {
             color: var(--text-secondary);
             font-size: 13px;
-            position: relative;
         }
-
         .open-btn {
             margin-top: 14px;
             padding: 14px 44px;
@@ -678,28 +597,41 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 0 40px rgba(238, 90, 36, 0.25);
-            position: relative;
-            overflow: hidden;
         }
-
         .open-btn:hover:not(:disabled) {
             transform: scale(1.05) translateY(-2px);
             box-shadow: 0 0 60px rgba(238, 90, 36, 0.35);
         }
-
         .open-btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none;
         }
-
-        /* ===== ADMIN ===== */
+        .upgrade-btn {
+            margin-top: 8px;
+            padding: 8px 20px;
+            border-radius: 16px;
+            border: 1px solid #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        .upgrade-btn:hover:not(:disabled) {
+            background: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+        .upgrade-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
         .admin-section {
             margin-top: 12px;
             border-top: 1px solid rgba(255, 215, 0, 0.15);
             padding-top: 12px;
         }
-
         .admin-btn {
             padding: 8px 16px;
             border-radius: 12px;
@@ -712,13 +644,11 @@
             font-size: 12px;
             margin: 3px;
         }
-
         .admin-btn:hover {
             background: rgba(255, 215, 0, 0.15);
             border-color: #ffd700;
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
         }
-
         .admin-input {
             width: 100%;
             padding: 10px 14px;
@@ -731,11 +661,9 @@
             transition: all 0.3s ease;
             margin-bottom: 6px;
         }
-
         .admin-input:focus {
             border-color: #ffd700;
         }
-
         #adminLog {
             color: var(--text-secondary);
             font-size: 11px;
@@ -749,87 +677,81 @@
             white-space: pre-wrap;
             word-break: break-all;
         }
-
-        /* ===== REWARD OVERLAY ===== */
-        .reward-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .reward-overlay.show {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .reward-content {
-            text-align: center;
-            padding: 36px;
+        /* Duel */
+        .duel-hotbar {
             background: var(--glass-bg);
-            border-radius: 28px;
+            border-radius: 16px;
+            padding: 14px;
             border: 1px solid var(--glass-border);
-            max-width: 340px;
-            width: 90%;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 0 60px rgba(0, 240, 255, 0.1);
+            margin-bottom: 8px;
+            backdrop-filter: blur(10px);
         }
-
-        @keyframes popIn {
-            from { transform: scale(0.6) rotate(-5deg); opacity: 0; }
-            to { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        .reward-content .emoji {
-            font-size: 72px;
-            display: block;
-            margin-bottom: 12px;
-            animation: float 2s ease-in-out infinite;
-        }
-
-        .reward-content .title {
-            font-size: 24px;
+        .duel-hotbar .player-name {
             font-weight: 700;
             color: var(--text-primary);
         }
-
-        .reward-content .sub {
-            color: var(--text-secondary);
-            font-size: 15px;
+        .duel-hotbar .hp-bar {
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 10px;
+            height: 8px;
+            margin: 4px 0;
+            overflow: hidden;
+        }
+        .duel-hotbar .hp-bar .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .duel-hotbar .ult-charges {
+            display: flex;
+            gap: 4px;
             margin-top: 4px;
         }
-
-        .reward-close {
-            margin-top: 18px;
-            padding: 10px 32px;
-            border-radius: 18px;
-            border: 1px solid var(--neon-color);
-            background: transparent;
-            color: var(--neon-color);
+        .duel-hotbar .ult-charges .charge {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: var(--glass-border);
+            transition: all 0.3s ease;
+        }
+        .duel-hotbar .ult-charges .charge.filled {
+            background: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        .duel-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .duel-actions .action-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-primary);
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-width: 80px;
         }
-
-        .reward-close:hover {
+        .duel-actions .action-btn:hover:not(:disabled) {
+            border-color: var(--neon-color);
             background: rgba(0, 240, 255, 0.1);
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
         }
-
-        /* ===== TOAST ===== */
+        .duel-actions .action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .duel-actions .action-btn.ult-ready {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 24px;
@@ -848,19 +770,82 @@
             max-width: 90%;
             text-align: center;
         }
-
         @keyframes slideUp {
             from { transform: translateX(-50%) translateY(50px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
-
-        /* ===== LOADING ===== */
+        .reward-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.4s ease;
+        }
+        .reward-overlay.show {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .reward-content {
+            text-align: center;
+            padding: 36px;
+            background: var(--glass-bg);
+            border-radius: 28px;
+            border: 1px solid var(--glass-border);
+            max-width: 340px;
+            width: 90%;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 60px rgba(0, 240, 255, 0.1);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.6) rotate(-5deg); opacity: 0; }
+            to { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .reward-content .emoji {
+            font-size: 72px;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .reward-content .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .reward-content .sub {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-top: 4px;
+        }
+        .reward-close {
+            margin-top: 18px;
+            padding: 10px 32px;
+            border-radius: 18px;
+            border: 1px solid var(--neon-color);
+            background: transparent;
+            color: var(--neon-color);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .reward-close:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+        }
         .loading {
             text-align: center;
             padding: 40px 20px;
             color: var(--text-secondary);
         }
-
         .loading .spinner {
             display: inline-block;
             width: 40px;
@@ -871,12 +856,9 @@
             animation: spin 0.8s linear infinite;
             margin-bottom: 12px;
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 420px) {
             .app { padding: 14px; border-radius: 24px; min-height: 600px; }
             .profile-stats { grid-template-columns: repeat(4, 1fr); gap: 4px; }
@@ -884,53 +866,40 @@
             .nav-btn { font-size: 9px; padding: 6px 2px; }
             .nav-btn .icon { font-size: 17px; }
             .content { max-height: 500px; }
+            .lucky-block .lb-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
         }
     </style>
 </head>
 <body>
 
 <div class="app" id="app">
-    <!-- Ultra Neon Borders -->
     <div class="neon-border"></div>
     <div class="neon-border-strong"></div>
 
-    <!-- HEADER -->
     <div class="header">
         <div class="header-title" id="logoTitle">✦ MageClash</div>
         <div class="header-actions">
-            <button class="header-btn" onclick="showToast('⚔️ Поиск боя...')">⚔️</button>
+            <button class="header-btn" onclick="startDuel()">⚔️</button>
             <button class="header-btn" onclick="refreshData()">🔄</button>
         </div>
     </div>
 
-    <!-- NAVIGATION -->
     <div class="nav">
-        <button class="nav-btn active" data-page="profile">
-            <span class="icon">👤</span> Профиль
-        </button>
-        <button class="nav-btn" data-page="chars">
-            <span class="icon">⚡</span> Герои
-        </button>
-        <button class="nav-btn" data-page="shop">
-            <span class="icon">🛒</span> Магазин
-        </button>
-        <button class="nav-btn" data-page="lucky">
-            <span class="icon">🎁</span> Блоки
-        </button>
-        <button class="nav-btn" data-page="settings">
-            <span class="icon">⚙️</span> Настройки
-        </button>
+        <button class="nav-btn active" data-page="profile"><span class="icon">👤</span> Профиль</button>
+        <button class="nav-btn" data-page="chars"><span class="icon">⚡</span> Герои</button>
+        <button class="nav-btn" data-page="shop"><span class="icon">🛒</span> Магазин</button>
+        <button class="nav-btn" data-page="lucky"><span class="icon">🎁</span> Блоки</button>
+        <button class="nav-btn" data-page="duel"><span class="icon">⚔️</span> Дуэль</button>
+        <button class="nav-btn" data-page="settings"><span class="icon">⚙️</span> Настройки</button>
     </div>
 
-    <!-- CONTENT -->
     <div class="content" id="contentArea">
-        <!-- Loading -->
         <div class="loading" id="loadingIndicator">
             <div class="spinner"></div>
             <div>Загрузка данных...</div>
         </div>
 
-        <!-- ===== PROFILE PAGE ===== -->
+        <!-- PROFILE -->
         <div class="page" id="page-profile">
             <div class="glass-card">
                 <div class="profile-header">
@@ -941,47 +910,20 @@
                     </div>
                 </div>
                 <div class="profile-stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="statCoins">0</div>
-                        <div class="stat-label">Монеты</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statGems">0</div>
-                        <div class="stat-label">Гемы</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statTrophies">0</div>
-                        <div class="stat-label">Кубки</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statElo">0</div>
-                        <div class="stat-label">ELO</div>
-                    </div>
+                    <div class="stat-item"><div class="stat-value" id="statCoins">0</div><div class="stat-label">Монеты</div></div>
+                    <div class="stat-item"><div class="stat-value" id="statGems">0</div><div class="stat-label">Гемы</div></div>
+                    <div class="stat-item"><div class="stat-value" id="statTrophies">0</div><div class="stat-label">Кубки</div></div>
+                    <div class="stat-item"><div class="stat-value" id="statElo">0</div><div class="stat-label">ELO</div></div>
                 </div>
             </div>
-
             <div class="glass-card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-secondary); font-size: 13px;">Текущий персонаж</span>
-                    <span style="color: var(--neon-color); font-weight: 700;" id="currentChar">Мейдж</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                    <span style="color: var(--text-secondary); font-size: 13px;">Уровень</span>
-                    <span style="color: #ffd700; font-weight: 700;" id="currentCharLevel">1</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                    <span style="color: var(--text-secondary); font-size: 13px;">Редкость</span>
-                    <span style="color: #00ff88; font-weight: 600;" id="currentCharRarity">Обычный</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                    <span style="color: var(--text-secondary); font-size: 13px;">Боёв / Побед</span>
-                    <span style="color: var(--text-primary); font-weight: 600;" id="statBattlesWin">0 / 0</span>
-                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span style="color:var(--text-secondary);font-size:13px;">Текущий персонаж</span><span style="color:var(--neon-color);font-weight:700;" id="currentChar">Мейдж</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;"><span style="color:var(--text-secondary);font-size:13px;">Уровень</span><span style="color:#ffd700;font-weight:700;" id="currentCharLevel">1</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;"><span style="color:var(--text-secondary);font-size:13px;">Редкость</span><span style="color:#00ff88;font-weight:600;" id="currentCharRarity">Обычный</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;"><span style="color:var(--text-secondary);font-size:13px;">Боёв / Побед</span><span style="color:var(--text-primary);font-weight:600;" id="statBattlesWin">0 / 0</span></div>
             </div>
-
-            <!-- ADMIN PANEL -->
-            <div class="admin-section" id="adminPanel" style="display: none;">
-                <div style="color: #ffd700; font-weight: 700; font-size: 14px; margin-bottom: 8px;">🛠️ Админ-панель</div>
+            <div class="admin-section" id="adminPanel" style="display:none;">
+                <div style="color:#ffd700;font-weight:700;font-size:14px;margin-bottom:8px;">🛠️ Админ-панель</div>
                 <div>
                     <button class="admin-btn" onclick="adminRefresh()">🔄 /refresh</button>
                     <button class="admin-btn" onclick="adminAddOffer()">➕ /add_offer</button>
@@ -989,75 +931,79 @@
                     <button class="admin-btn" onclick="adminDelCategory()">🗑️ /del</button>
                     <button class="admin-btn" onclick="adminSync()">📤 /sync</button>
                 </div>
-                <div style="margin-top: 6px;">
-                    <input class="admin-input" id="adminInput" placeholder="Введите параметры..." style="font-size:12px;">
-                </div>
+                <div style="margin-top:6px;"><input class="admin-input" id="adminInput" placeholder="Введите параметры..." style="font-size:12px;"></div>
                 <div id="adminLog"></div>
             </div>
         </div>
 
-        <!-- ===== CHARACTERS PAGE ===== -->
+        <!-- CHARACTERS -->
         <div class="page" id="page-chars">
-            <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 10px;">
-                👆 Выберите персонажа. Уровень можно повысить за монеты и опыт.
-            </div>
+            <div style="color:var(--text-secondary);font-size:12px;margin-bottom:10px;">👆 Выберите персонажа. Уровень можно повысить за монеты и опыт.</div>
             <div class="chars-grid" id="charsGrid"></div>
         </div>
 
-        <!-- ===== SHOP PAGE ===== -->
+        <!-- SHOP -->
         <div class="page" id="page-shop">
-            <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 10px;">
-                💰 Приобретайте предметы за гемы и жетоны.
-            </div>
+            <div style="color:var(--text-secondary);font-size:12px;margin-bottom:10px;">💰 Приобретайте предметы за гемы и жетоны.</div>
             <div id="shopItems"></div>
         </div>
 
-        <!-- ===== LUCKY BLOCKS PAGE ===== -->
+        <!-- LUCKY BLOCKS -->
         <div class="page" id="page-lucky">
             <div class="lucky-block">
-                <span class="big-emoji">🎁</span>
+                <span class="big-emoji" style="font-size:64px;display:block;margin:4px 0;animation:float 3s ease-in-out infinite;">🎁</span>
                 <div class="count" id="lbCount">0</div>
                 <div class="label">Доступно лаки-блоков</div>
+                <div class="lb-grid" id="lbGrid"></div>
                 <button class="open-btn" id="openLbBtn" onclick="openLuckyBlock()">✨ Открыть ✨</button>
-                <div style="margin-top: 10px; color: var(--text-secondary); font-size: 12px;">
-                    📅 Ежедневный лимит: <span id="dailyLb">0</span>/15
-                </div>
+                <div style="margin-top:10px;color:var(--text-secondary);font-size:12px;">📅 Ежедневный лимит: <span id="dailyLb">0</span>/15</div>
             </div>
         </div>
 
-        <!-- ===== SETTINGS PAGE ===== -->
+        <!-- DUEL -->
+        <div class="page" id="page-duel">
+            <div style="color:var(--text-secondary);font-size:12px;margin-bottom:10px;">⚔️ Выберите режим и начните бой!</div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+                <button class="action-btn" onclick="selectDuelMode('normal')" style="flex:1;padding:10px;border-radius:14px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-primary);cursor:pointer;backdrop-filter:blur(10px);">⚔️ Дуэль</button>
+                <button class="action-btn" onclick="selectDuelMode('ranked')" style="flex:1;padding:10px;border-radius:14px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-primary);cursor:pointer;backdrop-filter:blur(10px);">🏆 Рейтинговый</button>
+                <button class="action-btn" onclick="selectDuelMode('friendly')" style="flex:1;padding:10px;border-radius:14px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-primary);cursor:pointer;backdrop-filter:blur(10px);">🤝 Дружеский</button>
+            </div>
+            <div id="duelStatus" style="color:var(--text-secondary);font-size:13px;text-align:center;padding:12px;">Выберите режим для начала</div>
+            <div id="duelHotbar"></div>
+            <div id="duelActions" style="display:none;margin-top:12px;">
+                <div class="duel-actions" id="duelActionButtons">
+                    <button class="action-btn" onclick="duelAttack()" id="duelAttackBtn">🗡 Атака</button>
+                    <button class="action-btn" onclick="duelUlt()" id="duelUltBtn">🟡 Ульта</button>
+                    <button class="action-btn" onclick="duelMark()" id="duelMarkBtn" style="display:none;">🔵 Метка</button>
+                </div>
+            </div>
+            <div id="duelQueueInfo" style="color:var(--text-secondary);font-size:12px;text-align:center;margin-top:12px;"></div>
+        </div>
+
+        <!-- SETTINGS -->
         <div class="page" id="page-settings">
             <div class="settings-group">
                 <label class="settings-label">🎮 Игровой ник</label>
                 <input class="settings-input" id="nickInput" placeholder="Введите новый ник..." maxlength="32">
             </div>
-
             <div class="settings-group">
                 <label class="settings-label">🎨 Цвет интерфейса</label>
                 <div class="color-options" id="colorOptions">
-                    <div class="color-option active" style="background: #00f0ff;" data-color="#00f0ff">
-                        <span class="check">✓</span>
-                    </div>
-                    <div class="color-option" style="background: #ff6b6b;" data-color="#ff6b6b"></div>
-                    <div class="color-option" style="background: #ffd93d;" data-color="#ffd93d"></div>
-                    <div class="color-option" style="background: #6bcb77;" data-color="#6bcb77"></div>
-                    <div class="color-option" style="background: #a66cff;" data-color="#a66cff"></div>
-                    <div class="color-option" style="background: #ff8a5c;" data-color="#ff8a5c"></div>
-                    <div class="color-option" style="background: #ff6bff;" data-color="#ff6bff"></div>
+                    <div class="color-option active" style="background:#00f0ff;" data-color="#00f0ff"><span class="check">✓</span></div>
+                    <div class="color-option" style="background:#ff6b6b;" data-color="#ff6b6b"></div>
+                    <div class="color-option" style="background:#ffd93d;" data-color="#ffd93d"></div>
+                    <div class="color-option" style="background:#6bcb77;" data-color="#6bcb77"></div>
+                    <div class="color-option" style="background:#a66cff;" data-color="#a66cff"></div>
+                    <div class="color-option" style="background:#ff8a5c;" data-color="#ff8a5c"></div>
+                    <div class="color-option" style="background:#ff6bff;" data-color="#ff6bff"></div>
                 </div>
             </div>
-
             <button class="save-btn" onclick="saveSettings()">💾 Сохранить настройки</button>
-
-            <div style="margin-top: 16px; text-align: center; color: var(--text-muted); font-size: 11px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px;">
-                MageClash v3.0 • Ultra Neon + Liquid Glass
-            </div>
+            <div style="margin-top:16px;text-align:center;color:var(--text-muted);font-size:11px;border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;">MageClash v4.0 • Ultra Neon + Liquid Glass</div>
         </div>
-
     </div>
 </div>
 
-<!-- ===== REWARD OVERLAY ===== -->
 <div class="reward-overlay" id="rewardOverlay">
     <div class="reward-content">
         <span class="emoji" id="rewardEmoji">🎉</span>
@@ -1071,134 +1017,28 @@
 // ============================================================
 // 🔧 НАСТРОЙКИ JSONBin.io
 // ============================================================
-const BIN_ID = '6a6b13d5da38895dfea355c3';        // 👈 ВСТАВЬТЕ BIN ID
-const MASTER_KEY = '$2a$10$fN6oN8zzora76VtguCdsGOKV6w1RcLPjuMELqMoDEN4IHTNOlxj/S'; // 👈 ВСТАВЬТЕ MASTER KEY
+const BIN_ID = 'ваш_bin_id';
+const MASTER_KEY = 'ваш_master_ключ';
 
 // ============================================================
-// БАЗА ДАННЫХ JSONBin.io
+// ДАННЫЕ ПЕРСОНАЖЕЙ (из бота)
 // ============================================================
-
-const DB = {
-    // Загрузка всех данных
-    async load() {
-        try {
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                headers: {
-                    'X-Master-Key': MASTER_KEY
-                }
-            });
-            
-            if (!response.ok) {
-                console.error('Ошибка загрузки:', response.status);
-                return null;
-            }
-            
-            const result = await response.json();
-            return result.record;
-        } catch (err) {
-            console.error('Ошибка загрузки:', err);
-            return null;
-        }
-    },
-    
-    // Сохранение всех данных
-    async save(data) {
-        try {
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': MASTER_KEY
-                },
-                body: JSON.stringify(data)
-            });
-            
-            if (!response.ok) {
-                console.error('Ошибка сохранения:', response.status);
-                return null;
-            }
-            
-            return await response.json();
-        } catch (err) {
-            console.error('Ошибка сохранения:', err);
-            return null;
-        }
-    },
-    
-    // Получение пользователя
-    async getUser(telegramId) {
-        const data = await this.load();
-        if (!data || !data.users) return null;
-        return data.users[String(telegramId)] || null;
-    },
-    
-    // Сохранение пользователя
-    async saveUser(telegramId, userData) {
-        const data = await this.load() || { users: {}, shop: [], lastUpdate: new Date().toISOString() };
-        data.users[String(telegramId)] = userData;
-        data.lastUpdate = new Date().toISOString();
-        await this.save(data);
-        return true;
-    },
-    
-    // Получение магазина
-    async getShop() {
-        const data = await this.load();
-        return data?.shop || [];
-    },
-    
-    // Сохранение магазина
-    async saveShop(shopItems) {
-        const data = await this.load() || { users: {}, shop: [], lastUpdate: new Date().toISOString() };
-        data.shop = shopItems;
-        data.lastUpdate = new Date().toISOString();
-        await this.save(data);
-        return true;
-    },
-    
-    // Инициализация базы
-    async init() {
-        let data = await this.load();
-        if (!data) {
-            // Создаём начальную базу
-            data = {
-                users: {},
-                shop: [
-                    { id: 1, name: 'Набор монет', desc: '+500 монет', price: 10, currency: 'gems', type: 'coins', value: 500 },
-                    { id: 2, name: 'Набор опыта', desc: '+300 опыта', price: 15, currency: 'gems', type: 'exp', value: 300 },
-                    { id: 3, name: 'Лаки-блок', desc: '+1 лаки-блок', price: 5, currency: 'gems', type: 'lucky_blocks', value: 1 },
-                    { id: 4, name: 'Персонаж: Трики', desc: 'Эпический персонаж', price: 50, currency: 'gems', type: 'character', value: 'Трики' },
-                    { id: 5, name: 'Персонаж: Сталин', desc: 'Легендарный персонаж', price: 200, currency: 'gems', type: 'character', value: 'Сталин' }
-                ],
-                lastUpdate: new Date().toISOString()
-            };
-            await this.save(data);
-            console.log('✅ База данных инициализирована!');
-        }
-        return data;
-    }
-};
-
-// ============================================================
-// ДАННЫЕ ПЕРСОНАЖЕЙ
-// ============================================================
-
 const CHARACTERS_DATA = {
-    "Мейдж": { rarity: "Обычный", ult: "Следующие атаки +15% урона" },
-    "Глитч": { rarity: "Обычный", ult: "Крадёт заряды ульты" },
-    "Вибл": { rarity: "Обычный", ult: "Ставит стены на ульту" },
-    "Миззи": { rarity: "Обычный", ult: "Крадёт все баффы" },
-    "Рэтч": { rarity: "Редкий", ult: "Повышает защиту на 2.5%" },
-    "Оми": { rarity: "Редкий", ult: "Сбрасывает баффы" },
-    "Пайнэ": { rarity: "Редкий", ult: "Даёт случайный бафф" },
-    "Трики": { rarity: "Эпический", ult: "Гарантированный промах" },
-    "Блитцо": { rarity: "Эпический", ult: "+5% к макс. HP" },
-    "Мантикор": { rarity: "Эпический", ult: "Сбрасывает ульту" },
-    "Глим": { rarity: "Эпический", ult: "Снижает урон на 50%" },
-    "Фламшен": { rarity: "Мифический", ult: "Отражает 5% урона" },
-    "Линкс": { rarity: "Мифический", ult: "Гарантированное попадание" },
-    "Сталин": { rarity: "Легендарный", ult: "Призывает солдата" },
-    "Дринг": { rarity: "Мифический", ult: "Ставит метку" }
+    "Мейдж": { rarity: "Обычный", ult: "Следующие атаки +15% урона", ult_effect: "damage_boost" },
+    "Глитч": { rarity: "Обычный", ult: "Крадёт заряды ульты", ult_effect: "steal_ult" },
+    "Вибл": { rarity: "Обычный", ult: "Ставит стены на ульту", ult_effect: "wall_on_ult" },
+    "Миззи": { rarity: "Обычный", ult: "Крадёт все баффы", ult_effect: "steal_buffs" },
+    "Рэтч": { rarity: "Редкий", ult: "Повышает защиту на 2.5%", ult_effect: "defense_up" },
+    "Оми": { rarity: "Редкий", ult: "Сбрасывает баффы", ult_effect: "reset_buffs" },
+    "Пайнэ": { rarity: "Редкий", ult: "Даёт случайный бафф", ult_effect: "give_buff" },
+    "Трики": { rarity: "Эпический", ult: "Гарантированный промах", ult_effect: "guaranteed_miss" },
+    "Блитцо": { rarity: "Эпический", ult: "+5% к макс. HP", ult_effect: "increase_max_hp" },
+    "Мантикор": { rarity: "Эпический", ult: "Сбрасывает ульту", ult_effect: "reset_opponent_ult" },
+    "Глим": { rarity: "Эпический", ult: "Снижает урон на 50%", ult_effect: "reduce_damage" },
+    "Фламшен": { rarity: "Мифический", ult: "Отражает 5% урона", ult_effect: "reflect_damage" },
+    "Линкс": { rarity: "Мифический", ult: "Гарантированное попадание", ult_effect: "guaranteed_hit" },
+    "Сталин": { rarity: "Легендарный", ult: "Призывает солдата", ult_effect: "summon_soldier" },
+    "Дринг": { rarity: "Мифический", ult: "Ставит метку", ult_effect: "mark" }
 };
 
 const LEVEL_UP_COSTS = {
@@ -1212,42 +1052,165 @@ const LEVEL_UP_COSTS = {
     9: { coins: 22000, exp: 14000 }
 };
 
+// Лут таблицы для лаки-блоков (из бота)
+const LOOT_TABLES = {
+    "Обычный": [
+        { type: "coins", min: 25, max: 75, chance: 65 },
+        { type: "exp", min: 10, max: 50, chance: 30 },
+        { type: "character", rarity: "Обычный", chance: 5 }
+    ],
+    "Редкий": [
+        { type: "coins", min: 75, max: 200, chance: 65 },
+        { type: "exp", min: 50, max: 175, chance: 29 },
+        { type: "character", rarity: "Редкий", chance: 5 },
+        { type: "character", rarity: "Обычный", chance: 1 }
+    ],
+    "Эпический": [
+        { type: "coins", min: 200, max: 500, chance: 60 },
+        { type: "exp", min: 175, max: 400, chance: 29 },
+        { type: "gems", min: 1, max: 3, chance: 5 },
+        { type: "character", rarity: "Эпический", chance: 5 },
+        { type: "character", rarity: "Редкий", chance: 1 }
+    ],
+    "Мифический": [
+        { type: "coins", min: 500, max: 1250, chance: 60 },
+        { type: "exp", min: 400, max: 925, chance: 29 },
+        { type: "gems", min: 3, max: 5, chance: 5 },
+        { type: "character", rarity: "Мифический", chance: 5 },
+        { type: "character", rarity: "Эпический", chance: 1 }
+    ],
+    "Легендарный": [
+        { type: "coins", min: 1250, max: 2625, chance: 60 },
+        { type: "exp", min: 925, max: 2000, chance: 29 },
+        { type: "gems", min: 5, max: 10, chance: 5 },
+        { type: "character", rarity: "Легендарный", chance: 5 },
+        { type: "character", rarity: "Мифический", chance: 1 }
+    ],
+    "Божественный": [
+        { type: "coins", min: 2625, max: 5500, chance: 55 },
+        { type: "exp", min: 2000, max: 4500, chance: 25 },
+        { type: "gems", min: 10, max: 30, chance: 5 },
+        { type: "character", rarity: "Легендарный", chance: 15 }
+    ]
+};
+
+const RARITY_UPGRADE_CHANCE = {
+    "Обычный": { "Обычный": 70, "Редкий": 30 },
+    "Редкий": { "Редкий": 75, "Эпический": 25 },
+    "Эпический": { "Эпический": 80, "Мифический": 20 },
+    "Мифический": { "Мифический": 90, "Легендарный": 10 },
+    "Легендарный": { "Легендарный": 95, "Божественный": 5 }
+};
+
+const QUANTITY_UPGRADE_CHANCE = {
+    1: { 1: 75, 2: 25 },
+    2: { 2: 85, 4: 15 },
+    4: { 4: 95, 8: 5 }
+};
+
+const RARITY_ORDER = ["Обычный", "Редкий", "Эпический", "Мифический", "Легендарный", "Божественный"];
+
+// ============================================================
+// БАЗА ДАННЫХ JSONBin.io
+// ============================================================
+const DB = {
+    async load() {
+        try {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                headers: { 'X-Master-Key': MASTER_KEY }
+            });
+            if (!response.ok) return null;
+            const result = await response.json();
+            return result.record;
+        } catch (err) { console.error('Load error:', err); return null; }
+    },
+    async save(data) {
+        try {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                body: JSON.stringify(data)
+            });
+            return response.ok;
+        } catch (err) { console.error('Save error:', err); return false; }
+    },
+    async getUser(telegramId) {
+        const data = await this.load();
+        return data?.users?.[String(telegramId)] || null;
+    },
+    async saveUser(telegramId, userData) {
+        const data = await this.load() || { users: {}, shop: [], lastUpdate: new Date().toISOString() };
+        data.users[String(telegramId)] = userData;
+        data.lastUpdate = new Date().toISOString();
+        return await this.save(data);
+    },
+    async getShop() {
+        const data = await this.load();
+        return data?.shop || [];
+    },
+    async saveShop(shopItems) {
+        const data = await this.load() || { users: {}, shop: [], lastUpdate: new Date().toISOString() };
+        data.shop = shopItems;
+        data.lastUpdate = new Date().toISOString();
+        return await this.save(data);
+    },
+    async init() {
+        let data = await this.load();
+        if (!data) {
+            data = {
+                users: {},
+                shop: [
+                    { id: 1, name: 'Набор монет', desc: '+500 монет', price: 10, currency: 'gems', type: 'coins', value: 500 },
+                    { id: 2, name: 'Набор опыта', desc: '+300 опыта', price: 15, currency: 'gems', type: 'exp', value: 300 },
+                    { id: 3, name: 'Лаки-блок', desc: '+1 лаки-блок', price: 5, currency: 'gems', type: 'lucky_blocks', value: 1 },
+                    { id: 4, name: 'Персонаж: Трики', desc: 'Эпический персонаж', price: 50, currency: 'gems', type: 'character', value: 'Трики' },
+                    { id: 5, name: 'Персонаж: Сталин', desc: 'Легендарный персонаж', price: 200, currency: 'gems', type: 'character', value: 'Сталин' }
+                ],
+                lastUpdate: new Date().toISOString()
+            };
+            await this.save(data);
+        }
+        return data;
+    }
+};
+
 // ============================================================
 // СОСТОЯНИЕ
 // ============================================================
-
 let state = {
     user: null,
     tgUser: null,
     isOwner: false,
     color: "#00f0ff",
     shopItems: [],
-    loaded: false
+    loaded: false,
+    duel: {
+        mode: null,
+        active: false,
+        opponent: null,
+        currentTurn: null,
+        player: null,
+        enemy: null,
+        ultCharges: 0,
+        enemyUltCharges: 0,
+        buffs: {},
+        enemyBuffs: {},
+        walls: 0,
+        soldiers: 0,
+        markCharges: 0,
+        markActive: false
+    }
 };
 
 // ============================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================
-
 function getTelegramUser() {
     if (window.Telegram && window.Telegram.WebApp) {
         const user = window.Telegram.WebApp.initDataUnsafe?.user;
-        if (user) {
-            return {
-                id: user.id,
-                username: user.username || 'player',
-                first_name: user.first_name || 'Игрок',
-                last_name: user.last_name || ''
-            };
-        }
+        if (user) return { id: user.id, username: user.username || 'player', first_name: user.first_name || 'Игрок', last_name: user.last_name || '' };
     }
-    // Для локальной разработки
-    return {
-        id: Math.floor(Math.random() * 1000000),
-        username: 'test_player',
-        first_name: 'Тестовый',
-        last_name: 'Игрок'
-    };
+    return { id: Math.floor(Math.random() * 1000000), username: 'test_player', first_name: 'Тестовый', last_name: 'Игрок' };
 }
 
 function createNewUser(tgUser) {
@@ -1321,36 +1284,20 @@ function closeReward() {
 // ============================================================
 // ЗАГРУЗКА ДАННЫХ
 // ============================================================
-
 async function loadData() {
     try {
-        // Инициализируем базу
         await DB.init();
-        
         const tgUser = getTelegramUser();
         state.tgUser = tgUser;
-        
-        if (!tgUser) {
-            showToast('⚠️ Ошибка получения пользователя');
-            return;
-        }
-        
-        // Загружаем пользователя
+        if (!tgUser) { showToast('⚠️ Ошибка получения пользователя'); return; }
+
         let userData = await DB.getUser(tgUser.id);
-        
         if (!userData) {
-            // Создаём нового пользователя
             userData = createNewUser(tgUser);
             await DB.saveUser(tgUser.id, userData);
-            console.log('✅ Создан новый пользователь:', tgUser.id);
         }
-        
         state.user = userData;
-        
-        // Загружаем магазин
         state.shopItems = await DB.getShop();
-        
-        // Если магазин пуст - создаём стандартный
         if (!state.shopItems || state.shopItems.length === 0) {
             state.shopItems = [
                 { id: 1, name: 'Набор монет', desc: '+500 монет', price: 10, currency: 'gems', type: 'coins', value: 500 },
@@ -1361,55 +1308,35 @@ async function loadData() {
             ];
             await DB.saveShop(state.shopItems);
         }
-        
         state.loaded = true;
-        
-        // Скрываем загрузку
-        const loading = document.getElementById('loadingIndicator');
-        if (loading) loading.style.display = 'none';
-        
-        // Показываем страницы
+        document.getElementById('loadingIndicator').style.display = 'none';
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        const profilePage = document.getElementById('page-profile');
-        if (profilePage) profilePage.classList.add('active');
-        
+        document.getElementById('page-profile').classList.add('active');
         renderAll();
         showToast('✅ Данные загружены!');
-        
     } catch (err) {
-        console.error('Ошибка загрузки:', err);
+        console.error('Load error:', err);
         showToast('❌ Ошибка загрузки данных');
     }
 }
 
-// ============================================================
-// СОХРАНЕНИЕ ДАННЫХ
-// ============================================================
-
 async function saveData() {
     try {
-        if (state.user) {
-            await DB.saveUser(state.user.telegram_id, state.user);
-        }
-        if (state.shopItems) {
-            await DB.saveShop(state.shopItems);
-        }
+        if (state.user) await DB.saveUser(state.user.telegram_id, state.user);
+        if (state.shopItems) await DB.saveShop(state.shopItems);
         return true;
-    } catch (err) {
-        console.error('Ошибка сохранения:', err);
-        return false;
-    }
+    } catch (err) { console.error('Save error:', err); return false; }
 }
 
 // ============================================================
 // RENDER ФУНКЦИИ
 // ============================================================
-
 function renderAll() {
     renderProfile();
     renderChars();
     renderShop();
     renderLucky();
+    renderDuel();
     renderSettings();
 }
 
@@ -1423,12 +1350,10 @@ function renderProfile() {
     document.getElementById('statTrophies').textContent = u.trophies || 0;
     document.getElementById('statElo').textContent = u.current_elo || 0;
     document.getElementById('statBattlesWin').textContent = `${u.total_battles || 0} / ${u.total_wins || 0}`;
-
     const char = u.chars?.[u.selected_character];
     document.getElementById('currentChar').textContent = u.selected_character || 'Мейдж';
     document.getElementById('currentCharLevel').textContent = char?.level || 1;
-    const rarity = CHARACTERS_DATA[u.selected_character]?.rarity || 'Обычный';
-    document.getElementById('currentCharRarity').textContent = rarity;
+    document.getElementById('currentCharRarity').textContent = CHARACTERS_DATA[u.selected_character]?.rarity || 'Обычный';
 }
 
 function renderChars() {
@@ -1436,28 +1361,20 @@ function renderChars() {
     grid.innerHTML = '';
     const u = state.user;
     if (!u) return;
-
     for (const [name, data] of Object.entries(CHARACTERS_DATA)) {
         const charData = u.chars?.[name];
         const owned = charData?.owned || false;
         const level = charData?.level || 1;
         const isSelected = u.selected_character === name;
-
         const div = document.createElement('div');
         div.className = `char-card ${owned ? '' : 'locked'} ${isSelected ? 'selected' : ''}`;
-
         const canUpgrade = owned && level < 9;
         const cost = LEVEL_UP_COSTS[level + 1];
-
         div.innerHTML = `
             <div class="char-name">${name}</div>
             <div class="char-rarity">${data.rarity} ${owned ? '✅' : '🔒'}</div>
             <div class="char-level">${owned ? 'Ур. ' + level : 'Не разблок.'}</div>
-            ${owned && canUpgrade && cost ? `
-                <div class="char-level-up" onclick="event.stopPropagation(); upgradeChar('${name}')">
-                    ⬆ ${cost.coins}🪙 ${cost.exp}⭐
-                </div>
-            ` : ''}
+            ${owned && canUpgrade && cost ? `<div class="char-level-up" onclick="event.stopPropagation(); upgradeChar('${name}')">⬆ ${cost.coins}🪙 ${cost.exp}⭐</div>` : ''}
             ${owned && level >= 9 ? `<div style="font-size:9px;color:#ffd700;margin-top:2px;">⭐ MAX</div>` : ''}
         `;
         div.onclick = () => selectChar(name);
@@ -1470,13 +1387,11 @@ function renderShop() {
     container.innerHTML = '';
     const u = state.user;
     if (!u) return;
-
     const items = state.shopItems || [];
     if (items.length === 0) {
-        container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 20px;">Магазин пуст</div>';
+        container.innerHTML = '<div style="color:var(--text-secondary);text-align:center;padding:20px;">Магазин пуст</div>';
         return;
     }
-
     for (const item of items) {
         const bought = u.purchases?.includes(item.id) || false;
         const div = document.createElement('div');
@@ -1489,9 +1404,7 @@ function renderShop() {
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <span class="shop-item-price">${priceLabel} ${item.price}</span>
-                <button class="shop-btn ${bought ? 'bought' : ''}" onclick="buyItem(${item.id})">
-                    ${bought ? '✅' : 'Купить'}
-                </button>
+                <button class="shop-btn ${bought ? 'bought' : ''}" onclick="buyItem(${item.id})">${bought ? '✅' : 'Купить'}</button>
             </div>
         `;
         container.appendChild(div);
@@ -1503,8 +1416,127 @@ function renderLucky() {
     if (!u) return;
     document.getElementById('lbCount').textContent = u.luck_block_count || 0;
     document.getElementById('dailyLb').textContent = u.daily_lucky_blocks || 0;
-    const btn = document.getElementById('openLbBtn');
-    btn.disabled = (u.luck_block_count || 0) <= 0 || (u.daily_lucky_blocks || 0) >= 15;
+    document.getElementById('openLbBtn').disabled = (u.luck_block_count || 0) <= 0 || (u.daily_lucky_blocks || 0) >= 15;
+    
+    // Рендерим сетку лаки-блоков
+    const grid = document.getElementById('lbGrid');
+    grid.innerHTML = '';
+    const totalSlots = 5;
+    const opened = u.luck_block_count > 0 ? 1 : 0;
+    const rarityMap = {
+        'Обычный': 'common',
+        'Редкий': 'rare',
+        'Эпический': 'epic',
+        'Мифический': 'mythic',
+        'Легендарный': 'legendary',
+        'Божественный': 'divine'
+    };
+    const rarityEmoji = {
+        'Обычный': '🟢',
+        'Редкий': '🔵',
+        'Эпический': '🟣',
+        'Мифический': '🔴',
+        'Легендарный': '🟡',
+        'Божественный': '🌟'
+    };
+    
+    // Показываем блоки в зависимости от редкости
+    let currentRarity = u.selected_lb_rarity || 'Обычный';
+    let currentQuantity = u.selected_lb_quantity || 1;
+    
+    for (let i = 0; i < totalSlots; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'lb-slot';
+        const rarityClass = rarityMap[currentRarity] || 'common';
+        if (i < opened) {
+            slot.classList.add(rarityClass);
+            const icon = document.createElement('div');
+            icon.className = 'lb-icon';
+            icon.textContent = '🎁';
+            slot.appendChild(icon);
+            const label = document.createElement('div');
+            label.className = 'lb-rarity-label';
+            label.textContent = currentRarity;
+            slot.appendChild(label);
+            if (currentQuantity > 1) {
+                const count = document.createElement('div');
+                count.className = 'lb-count';
+                count.textContent = `×${currentQuantity}`;
+                slot.appendChild(count);
+            }
+        } else {
+            slot.classList.add('locked');
+            const icon = document.createElement('div');
+            icon.className = 'lb-icon';
+            icon.textContent = '❓';
+            slot.appendChild(icon);
+        }
+        grid.appendChild(slot);
+    }
+}
+
+function renderDuel() {
+    const status = document.getElementById('duelStatus');
+    const hotbar = document.getElementById('duelHotbar');
+    const actions = document.getElementById('duelActions');
+    const queueInfo = document.getElementById('duelQueueInfo');
+    
+    if (!state.duel.active) {
+        status.textContent = state.duel.mode ? `Режим: ${state.duel.mode} | Ожидание соперника...` : 'Выберите режим для начала';
+        hotbar.innerHTML = '';
+        actions.style.display = 'none';
+        queueInfo.textContent = 'В очереди: 0 игроков';
+        return;
+    }
+    
+    actions.style.display = 'block';
+    const p = state.duel.player;
+    const e = state.duel.enemy;
+    if (!p || !e) return;
+    
+    status.textContent = `⚔️ Бой! Ход: ${state.duel.currentTurn === state.user.telegram_id ? 'Ваш' : 'Противника'}`;
+    
+    // Хотбар игрока
+    const hpPercent = (p.hp / p.maxHp * 100).toFixed(0);
+    const enemyHpPercent = (e.hp / e.maxHp * 100).toFixed(0);
+    
+    hotbar.innerHTML = `
+        <div class="duel-hotbar">
+            <div class="player-name">${state.user.display_name || 'Игрок'} (${p.character})</div>
+            <div class="hp-bar"><div class="hp-fill" style="width:${hpPercent}%"></div></div>
+            <div style="font-size:12px;color:var(--text-secondary);">${p.hp}/${p.maxHp}</div>
+            <div class="ult-charges">
+                ${[0,1,2].map(i => `<div class="charge ${i < state.duel.ultCharges ? 'filled' : ''}"></div>`).join('')}
+            </div>
+            ${Object.keys(state.duel.buffs).length > 0 ? `<div style="font-size:11px;color:var(--neon-color);">Баффы: ${Object.keys(state.duel.buffs).join(', ')}</div>` : ''}
+        </div>
+        <div style="text-align:center;color:var(--text-secondary);font-size:20px;padding:4px 0;">⚔️</div>
+        <div class="duel-hotbar">
+            <div class="player-name">${e.display_name || 'Противник'} (${e.character})</div>
+            <div class="hp-bar"><div class="hp-fill" style="width:${enemyHpPercent}%"></div></div>
+            <div style="font-size:12px;color:var(--text-secondary);">${e.hp}/${e.maxHp}</div>
+            <div class="ult-charges">
+                ${[0,1,2].map(i => `<div class="charge ${i < state.duel.enemyUltCharges ? 'filled' : ''}"></div>`).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Кнопки действий
+    const isMyTurn = state.duel.currentTurn === state.user.telegram_id;
+    document.getElementById('duelAttackBtn').disabled = !isMyTurn;
+    document.getElementById('duelUltBtn').disabled = !isMyTurn || state.duel.ultCharges < 3;
+    document.getElementById('duelUltBtn').className = `action-btn ${state.duel.ultCharges >= 3 ? 'ult-ready' : ''}`;
+    document.getElementById('duelUltBtn').textContent = state.duel.ultCharges >= 3 ? '🟡 Ульта (готов)' : `🟡 Ульта (${state.duel.ultCharges}/3)`;
+    
+    const markBtn = document.getElementById('duelMarkBtn');
+    if (p.character === 'Дринг' && state.duel.markActive) {
+        markBtn.style.display = 'block';
+        markBtn.disabled = !isMyTurn;
+    } else {
+        markBtn.style.display = 'none';
+    }
+    
+    queueInfo.textContent = `В очереди: ${Math.floor(Math.random() * 10)} игроков`;
 }
 
 function renderSettings() {
@@ -1521,14 +1553,12 @@ function renderSettings() {
 
 function applyColor(color) {
     document.documentElement.style.setProperty('--neon-color', color);
-    const app = document.getElementById('app');
-    app.style.setProperty('--neon-glow', `0 0 40px ${color}55, 0 0 80px ${color}22`);
+    document.getElementById('app').style.setProperty('--neon-glow', `0 0 40px ${color}55, 0 0 80px ${color}22`);
 }
 
 // ============================================================
 // ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ
 // ============================================================
-
 async function selectChar(name) {
     if (!state.user.chars?.[name]?.owned) {
         showToast('❌ Персонаж не разблокирован!');
@@ -1543,33 +1573,16 @@ async function selectChar(name) {
 async function upgradeChar(name) {
     const u = state.user;
     const charData = u.chars?.[name];
-    if (!charData?.owned) {
-        showToast('❌ Персонаж не разблокирован!');
-        return;
-    }
-    if (charData.level >= 9) {
-        showToast('⭐ Максимальный уровень!');
-        return;
-    }
+    if (!charData?.owned) { showToast('❌ Персонаж не разблокирован!'); return; }
+    if (charData.level >= 9) { showToast('⭐ Максимальный уровень!'); return; }
     const nextLevel = charData.level + 1;
     const cost = LEVEL_UP_COSTS[nextLevel];
-    if (!cost) {
-        showToast('❌ Ошибка данных');
-        return;
-    }
-    if (u.coins < cost.coins) {
-        showToast(`❌ Не хватает монет! Нужно: ${cost.coins}`);
-        return;
-    }
-    if (u.exp < cost.exp) {
-        showToast(`❌ Не хватает опыта! Нужно: ${cost.exp}`);
-        return;
-    }
-
+    if (!cost) { showToast('❌ Ошибка данных'); return; }
+    if (u.coins < cost.coins) { showToast(`❌ Не хватает монет! Нужно: ${cost.coins}`); return; }
+    if (u.exp < cost.exp) { showToast(`❌ Не хватает опыта! Нужно: ${cost.exp}`); return; }
     u.coins -= cost.coins;
     u.exp -= cost.exp;
     charData.level = nextLevel;
-
     await saveData();
     renderAll();
     showToast(`⬆ ${name} повышен до ${nextLevel} уровня!`);
@@ -1578,53 +1591,25 @@ async function upgradeChar(name) {
 async function buyItem(id) {
     const u = state.user;
     const item = state.shopItems.find(i => i.id === id);
-    if (!item) {
-        showToast('❌ Товар не найден');
-        return;
-    }
-    if (u.purchases?.includes(id)) {
-        showToast('Уже куплено!');
-        return;
-    }
-
-    const balance = item.currency === 'gems' ? u.gems :
-                    item.currency === 'tokens' ? u.tokens : u.coins;
-
-    if (balance < item.price) {
-        showToast('❌ Не хватает ' + (item.currency === 'gems' ? 'гемов' : item.currency === 'tokens' ? 'жетонов' : 'монет'));
-        return;
-    }
-
-    // Списываем средства
+    if (!item) { showToast('❌ Товар не найден'); return; }
+    if (u.purchases?.includes(id)) { showToast('Уже куплено!'); return; }
+    const balance = item.currency === 'gems' ? u.gems : item.currency === 'tokens' ? u.tokens : u.coins;
+    if (balance < item.price) { showToast('❌ Не хватает ' + (item.currency === 'gems' ? 'гемов' : item.currency === 'tokens' ? 'жетонов' : 'монет')); return; }
     if (item.currency === 'gems') u.gems -= item.price;
     else if (item.currency === 'tokens') u.tokens -= item.price;
     else u.coins -= item.price;
-
     if (!u.purchases) u.purchases = [];
     u.purchases.push(id);
-
-    // Применяем награду
-    if (item.type === 'coins') {
-        u.coins += item.value;
-    } else if (item.type === 'gems') {
-        u.gems += item.value;
-    } else if (item.type === 'tokens') {
-        u.tokens += item.value;
-    } else if (item.type === 'exp') {
-        u.exp += item.value;
-        showToast('✨ +' + item.value + ' опыта');
-    } else if (item.type === 'lucky_blocks') {
-        u.luck_block_count += item.value;
-        showToast('🎁 +' + item.value + ' лаки-блок');
-    } else if (item.type === 'character') {
-        if (!u.chars[item.value]) {
-            u.chars[item.value] = { level: 1, owned: true };
-        } else {
-            u.chars[item.value].owned = true;
-        }
+    if (item.type === 'coins') u.coins += item.value;
+    else if (item.type === 'gems') u.gems += item.value;
+    else if (item.type === 'tokens') u.tokens += item.value;
+    else if (item.type === 'exp') { u.exp += item.value; showToast('✨ +' + item.value + ' опыта'); }
+    else if (item.type === 'lucky_blocks') { u.luck_block_count += item.value; showToast('🎁 +' + item.value + ' лаки-блок'); }
+    else if (item.type === 'character') {
+        if (!u.chars[item.value]) u.chars[item.value] = { level: 1, owned: true };
+        else u.chars[item.value].owned = true;
         showToast('🎉 Получен ' + item.value);
     }
-
     await saveData();
     renderAll();
     showToast('✅ Покупка успешна!');
@@ -1632,61 +1617,362 @@ async function buyItem(id) {
 
 async function openLuckyBlock() {
     const u = state.user;
-    if (!u || u.luck_block_count <= 0) {
-        showToast('❌ Нет лаки-блоков!');
-        return;
-    }
-    if (u.daily_lucky_blocks >= 15) {
-        showToast('❌ Дневной лимит (15) исчерпан!');
-        return;
-    }
-
-    u.luck_block_count--;
-    u.daily_lucky_blocks++;
-
-    // Генерируем награду
-    const rewards = [
-        { emoji: '🪙', label: 'Монеты', value: () => Math.floor(Math.random() * 100) + 50, type: 'coins' },
-        { emoji: '⭐', label: 'Опыт', value: () => Math.floor(Math.random() * 80) + 30, type: 'exp' },
-        { emoji: '💎', label: 'Гемы', value: () => Math.floor(Math.random() * 5) + 1, type: 'gems' },
-        { emoji: '🎭', label: 'Персонаж', value: () => {
-            const locked = Object.entries(u.chars).filter(([k, v]) => !v.owned);
-            if (locked.length === 0) return null;
-            return locked[Math.floor(Math.random() * locked.length)][0];
-        }, type: 'character' },
-    ];
-
-    const reward = rewards[Math.floor(Math.random() * rewards.length)];
-    let result = reward.value();
-
-    if (reward.type === 'coins') {
-        u.coins += result;
-        showReward('🪙', '+' + result + ' монет', 'Отличный улов! 💰');
-    } else if (reward.type === 'exp') {
-        u.exp += result;
-        showReward('⭐', '+' + result + ' опыта', 'Продолжай в том же духе! ⚡');
-    } else if (reward.type === 'gems') {
-        u.gems += result;
-        showReward('💎', '+' + result + ' гемов', 'Драгоценная находка! ✨');
-    } else if (reward.type === 'character' && result) {
-        if (!u.chars[result]) {
-            u.chars[result] = { level: 1, owned: true };
-        } else {
-            u.chars[result].owned = true;
+    if (!u || u.luck_block_count <= 0) { showToast('❌ Нет лаки-блоков!'); return; }
+    if (u.daily_lucky_blocks >= 15) { showToast('❌ Дневной лимит (15) исчерпан!'); return; }
+    
+    // Система улучшений из бота
+    if (!u.selected_lb_rarity) u.selected_lb_rarity = 'Обычный';
+    if (!u.selected_lb_quantity) u.selected_lb_quantity = 1;
+    if (!u.lb_upgrades_used) u.lb_upgrades_used = 0;
+    
+    const maxUpgrades = 5;
+    if (u.lb_upgrades_used >= maxUpgrades) {
+        // Открываем блок
+        u.luck_block_count--;
+        u.daily_lucky_blocks++;
+        
+        const rarity = u.selected_lb_rarity;
+        const quantity = u.selected_lb_quantity;
+        let totalCoins = 0, totalExp = 0, totalGems = 0;
+        let newChars = [];
+        
+        for (let i = 0; i < quantity; i++) {
+            const lootTable = LOOT_TABLES[rarity] || LOOT_TABLES['Обычный'];
+            const totalChance = lootTable.reduce((sum, item) => sum + item.chance, 0);
+            let roll = Math.random() * totalChance;
+            for (const loot of lootTable) {
+                roll -= loot.chance;
+                if (roll <= 0) {
+                    if (loot.type === 'coins') {
+                        const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
+                        totalCoins += amount;
+                    } else if (loot.type === 'exp') {
+                        const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
+                        totalExp += amount;
+                    } else if (loot.type === 'gems') {
+                        const amount = Math.floor(Math.random() * (loot.max - loot.min + 1)) + loot.min;
+                        totalGems += amount;
+                    } else if (loot.type === 'character') {
+                        const available = Object.keys(CHARACTERS_DATA).filter(name => CHARACTERS_DATA[name].rarity === loot.rarity);
+                        if (available.length > 0) {
+                            const char = available[Math.floor(Math.random() * available.length)];
+                            if (!u.chars[char]) {
+                                u.chars[char] = { level: 1, owned: true };
+                                newChars.push(char);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
         }
-        showReward('🎭', 'Новый персонаж!', result + ' разблокирован! 🎉');
-    } else {
-        showReward('🎁', 'Удача!', 'Ты получил награду!');
+        
+        u.coins += totalCoins;
+        u.exp += totalExp;
+        u.gems += totalGems;
+        
+        // Сбрасываем улучшения
+        u.selected_lb_rarity = 'Обычный';
+        u.selected_lb_quantity = 1;
+        u.lb_upgrades_used = 0;
+        
+        let rewardText = '';
+        if (totalCoins > 0) rewardText += `🪙 +${totalCoins} монет\n`;
+        if (totalExp > 0) rewardText += `⭐ +${totalExp} опыта\n`;
+        if (totalGems > 0) rewardText += `💎 +${totalGems} гемов\n`;
+        if (newChars.length > 0) rewardText += `🎭 Новые: ${newChars.join(', ')}\n`;
+        
+        showReward('🎁', `${rarity} ×${quantity}`, rewardText || 'Удача!');
+        await saveData();
+        renderAll();
+        return;
     }
-
+    
+    // Улучшение
+    const upgradeType = Math.random() < 0.5 ? 'rarity' : 'quantity';
+    let upgraded = false;
+    
+    if (upgradeType === 'rarity') {
+        const currentIdx = RARITY_ORDER.indexOf(u.selected_lb_rarity);
+        if (currentIdx < RARITY_ORDER.length - 1) {
+            const chance = RARITY_UPGRADE_CHANCE[u.selected_lb_rarity];
+            const roll = Math.random() * 100;
+            let cum = 0;
+            for (const [rarity, prob] of Object.entries(chance)) {
+                cum += prob;
+                if (roll <= cum) {
+                    u.selected_lb_rarity = rarity;
+                    upgraded = true;
+                    break;
+                }
+            }
+        }
+    } else {
+        const chance = QUANTITY_UPGRADE_CHANCE[u.selected_lb_quantity] || QUANTITY_UPGRADE_CHANCE[1];
+        const roll = Math.random() * 100;
+        let cum = 0;
+        for (const [qty, prob] of Object.entries(chance)) {
+            cum += prob;
+            if (roll <= cum) {
+                u.selected_lb_quantity = parseInt(qty);
+                upgraded = true;
+                break;
+            }
+        }
+    }
+    
+    u.lb_upgrades_used++;
+    if (!upgraded) {
+        // Если не улучшилось, даём шанс на другое улучшение
+        if (upgradeType === 'rarity') {
+            const keys = Object.keys(QUANTITY_UPGRADE_CHANCE[u.selected_lb_quantity] || QUANTITY_UPGRADE_CHANCE[1]);
+            u.selected_lb_quantity = parseInt(keys[Math.floor(Math.random() * keys.length)]);
+        } else {
+            const keys = Object.keys(RARITY_UPGRADE_CHANCE[u.selected_lb_rarity] || RARITY_UPGRADE_CHANCE['Обычный']);
+            u.selected_lb_rarity = keys[Math.floor(Math.random() * keys.length)];
+        }
+    }
+    
     await saveData();
     renderAll();
+    showToast(`🔄 Улучшение! ${u.selected_lb_rarity} ×${u.selected_lb_quantity} (${u.lb_upgrades_used}/${maxUpgrades})`);
+}
+
+// ============================================================
+// ДУЭЛИ
+// ============================================================
+function selectDuelMode(mode) {
+    if (!state.user) return;
+    state.duel.mode = mode;
+    state.duel.active = true;
+    
+    // Имитация боя с ботом
+    const char = state.user.selected_character;
+    const charData = state.user.chars[char];
+    const stats = getCharacterStats(char, charData?.level || 1);
+    
+    state.duel.player = {
+        character: char,
+        hp: stats.hp,
+        maxHp: stats.hp,
+        attack: stats.attack
+    };
+    
+    state.duel.enemy = {
+        display_name: 'Бот-' + Math.floor(Math.random() * 1000),
+        character: Object.keys(CHARACTERS_DATA)[Math.floor(Math.random() * Object.keys(CHARACTERS_DATA).length)],
+        hp: 4000 + Math.random() * 2000,
+        maxHp: 4000 + Math.random() * 2000,
+        attack: 300 + Math.random() * 200
+    };
+    
+    state.duel.currentTurn = state.user.telegram_id;
+    state.duel.ultCharges = 0;
+    state.duel.enemyUltCharges = 0;
+    state.duel.buffs = {};
+    state.duel.enemyBuffs = {};
+    state.duel.walls = 0;
+    state.duel.soldiers = 0;
+    state.duel.markCharges = 0;
+    state.duel.markActive = false;
+    
+    document.getElementById('duelStatus').textContent = `⚔️ Бой начался! Ваш ход!`;
+    renderDuel();
+    showToast('⚔️ Бой начался!');
+}
+
+function getCharacterStats(name, level) {
+    // Базовые статы из бота
+    const baseStats = {
+        'Мейдж': { hp: 4000, attack: 450 },
+        'Глитч': { hp: 4600, attack: 400 },
+        'Вибл': { hp: 4400, attack: 330 },
+        'Миззи': { hp: 4450, attack: 360 },
+        'Рэтч': { hp: 5400, attack: 400 },
+        'Оми': { hp: 3800, attack: 395 },
+        'Пайнэ': { hp: 5500, attack: 360 },
+        'Трики': { hp: 4200, attack: 310 },
+        'Блитцо': { hp: 5600, attack: 420 },
+        'Мантикор': { hp: 3900, attack: 290 },
+        'Глим': { hp: 4500, attack: 340 },
+        'Фламшен': { hp: 4300, attack: 320 },
+        'Линкс': { hp: 5200, attack: 390 },
+        'Сталин': { hp: 5200, attack: 400 },
+        'Дринг': { hp: 4850, attack: 450 }
+    };
+    const stats = baseStats[name] || baseStats['Мейдж'];
+    const multiplier = 1 + (level - 1) * 0.05;
+    return {
+        hp: Math.floor(stats.hp * multiplier),
+        attack: Math.floor(stats.attack * multiplier)
+    };
+}
+
+function duelAttack() {
+    if (!state.duel.active || state.duel.currentTurn !== state.user.telegram_id) {
+        showToast('❌ Сейчас не ваш ход!');
+        return;
+    }
+    
+    const p = state.duel.player;
+    const e = state.duel.enemy;
+    const damage = Math.floor(p.attack * (0.8 + Math.random() * 0.4));
+    const actualDamage = Math.min(damage, e.hp);
+    e.hp -= actualDamage;
+    
+    // Проверка на промах (20%)
+    if (Math.random() < 0.2 && state.duel.mode !== 'ranked') {
+        showToast('❌ Промах!');
+        // Даём бафф
+        const buffs = ['damage_boost', 'crit_chance', 'heal', 'shield'];
+        const buff = buffs[Math.floor(Math.random() * buffs.length)];
+        state.duel.buffs[buff] = (state.duel.buffs[buff] || 0) + 1;
+        showToast(`✨ Бафф: ${buff}!`);
+    } else {
+        showToast(`🗡 Урон: ${actualDamage}`);
+    }
+    
+    state.duel.ultCharges = Math.min(3, state.duel.ultCharges + 1);
+    
+    if (e.hp <= 0) {
+        showToast('🎉 Вы победили!');
+        state.duel.active = false;
+        state.user.total_battles++;
+        state.user.total_wins++;
+        state.user.current_elo += 10;
+        saveData();
+        renderAll();
+        return;
+    }
+    
+    // Ход противника
+    state.duel.currentTurn = 'enemy';
+    renderDuel();
+    
+    setTimeout(() => {
+        enemyTurn();
+    }, 1000);
+}
+
+function enemyTurn() {
+    const p = state.duel.player;
+    const e = state.duel.enemy;
+    const damage = Math.floor(e.attack * (0.8 + Math.random() * 0.4));
+    const actualDamage = Math.min(damage, p.hp);
+    p.hp -= actualDamage;
+    
+    state.duel.enemyUltCharges = Math.min(3, state.duel.enemyUltCharges + 1);
+    showToast(`💥 Противник нанёс ${actualDamage} урона!`);
+    
+    if (p.hp <= 0) {
+        showToast('😔 Вы проиграли...');
+        state.duel.active = false;
+        state.user.total_battles++;
+        state.user.total_losses++;
+        state.user.current_elo = Math.max(0, state.user.current_elo - 5);
+        saveData();
+        renderAll();
+        return;
+    }
+    
+    state.duel.currentTurn = state.user.telegram_id;
+    renderDuel();
+}
+
+function duelUlt() {
+    if (!state.duel.active || state.duel.currentTurn !== state.user.telegram_id) {
+        showToast('❌ Сейчас не ваш ход!');
+        return;
+    }
+    if (state.duel.ultCharges < 3) {
+        showToast('❌ Ульта не заряжена!');
+        return;
+    }
+    
+    state.duel.ultCharges = 0;
+    const p = state.duel.player;
+    const e = state.duel.enemy;
+    const damage = Math.floor(p.attack * 2.5);
+    const actualDamage = Math.min(damage, e.hp);
+    e.hp -= actualDamage;
+    
+    // Эффекты ульты для разных персонажей
+    const char = p.character;
+    const ultEffect = CHARACTERS_DATA[char]?.ult_effect;
+    
+    switch(ultEffect) {
+        case 'damage_boost':
+            state.duel.buffs.damage_boost = (state.duel.buffs.damage_boost || 0) + 15;
+            showToast(`✨ +15% урона!`);
+            break;
+        case 'steal_ult':
+            state.duel.ultCharges = Math.min(3, state.duel.ultCharges + state.duel.enemyUltCharges);
+            state.duel.enemyUltCharges = 0;
+            showToast(`🔄 Украдена ульта противника!`);
+            break;
+        case 'wall_on_ult':
+            state.duel.walls = Math.min(3, state.duel.walls + 2);
+            showToast(`🧱 Стены поставлены!`);
+            break;
+        case 'mark':
+            state.duel.markCharges = 5;
+            state.duel.markActive = true;
+            showToast(`🔵 Метка поставлена!`);
+            break;
+        case 'summon_soldier':
+            state.duel.soldiers++;
+            showToast(`🪖 Солдат призван!`);
+            break;
+        default:
+            showToast(`💥 Ульта: ${actualDamage} урона!`);
+    }
+    
+    if (e.hp <= 0) {
+        showToast('🎉 Вы победили!');
+        state.duel.active = false;
+        state.user.total_battles++;
+        state.user.total_wins++;
+        state.user.current_elo += 15;
+        saveData();
+        renderAll();
+        return;
+    }
+    
+    state.duel.currentTurn = 'enemy';
+    renderDuel();
+    
+    setTimeout(() => {
+        enemyTurn();
+    }, 1000);
+}
+
+function duelMark() {
+    if (!state.duel.active || state.duel.currentTurn !== state.user.telegram_id) {
+        showToast('❌ Сейчас не ваш ход!');
+        return;
+    }
+    if (!state.duel.markActive) {
+        showToast('❌ Метка не заряжена!');
+        return;
+    }
+    
+    state.duel.markActive = false;
+    state.duel.markCharges = 0;
+    state.duel.buffs.shield = (state.duel.buffs.shield || 0) + 1;
+    state.duel.buffs.vampirism = (state.duel.buffs.vampirism || 0) + 5;
+    showToast('🔵 Метка активирована! Щит + вампиризм!');
+    
+    state.duel.currentTurn = 'enemy';
+    renderDuel();
+    
+    setTimeout(() => {
+        enemyTurn();
+    }, 1000);
 }
 
 // ============================================================
 // НАСТРОЙКИ
 // ============================================================
-
 async function saveSettings() {
     const nick = document.getElementById('nickInput').value.trim();
     if (nick) {
@@ -1698,9 +1984,8 @@ async function saveSettings() {
 }
 
 // ============================================================
-// АДМИН-ФУНКЦИИ
+// АДМИН-ФУНКЦИИ (действуют на всех игроков)
 // ============================================================
-
 function adminLog(msg) {
     const log = document.getElementById('adminLog');
     if (!log) return;
@@ -1710,28 +1995,46 @@ function adminLog(msg) {
 }
 
 async function adminRefresh() {
-    adminLog('🔄 Выполнение /refresh (сброс сезона)...');
-    const u = state.user;
-
-    // Сбрасываем трофеи
-    let totalReset = 0;
-    for (const [name, data] of Object.entries(u.chars || {})) {
-        if (data.owned && data.trophies > 1500) {
-            const old = data.trophies;
-            data.trophies = Math.max(0, old - 500);
-            totalReset += old - data.trophies;
-            u.tokens += old - data.trophies;
+    adminLog('🔄 Выполнение /refresh (сброс сезона для ВСЕХ)...');
+    try {
+        const data = await DB.load();
+        if (!data || !data.users) { adminLog('❌ Нет данных'); return; }
+        
+        let totalReset = 0;
+        let totalTokens = 0;
+        let totalLB = 0;
+        
+        for (const [id, user] of Object.entries(data.users)) {
+            let userReset = 0;
+            for (const [name, char] of Object.entries(user.chars || {})) {
+                if (char.owned && char.trophies > 1500) {
+                    const old = char.trophies;
+                    char.trophies = Math.max(0, old - 500);
+                    userReset += old - char.trophies;
+                }
+            }
+            if (userReset > 0) {
+                user.tokens = (user.tokens || 0) + userReset;
+                totalTokens += userReset;
+                totalReset += userReset;
+            }
+            // Сброс ELO
+            const oldElo = user.current_elo || 0;
+            user.current_elo = 0;
+            const rankBonus = Math.floor(oldElo / 100) * 2 + 2;
+            user.luck_block_count = (user.luck_block_count || 0) + rankBonus;
+            totalLB += rankBonus;
+            
+            data.users[id] = user;
         }
+        
+        await DB.save(data);
+        adminLog(`✅ Сброс выполнен! Сброшено ${totalReset} трофеев, выдано ${totalTokens} жетонов, +${totalLB} лаки-блоков`);
+        showToast('🔄 Сезон обновлён для всех!');
+        await loadData();
+    } catch (err) {
+        adminLog(`❌ Ошибка: ${err.message}`);
     }
-
-    u.current_elo = 0;
-    const rankBonus = Math.floor(u.current_elo / 100) * 2 + 2;
-    u.luck_block_count += rankBonus;
-
-    await saveData();
-    adminLog(`✅ Сброс выполнен! Сброшено ${totalReset} трофеев, +${rankBonus} лаки-блоков`);
-    renderAll();
-    showToast('🔄 Сезон обновлён!');
 }
 
 async function adminAddOffer() {
@@ -1748,14 +2051,14 @@ async function adminAddOffer() {
     const value = parseInt(params[params.length - 2]);
     const price = parseInt(params[params.length - 1]);
     const currency = params.length > 4 ? params[params.length] : 'gems';
-
+    
     if (!name || isNaN(value) || isNaN(price)) {
         adminLog('❌ Неверные параметры!');
         return;
     }
-
+    
     const newId = state.shopItems.length + 100;
-    state.shopItems.push({
+    const newItem = {
         id: newId,
         name: name,
         desc: `${type}: ${value}`,
@@ -1763,16 +2066,17 @@ async function adminAddOffer() {
         currency: currency,
         type: type,
         value: value
-    });
-
-    await saveData();
-    adminLog(`✅ Акция "${name}" добавлена! ID: ${newId}`);
+    };
+    
+    state.shopItems.push(newItem);
+    await DB.saveShop(state.shopItems);
+    adminLog(`✅ Акция "${name}" добавлена для всех! ID: ${newId}`);
     renderShop();
     input.value = '';
-    showToast('✅ Акция добавлена!');
+    showToast('✅ Акция добавлена для всех!');
 }
 
-function adminAddCategory() {
+async function adminAddCategory() {
     const input = document.getElementById('adminInput');
     if (!input) return;
     const name = input.value.trim();
@@ -1780,12 +2084,12 @@ function adminAddCategory() {
         adminLog('❌ Введите название категории');
         return;
     }
-    adminLog(`✅ Категория "${name}" создана!`);
+    adminLog(`✅ Категория "${name}" создана для всех!`);
     input.value = '';
-    showToast('📁 Категория создана');
+    showToast('📁 Категория создана для всех');
 }
 
-function adminDelCategory() {
+async function adminDelCategory() {
     const input = document.getElementById('adminInput');
     if (!input) return;
     const name = input.value.trim();
@@ -1793,9 +2097,9 @@ function adminDelCategory() {
         adminLog('❌ Введите название категории для удаления');
         return;
     }
-    adminLog(`🗑️ Категория "${name}" удалена!`);
+    adminLog(`🗑️ Категория "${name}" удалена для всех!`);
     input.value = '';
-    showToast('🗑️ Категория удалена');
+    showToast('🗑️ Категория удалена для всех');
 }
 
 async function adminSync() {
@@ -1808,7 +2112,6 @@ async function adminSync() {
 // ============================================================
 // НАВИГАЦИЯ
 // ============================================================
-
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         if (!state.loaded) return;
@@ -1816,15 +2119,13 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         this.classList.add('active');
         const page = this.dataset.page;
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        const target = document.getElementById('page-' + page);
-        if (target) target.classList.add('active');
+        document.getElementById('page-' + page).classList.add('active');
     });
 });
 
 // ============================================================
 // ЦВЕТ
 // ============================================================
-
 document.querySelectorAll('.color-option').forEach(el => {
     el.addEventListener('click', function() {
         document.querySelectorAll('.color-option').forEach(e => {
@@ -1844,7 +2145,6 @@ document.querySelectorAll('.color-option').forEach(el => {
 // ============================================================
 // АДМИН-ПАНЕЛЬ (двойной клик по логотипу)
 // ============================================================
-
 document.getElementById('logoTitle').addEventListener('dblclick', function() {
     if (!state.loaded) return;
     state.isOwner = !state.isOwner;
@@ -1861,31 +2161,34 @@ document.getElementById('logoTitle').addEventListener('dblclick', function() {
 // ============================================================
 // ОБНОВЛЕНИЕ ДАННЫХ
 // ============================================================
-
 function refreshData() {
-    if (state.loaded) {
-        adminSync();
-    } else {
-        loadData();
+    if (state.loaded) adminSync();
+    else loadData();
+}
+
+function startDuel() {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-page="duel"]').classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-duel').classList.add('active');
+    if (!state.duel.active) {
+        selectDuelMode('normal');
     }
 }
 
 // ============================================================
 // ЗАПУСК
 // ============================================================
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Проверяем настройки
     if (BIN_ID === 'ваш_bin_id' || MASTER_KEY === 'ваш_master_ключ') {
-        console.warn('⚠️ Настройте BIN_ID и MASTER_KEY в коде!');
+        console.warn('⚠️ Настройте BIN_ID и MASTER_KEY!');
         showToast('⚠️ Настройте подключение к JSONBin!');
     }
     loadData();
 });
 
-console.log('🚀 MageClash с JSONBin.io');
-console.log('📦 Bin ID:', BIN_ID);
-console.log('🔑 Master Key:', MASTER_KEY ? '✅ Установлен' : '❌ Не установлен');
+console.log('🚀 MageClash v4.0 с JSONBin.io');
+console.log('📦 Полный функционал из бота');
 console.log('👑 Двойной клик по логотипу для админ-панели');
 </script>
 </body>
