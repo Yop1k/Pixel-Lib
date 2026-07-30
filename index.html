@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MageClash RPG</title>
     
-    <!-- Supabase Client -->
+    <!-- Supabase Client (не используется, оставлено для совместимости) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js">
     </script>
     
@@ -83,7 +83,30 @@
             100% { transform: translate(-2%, -2%) rotate(-2deg) scale(1); }
         }
 
-        /* Ultra Neon */
+        /* Liquid Glass - Второй слой */
+        .app::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 70% 20%, rgba(0, 240, 255, 0.06) 0%, transparent 30%),
+                radial-gradient(ellipse at 30% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+            animation: liquidGlassDeep 25s ease-in-out infinite alternate;
+            filter: blur(8px);
+        }
+
+        @keyframes liquidGlassDeep {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-3%, 2%) rotate(-3deg); }
+            100% { transform: translate(3%, -2%) rotate(3deg); }
+        }
+
+        /* Ultra Neon - Усиленное свечение */
         .app .neon-border {
             position: absolute;
             top: -3px;
@@ -152,6 +175,7 @@
             letter-spacing: 1.5px;
             cursor: pointer;
             user-select: none;
+            text-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
         }
 
         @keyframes titleGradient {
@@ -239,6 +263,17 @@
             padding-right: 4px;
         }
 
+        .content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .content::-webkit-scrollbar-thumb {
+            background: var(--neon-color);
+            border-radius: 10px;
+        }
+
         .page {
             display: none;
             animation: fadeSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -264,6 +299,17 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(0, 240, 255, 0.03) 0%, transparent 60%);
+            pointer-events: none;
         }
 
         .glass-card:hover {
@@ -578,11 +624,28 @@
             overflow: hidden;
         }
 
+        .lucky-block::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.05) 0%, transparent 60%);
+            animation: lbGlow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes lbGlow {
+            0% { transform: scale(0.8) rotate(0deg); opacity: 0.5; }
+            100% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+        }
+
         .lucky-block .big-emoji {
             font-size: 64px;
             display: block;
             margin: 4px 0;
             animation: float 3s ease-in-out infinite;
+            position: relative;
         }
 
         @keyframes float {
@@ -594,11 +657,13 @@
             font-size: 34px;
             font-weight: 800;
             color: var(--neon-color);
+            position: relative;
         }
 
         .lucky-block .label {
             color: var(--text-secondary);
             font-size: 13px;
+            position: relative;
         }
 
         .open-btn {
@@ -613,6 +678,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 0 40px rgba(238, 90, 36, 0.25);
+            position: relative;
+            overflow: hidden;
         }
 
         .open-btn:hover:not(:disabled) {
@@ -1001,927 +1068,825 @@
 </div>
 
 <script>
-    // ============================================================
-    // 🔧 НАСТРОЙКИ - ИЗМЕНИТЕ ЭТИ ЗНАЧЕНИЯ!
-    // ============================================================
-    const SUPABASE_URL = 'https://xrkmpkwnzothvdgppcru.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhya21wa3duem90aHZkZ3BwY3J1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNjIwODgsImV4cCI6MjEwMDkzODA4OH0.vL8W6KuQif76eeNx7ciwbErDnUldXwHll9BnaFTJiMs';
-    const BOT_TOKEN = '8978051807:AAHgpWzdb0XmTxVIZ2EMQ7WzkCicVsZtknc'; // для верификации
-    const OWNER_ID = 8226550622; // ваш Telegram ID
+// ============================================================
+// 🔧 НАСТРОЙКИ JSONBin.io
+// ============================================================
+const BIN_ID = '6a6b13d5da38895dfea355c3';        // 👈 ВСТАВЬТЕ BIN ID
+const MASTER_KEY = '$2a$10$fN6oN8zzora76VtguCdsGOKV6w1RcLPjuMELqMoDEN4IHTNOlxj/S'; // 👈 ВСТАВЬТЕ MASTER KEY
 
-    // ============================================================
-    // ИНИЦИАЛИЗАЦИЯ SUPABASE
-    // ============================================================
-    const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ============================================================
+// БАЗА ДАННЫХ JSONBin.io
+// ============================================================
 
-    // ============================================================
-    // ДАННЫЕ
-    // ============================================================
-    const CHARACTERS_DATA = {
-        "Мейдж": { rarity: "Обычный", ult: "Следующие атаки +15% урона" },
-        "Глитч": { rarity: "Обычный", ult: "Крадёт заряды ульты" },
-        "Вибл": { rarity: "Обычный", ult: "Ставит стены на ульту" },
-        "Миззи": { rarity: "Обычный", ult: "Крадёт все баффы" },
-        "Рэтч": { rarity: "Редкий", ult: "Повышает защиту на 2.5%" },
-        "Оми": { rarity: "Редкий", ult: "Сбрасывает баффы" },
-        "Пайнэ": { rarity: "Редкий", ult: "Даёт случайный бафф" },
-        "Трики": { rarity: "Эпический", ult: "Гарантированный промах" },
-        "Блитцо": { rarity: "Эпический", ult: "+5% к макс. HP" },
-        "Мантикор": { rarity: "Эпический", ult: "Сбрасывает ульту" },
-        "Глим": { rarity: "Эпический", ult: "Снижает урон на 50%" },
-        "Фламшен": { rarity: "Мифический", ult: "Отражает 5% урона" },
-        "Линкс": { rarity: "Мифический", ult: "Гарантированное попадание" },
-        "Сталин": { rarity: "Легендарный", ult: "Призывает солдата" },
-        "Дринг": { rarity: "Мифический", ult: "Ставит метку" }
-    };
-
-    const LEVEL_UP_COSTS = {
-        2: { coins: 75, exp: 40 },
-        3: { coins: 200, exp: 120 },
-        4: { coins: 480, exp: 300 },
-        5: { coins: 1100, exp: 700 },
-        6: { coins: 2350, exp: 1550 },
-        7: { coins: 4900, exp: 3275 },
-        8: { coins: 10000, exp: 6800 },
-        9: { coins: 22000, exp: 14000 }
-    };
-
-    // ============================================================
-    // СОСТОЯНИЕ
-    // ============================================================
-    let state = {
-        user: null,
-        tgUser: null,
-        isOwner: false,
-        color: "#00f0ff",
-        shopItems: [],
-        loaded: false
-    };
-
-    // ============================================================
-    // ФУНКЦИИ БАЗЫ ДАННЫХ
-    // ============================================================
-
-    // Получение пользователя
-    async function getUserData(telegramId) {
+const DB = {
+    // Загрузка всех данных
+    async load() {
         try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('telegram_id', telegramId)
-                .single();
-
-            if (error && error.code === 'PGRST116') {
-                return await createUser(telegramId);
-            }
-
-            if (error) throw error;
-            return data;
-        } catch (err) {
-            console.error('Error getting user:', err);
-            return null;
-        }
-    }
-
-    // Создание пользователя
-    async function createUser(telegramId) {
-        const newUser = {
-            telegram_id: telegramId,
-            username: state.tgUser?.username || 'player',
-            display_name: state.tgUser?.first_name || 'Игрок',
-            game_nick: `Игрок_${Math.floor(Math.random() * 10000)}`,
-            coins: 100,
-            exp: 0,
-            gems: 10,
-            tokens: 0,
-            total_battles: 0,
-            total_wins: 0,
-            total_losses: 0,
-            current_elo: 0,
-            max_elo: 0,
-            selected_character: 'Мейдж',
-            luck_block_count: 3,
-            daily_lucky_blocks: 0,
-            last_lucky_block_date: new Date().toISOString().split('T')[0],
-            is_partner: false,
-            partner_emoji_id: '5861786805988234706',
-            created_at: new Date().toISOString(),
-            last_seen: new Date().toISOString()
-        };
-
-        const { data, error } = await supabase
-            .from('users')
-            .insert([newUser])
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Error creating user:', error);
-            return null;
-        }
-
-        // Создаём начального персонажа
-        await addCharacter(data.id, 'Мейдж', 1);
-
-        return data;
-    }
-
-    // Получение персонажей
-    async function getUserCharacters(userId) {
-        const { data, error } = await supabase
-            .from('user_characters')
-            .select('*')
-            .eq('user_id', userId);
-
-        if (error) {
-            console.error('Error getting characters:', error);
-            return {};
-        }
-
-        const chars = {};
-        data.forEach(row => {
-            chars[row.character_name] = {
-                level: row.level || 1,
-                trophies: row.trophies || 0
-            };
-        });
-        return chars;
-    }
-
-    // Добавление персонажа
-    async function addCharacter(userId, characterName, level = 1) {
-        const { error } = await supabase
-            .from('user_characters')
-            .insert([{
-                user_id: userId,
-                character_name: characterName,
-                level: level,
-                trophies: 0
-            }]);
-
-        if (error) console.error('Error adding character:', error);
-    }
-
-    // Обновление пользователя
-    async function updateUser(telegramId, updates) {
-        const { error } = await supabase
-            .from('users')
-            .update(updates)
-            .eq('telegram_id', telegramId);
-
-        if (error) console.error('Error updating user:', error);
-        return !error;
-    }
-
-    // Получение товаров магазина
-    async function getShopItems() {
-        const { data, error } = await supabase
-            .from('shop_offers')
-            .select('*')
-            .order('id');
-
-        if (error) {
-            console.error('Error getting shop items:', error);
-            return [];
-        }
-        return data;
-    }
-
-    // Получение покупок пользователя
-    async function getUserPurchases(userId) {
-        const { data, error } = await supabase
-            .from('shop_purchases')
-            .select('offer_id')
-            .eq('user_id', userId);
-
-        if (error) {
-            console.error('Error getting purchases:', error);
-            return [];
-        }
-        return data.map(p => p.offer_id);
-    }
-
-    // Добавление покупки
-    async function addPurchase(userId, offerId) {
-        const { error } = await supabase
-            .from('shop_purchases')
-            .insert([{
-                user_id: userId,
-                offer_id: offerId,
-                purchased_at: new Date().toISOString()
-            }]);
-
-        if (error) console.error('Error adding purchase:', error);
-        return !error;
-    }
-
-    // Добавление товара в магазин (админ)
-    async function addShopItem(item) {
-        const { data, error } = await supabase
-            .from('shop_offers')
-            .insert([item])
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Error adding shop item:', error);
-            return null;
-        }
-        return data;
-    }
-
-    // ============================================================
-    // ЗАГРУЗКА ДАННЫХ
-    // ============================================================
-
-    async function loadData() {
-        try {
-            // Получаем пользователя из Telegram
-            const tgUser = getTelegramUser();
-            if (!tgUser) {
-                showToast('⚠️ Ошибка: не удалось получить данные пользователя');
-                return;
-            }
-
-            state.tgUser = tgUser;
-
-            // Загружаем данные пользователя
-            const userData = await getUserData(tgUser.id);
-            if (!userData) {
-                showToast('❌ Ошибка загрузки данных');
-                return;
-            }
-
-            // Загружаем персонажей
-            const characters = await getUserCharacters(userData.id);
-
-            // Загружаем магазин
-            const shopItems = await getShopItems();
-
-            // Загружаем покупки
-            const purchases = await getUserPurchases(userData.id);
-
-            // Формируем state
-            state.user = {
-                id: userData.id,
-                telegram_id: userData.telegram_id,
-                name: userData.display_name || tgUser.first_name,
-                nick: userData.game_nick || '@' + (tgUser.username || 'player'),
-                coins: userData.coins || 0,
-                exp: userData.exp || 0,
-                gems: userData.gems || 0,
-                tokens: userData.tokens || 0,
-                trophies: 0,
-                battles: userData.total_battles || 0,
-                wins: userData.total_wins || 0,
-                elo: userData.current_elo || 0,
-                luckBlocks: userData.luck_block_count || 3,
-                dailyLb: userData.daily_lucky_blocks || 0,
-                selectedChar: userData.selected_character || 'Мейдж',
-                chars: characters,
-                purchases: purchases,
-                isPartner: userData.is_partner || false,
-                partnerEmojiId: userData.partner_emoji_id || '5861786805988234706'
-            };
-
-            // Считаем общие трофеи
-            let totalTrophies = 0;
-            for (const [name, data] of Object.entries(state.user.chars)) {
-                totalTrophies += data.trophies || 0;
-            }
-            state.user.trophies = totalTrophies;
-
-            state.shopItems = shopItems;
-            state.isOwner = (tgUser.id === OWNER_ID);
-            state.loaded = true;
-
-            // Скрываем загрузку
-            document.getElementById('loadingIndicator').style.display = 'none';
-
-            // Показываем страницы
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelector('.page#page-profile').classList.add('active');
-
-            // Рендерим
-            renderAll();
-
-            // Показываем админ-панель если владелец
-            if (state.isOwner) {
-                document.getElementById('adminPanel').style.display = 'block';
-                adminLog('👑 Админ-панель активирована');
-            }
-
-            showToast('✅ Данные загружены!');
-
-        } catch (err) {
-            console.error('Load error:', err);
-            showToast('❌ Ошибка загрузки данных');
-        }
-    }
-
-    // ============================================================
-    // RENDER ФУНКЦИИ
-    // ============================================================
-
-    function renderAll() {
-        renderProfile();
-        renderChars();
-        renderShop();
-        renderLucky();
-        renderSettings();
-    }
-
-    function renderProfile() {
-        const u = state.user;
-        if (!u) return;
-        document.getElementById('displayName').textContent = u.name || 'Игрок';
-        document.getElementById('gameNick').textContent = u.nick || '@player';
-        document.getElementById('statCoins').textContent = u.coins || 0;
-        document.getElementById('statGems').textContent = u.gems || 0;
-        document.getElementById('statTrophies').textContent = u.trophies || 0;
-        document.getElementById('statElo').textContent = u.elo || 0;
-
-        const char = u.chars[u.selectedChar];
-        document.getElementById('currentChar').textContent = u.selectedChar || 'Мейдж';
-        document.getElementById('currentCharLevel').textContent = char ? char.level : 1;
-        const rarity = CHARACTERS_DATA[u.selectedChar]?.rarity || 'Обычный';
-        document.getElementById('currentCharRarity').textContent = rarity;
-        document.getElementById('statBattlesWin').textContent = `${u.battles || 0} / ${u.wins || 0}`;
-    }
-
-    function renderChars() {
-        const grid = document.getElementById('charsGrid');
-        grid.innerHTML = '';
-        const u = state.user;
-        if (!u) return;
-
-        for (const [name, data] of Object.entries(CHARACTERS_DATA)) {
-            const charData = u.chars[name];
-            const owned = charData?.owned !== undefined ? charData.owned : !!charData;
-            const level = charData?.level || 1;
-            const isSelected = u.selectedChar === name;
-
-            const div = document.createElement('div');
-            div.className = `char-card ${owned ? '' : 'locked'} ${isSelected ? 'selected' : ''}`;
-
-            const canUpgrade = owned && level < 9;
-            const cost = LEVEL_UP_COSTS[level + 1];
-
-            div.innerHTML = `
-                <div class="char-name">${name}</div>
-                <div class="char-rarity">${data.rarity} ${owned ? '✅' : '🔒'}</div>
-                <div class="char-level">${owned ? 'Ур. ' + level : 'Не разблок.'}</div>
-                ${owned && canUpgrade && cost ? `
-                    <div class="char-level-up" onclick="event.stopPropagation(); upgradeChar('${name}')">
-                        ⬆ ${cost.coins}🪙 ${cost.exp}⭐
-                    </div>
-                ` : ''}
-                ${owned && level >= 9 ? `<div style="font-size:9px;color:#ffd700;margin-top:2px;">⭐ MAX</div>` : ''}
-            `;
-            div.onclick = () => selectChar(name);
-            grid.appendChild(div);
-        }
-    }
-
-    function renderShop() {
-        const container = document.getElementById('shopItems');
-        container.innerHTML = '';
-        const u = state.user;
-        if (!u) return;
-
-        const items = state.shopItems || [];
-        if (items.length === 0) {
-            container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 20px;">Магазин пуст</div>';
-            return;
-        }
-
-        for (const item of items) {
-            const bought = u.purchases?.includes(item.id) || false;
-            const div = document.createElement('div');
-            div.className = 'shop-item';
-            const priceLabel = item.currency === 'gems' ? '💎' : item.currency === 'tokens' ? '🪙' : '🪙';
-            div.innerHTML = `
-                <div class="shop-item-info">
-                    <div class="shop-item-name">${item.name || 'Товар'}</div>
-                    <div class="shop-item-desc">${item.description || item.item_type || ''}</div>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span class="shop-item-price">${priceLabel} ${item.price || 0}</span>
-                    <button class="shop-btn ${bought ? 'bought' : ''}" onclick="buyItem(${item.id})">
-                        ${bought ? '✅' : 'Купить'}
-                    </button>
-                </div>
-            `;
-            container.appendChild(div);
-        }
-    }
-
-    function renderLucky() {
-        const u = state.user;
-        if (!u) return;
-        document.getElementById('lbCount').textContent = u.luckBlocks || 0;
-        document.getElementById('dailyLb').textContent = u.dailyLb || 0;
-        const btn = document.getElementById('openLbBtn');
-        btn.disabled = (u.luckBlocks || 0) <= 0 || (u.dailyLb || 0) >= 15;
-    }
-
-    function renderSettings() {
-        const u = state.user;
-        if (!u) return;
-        document.getElementById('nickInput').value = (u.nick || '').replace('@', '');
-        document.querySelectorAll('.color-option').forEach(el => {
-            el.classList.toggle('active', el.dataset.color === state.color);
-            const check = el.querySelector('.check');
-            if (check) check.style.display = el.dataset.color === state.color ? 'block' : 'none';
-        });
-        applyColor(state.color);
-    }
-
-    function applyColor(color) {
-        document.documentElement.style.setProperty('--neon-color', color);
-        const app = document.getElementById('app');
-        app.style.setProperty('--neon-glow', `0 0 40px ${color}55, 0 0 80px ${color}22`);
-    }
-
-    // ============================================================
-    // ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ
-    // ============================================================
-
-    async function selectChar(name) {
-        if (!state.user.chars[name]?.owned && !state.user.chars[name]) {
-            showToast('❌ Персонаж не разблокирован!');
-            return;
-        }
-        state.user.selectedChar = name;
-        await updateUser(state.user.telegram_id, { selected_character: name });
-        renderAll();
-        showToast('✅ Выбран ' + name);
-    }
-
-    async function upgradeChar(name) {
-        const u = state.user;
-        const charData = u.chars[name];
-        if (!charData?.owned) {
-            showToast('❌ Персонаж не разблокирован!');
-            return;
-        }
-        if (charData.level >= 9) {
-            showToast('⭐ Максимальный уровень!');
-            return;
-        }
-        const nextLevel = charData.level + 1;
-        const cost = LEVEL_UP_COSTS[nextLevel];
-        if (!cost) {
-            showToast('❌ Ошибка данных');
-            return;
-        }
-        if (u.coins < cost.coins) {
-            showToast(`❌ Не хватает монет! Нужно: ${cost.coins}`);
-            return;
-        }
-        if (u.exp < cost.exp) {
-            showToast(`❌ Не хватает опыта! Нужно: ${cost.exp}`);
-            return;
-        }
-
-        // Обновляем в БД
-        const success = await updateUser(u.telegram_id, {
-            coins: u.coins - cost.coins,
-            exp: u.exp - cost.exp
-        });
-
-        if (!success) {
-            showToast('❌ Ошибка обновления');
-            return;
-        }
-
-        // Обновляем уровень персонажа
-        const { error } = await supabase
-            .from('user_characters')
-            .update({ level: nextLevel })
-            .eq('user_id', u.id)
-            .eq('character_name', name);
-
-        if (error) {
-            showToast('❌ Ошибка обновления уровня');
-            return;
-        }
-
-        u.coins -= cost.coins;
-        u.exp -= cost.exp;
-        charData.level = nextLevel;
-
-        renderAll();
-        showToast(`⬆ ${name} повышен до ${nextLevel} уровня!`);
-    }
-
-    async function buyItem(id) {
-        const u = state.user;
-        const item = state.shopItems.find(i => i.id === id);
-        if (!item) {
-            showToast('❌ Товар не найден');
-            return;
-        }
-        if (u.purchases?.includes(id)) {
-            showToast('Уже куплено!');
-            return;
-        }
-
-        const balance = item.currency === 'gems' ? u.gems :
-            item.currency === 'tokens' ? u.tokens : u.coins;
-
-        if (balance < item.price) {
-            showToast('❌ Не хватает ' + (item.currency === 'gems' ? 'гемов' : item.currency === 'tokens' ? 'жетонов' : 'монет'));
-            return;
-        }
-
-        // Списываем средства
-        const updates = {};
-        if (item.currency === 'gems') {
-            updates.gems = u.gems - item.price;
-            u.gems -= item.price;
-        } else if (item.currency === 'tokens') {
-            updates.tokens = u.tokens - item.price;
-            u.tokens -= item.price;
-        } else {
-            updates.coins = u.coins - item.price;
-            u.coins -= item.price;
-        }
-
-        await updateUser(u.telegram_id, updates);
-
-        // Добавляем покупку
-        await addPurchase(u.id, id);
-        if (!u.purchases) u.purchases = [];
-        u.purchases.push(id);
-
-        // Применяем награду
-        if (item.type === 'coins') {
-            u.coins += item.value;
-            await updateUser(u.telegram_id, { coins: u.coins });
-        } else if (item.type === 'gems') {
-            u.gems += item.value;
-            await updateUser(u.telegram_id, { gems: u.gems });
-        } else if (item.type === 'tokens') {
-            u.tokens += item.value;
-            await updateUser(u.telegram_id, { tokens: u.tokens });
-        } else if (item.type === 'exp') {
-            u.exp += item.value;
-            await updateUser(u.telegram_id, { exp: u.exp });
-            showToast('✨ +' + item.value + ' опыта');
-        } else if (item.type === 'lucky_blocks') {
-            u.luckBlocks += item.value;
-            await updateUser(u.telegram_id, { luck_block_count: u.luckBlocks });
-            showToast('🎁 +' + item.value + ' лаки-блок');
-        } else if (item.type === 'character') {
-            if (!u.chars[item.value]) {
-                u.chars[item.value] = { level: 1, owned: true };
-                await addCharacter(u.id, item.value);
-            } else {
-                u.chars[item.value].owned = true;
-                await supabase
-                    .from('user_characters')
-                    .update({ owned: true })
-                    .eq('user_id', u.id)
-                    .eq('character_name', item.value);
-            }
-            showToast('🎉 Получен ' + item.value);
-        }
-
-        renderAll();
-        showToast('✅ Покупка успешна!');
-    }
-
-    async function openLuckyBlock() {
-        const u = state.user;
-        if (!u || u.luckBlocks <= 0) {
-            showToast('❌ Нет лаки-блоков!');
-            return;
-        }
-        if (u.dailyLb >= 15) {
-            showToast('❌ Дневной лимит (15) исчерпан!');
-            return;
-        }
-
-        // Открываем блок
-        u.luckBlocks--;
-        u.dailyLb++;
-
-        // Сохраняем в БД
-        await updateUser(u.telegram_id, {
-            luck_block_count: u.luckBlocks,
-            daily_lucky_blocks: u.dailyLb,
-            last_lucky_block_date: new Date().toISOString().split('T')[0]
-        });
-
-        // Генерируем награду
-        const rewards = [
-            { emoji: '🪙', label: 'Монеты', value: () => Math.floor(Math.random() * 100) + 50, type: 'coins' },
-            { emoji: '⭐', label: 'Опыт', value: () => Math.floor(Math.random() * 80) + 30, type: 'exp' },
-            { emoji: '💎', label: 'Гемы', value: () => Math.floor(Math.random() * 5) + 1, type: 'gems' },
-            { emoji: '🎭', label: 'Персонаж', value: () => {
-                    const locked = Object.entries(u.chars).filter(([k, v]) => !v.owned);
-                    if (locked.length === 0) return null;
-                    return locked[Math.floor(Math.random() * locked.length)][0];
-                }, type: 'character' },
-        ];
-
-        const reward = rewards[Math.floor(Math.random() * rewards.length)];
-        let result = reward.value();
-
-        if (reward.type === 'coins') {
-            u.coins += result;
-            await updateUser(u.telegram_id, { coins: u.coins });
-            showReward('🪙', '+' + result + ' монет', 'Отличный улов! 💰');
-        } else if (reward.type === 'exp') {
-            u.exp += result;
-            await updateUser(u.telegram_id, { exp: u.exp });
-            showReward('⭐', '+' + result + ' опыта', 'Продолжай в том же духе! ⚡');
-        } else if (reward.type === 'gems') {
-            u.gems += result;
-            await updateUser(u.telegram_id, { gems: u.gems });
-            showReward('💎', '+' + result + ' гемов', 'Драгоценная находка! ✨');
-        } else if (reward.type === 'character' && result) {
-            if (!u.chars[result]) {
-                u.chars[result] = { level: 1, owned: true };
-                await addCharacter(u.id, result);
-            } else {
-                u.chars[result].owned = true;
-                await supabase
-                    .from('user_characters')
-                    .update({ owned: true })
-                    .eq('user_id', u.id)
-                    .eq('character_name', result);
-            }
-            showReward('🎭', 'Новый персонаж!', result + ' разблокирован! 🎉');
-        } else {
-            showReward('🎁', 'Удача!', 'Ты получил награду!');
-        }
-
-        renderAll();
-    }
-
-    // ============================================================
-    // НАСТРОЙКИ
-    // ============================================================
-
-    async function saveSettings() {
-        const nick = document.getElementById('nickInput').value.trim();
-        if (nick) {
-            state.user.nick = '@' + nick;
-            await updateUser(state.user.telegram_id, { game_nick: nick });
-            renderProfile();
-            showToast('✅ Ник изменён!');
-        }
-    }
-
-    // ============================================================
-    // АДМИН-ФУНКЦИИ
-    // ============================================================
-
-    function adminLog(msg) {
-        const log = document.getElementById('adminLog');
-        const time = new Date().toLocaleTimeString();
-        log.innerHTML += `[${time}] ${msg}\n`;
-        log.scrollTop = log.scrollHeight;
-    }
-
-    async function adminRefresh() {
-        adminLog('🔄 Выполнение /refresh (сброс сезона)...');
-        const u = state.user;
-
-        // Сбрасываем трофеи
-        let totalReset = 0;
-        for (const [name, data] of Object.entries(u.chars)) {
-            if (data.owned && data.trophies > 1500) {
-                const old = data.trophies;
-                data.trophies = Math.max(0, old - 500);
-                totalReset += old - data.trophies;
-                u.tokens += old - data.trophies;
-                await supabase
-                    .from('user_characters')
-                    .update({ trophies: data.trophies })
-                    .eq('user_id', u.id)
-                    .eq('character_name', name);
-            }
-        }
-
-        u.elo = 0;
-        await updateUser(u.telegram_id, { current_elo: 0, tokens: u.tokens });
-
-        // Добавляем лаки-блоки за ранг
-        const rankBonus = Math.floor(u.elo / 100) * 2 + 2;
-        u.luckBlocks += rankBonus;
-        await updateUser(u.telegram_id, { luck_block_count: u.luckBlocks });
-
-        adminLog(`✅ Сброс выполнен! Сброшено ${totalReset} трофеев, выдано ${totalReset} жетонов, +${rankBonus} лаки-блоков`);
-        renderAll();
-        showToast('🔄 Сезон обновлён!');
-    }
-
-    async function adminAddOffer() {
-        const input = document.getElementById('adminInput');
-        const params = input.value.trim().split(' ');
-        if (params.length < 4) {
-            adminLog('❌ Использование: /add_offer <название> <тип> <количество> <цена> [валюта]');
-            adminLog('Пример: "Набор монет coins 500 10 gems"');
-            return;
-        }
-        const name = params.slice(0, -3).join(' ');
-        const type = params[params.length - 3];
-        const value = parseInt(params[params.length - 2]);
-        const price = parseInt(params[params.length - 1]);
-        const currency = params.length > 4 ? params[params.length] : 'gems';
-
-        if (!name || isNaN(value) || isNaN(price)) {
-            adminLog('❌ Неверные параметры!');
-            return;
-        }
-
-        const item = {
-            name: name,
-            description: `${type}: ${value}`,
-            item_type: type,
-            item_value: String(value),
-            price: price,
-            currency: currency,
-            category: 'Акции',
-            end_date: null,
-            is_purchased: false
-        };
-
-        const result = await addShopItem(item);
-        if (result) {
-            state.shopItems.push(result);
-            adminLog(`✅ Акция "${name}" добавлена! ID: ${result.id}`);
-            renderShop();
-            showToast('✅ Акция добавлена!');
-        } else {
-            adminLog('❌ Ошибка добавления акции');
-        }
-        input.value = '';
-    }
-
-    function adminAddCategory() {
-        const input = document.getElementById('adminInput');
-        const name = input.value.trim();
-        if (!name) {
-            adminLog('❌ Введите название категории');
-            return;
-        }
-        adminLog(`✅ Категория "${name}" создана! (только локально, для БД нужно добавить в таблицу)`);
-        input.value = '';
-        showToast('📁 Категория создана');
-    }
-
-    function adminDelCategory() {
-        const input = document.getElementById('adminInput');
-        const name = input.value.trim();
-        if (!name) {
-            adminLog('❌ Введите название категории для удаления');
-            return;
-        }
-        adminLog(`🗑️ Категория "${name}" удалена! (только локально)`);
-        input.value = '';
-        showToast('🗑️ Категория удалена');
-    }
-
-    async function adminSync() {
-        adminLog('🔄 Синхронизация с БД...');
-        await loadData();
-        adminLog('✅ Синхронизация завершена');
-        showToast('🔄 Данные обновлены');
-    }
-
-    // ============================================================
-    // TELEGRAM INTEGRATION
-    // ============================================================
-
-    function getTelegramUser() {
-        if (window.Telegram && window.Telegram.WebApp) {
-            const user = window.Telegram.WebApp.initDataUnsafe?.user;
-            if (user) {
-                return {
-                    id: user.id,
-                    username: user.username || 'player',
-                    first_name: user.first_name || 'Игрок',
-                    last_name: user.last_name || ''
-                };
-            }
-        }
-        // Для локальной разработки (заглушка)
-        return {
-            id: 123456789,
-            username: 'test_player',
-            first_name: 'Тестовый',
-            last_name: 'Игрок'
-        };
-    }
-
-    // ============================================================
-    // UI HELPERS
-    // ============================================================
-
-    function showToast(message) {
-        const existing = document.querySelector('.toast');
-        if (existing) existing.remove();
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(-50%) translateY(20px)';
-            setTimeout(() => toast.remove(), 400);
-        }, 2500);
-    }
-
-    function showReward(emoji, title, sub) {
-        document.getElementById('rewardEmoji').textContent = emoji;
-        document.getElementById('rewardTitle').textContent = title;
-        document.getElementById('rewardSub').textContent = sub;
-        document.getElementById('rewardOverlay').classList.add('show');
-    }
-
-    function closeReward() {
-        document.getElementById('rewardOverlay').classList.remove('show');
-    }
-
-    function refreshData() {
-        if (state.loaded) {
-            adminSync();
-        } else {
-            loadData();
-        }
-    }
-
-    // ============================================================
-    // NAVIGATION
-    // ============================================================
-
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (!state.loaded) return;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            const page = this.dataset.page;
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-' + page).classList.add('active');
-        });
-    });
-
-    // ============================================================
-    // COLOR SELECTION
-    // ============================================================
-
-    document.querySelectorAll('.color-option').forEach(el => {
-        el.addEventListener('click', function() {
-            document.querySelectorAll('.color-option').forEach(e => {
-                e.classList.remove('active');
-                const c = e.querySelector('.check');
-                if (c) c.style.display = 'none';
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                headers: {
+                    'X-Master-Key': MASTER_KEY
+                }
             });
-            this.classList.add('active');
-            const c = this.querySelector('.check');
-            if (c) c.style.display = 'block';
-            state.color = this.dataset.color;
-            applyColor(state.color);
-            showToast('🎨 Цвет изменён');
-        });
+            
+            if (!response.ok) {
+                console.error('Ошибка загрузки:', response.status);
+                return null;
+            }
+            
+            const result = await response.json();
+            return result.record;
+        } catch (err) {
+            console.error('Ошибка загрузки:', err);
+            return null;
+        }
+    },
+    
+    // Сохранение всех данных
+    async save(data) {
+        try {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': MASTER_KEY
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+                console.error('Ошибка сохранения:', response.status);
+                return null;
+            }
+            
+            return await response.json();
+        } catch (err) {
+            console.error('Ошибка сохранения:', err);
+            return null;
+        }
+    },
+    
+    // Получение пользователя
+    async getUser(telegramId) {
+        const data = await this.load();
+        if (!data || !data.users) return null;
+        return data.users[String(telegramId)] || null;
+    },
+    
+    // Сохранение пользователя
+    async saveUser(telegramId, userData) {
+        const data = await this.load() || { users: {}, shop: [], lastUpdate: new Date().toISOString() };
+        data.users[String(telegramId)] = userData;
+        data.lastUpdate = new Date().toISOString();
+        await this.save(data);
+        return true;
+    },
+    
+    // Получение магазина
+    async getShop() {
+        const data = await this.load();
+        return data?.shop || [];
+    },
+    
+    // Сохранение магазина
+    async saveShop(shopItems) {
+        const data = await this.load() || { users: {}, shop: [], lastUpdate: new Date().toISOString() };
+        data.shop = shopItems;
+        data.lastUpdate = new Date().toISOString();
+        await this.save(data);
+        return true;
+    },
+    
+    // Инициализация базы
+    async init() {
+        let data = await this.load();
+        if (!data) {
+            // Создаём начальную базу
+            data = {
+                users: {},
+                shop: [
+                    { id: 1, name: 'Набор монет', desc: '+500 монет', price: 10, currency: 'gems', type: 'coins', value: 500 },
+                    { id: 2, name: 'Набор опыта', desc: '+300 опыта', price: 15, currency: 'gems', type: 'exp', value: 300 },
+                    { id: 3, name: 'Лаки-блок', desc: '+1 лаки-блок', price: 5, currency: 'gems', type: 'lucky_blocks', value: 1 },
+                    { id: 4, name: 'Персонаж: Трики', desc: 'Эпический персонаж', price: 50, currency: 'gems', type: 'character', value: 'Трики' },
+                    { id: 5, name: 'Персонаж: Сталин', desc: 'Легендарный персонаж', price: 200, currency: 'gems', type: 'character', value: 'Сталин' }
+                ],
+                lastUpdate: new Date().toISOString()
+            };
+            await this.save(data);
+            console.log('✅ База данных инициализирована!');
+        }
+        return data;
+    }
+};
+
+// ============================================================
+// ДАННЫЕ ПЕРСОНАЖЕЙ
+// ============================================================
+
+const CHARACTERS_DATA = {
+    "Мейдж": { rarity: "Обычный", ult: "Следующие атаки +15% урона" },
+    "Глитч": { rarity: "Обычный", ult: "Крадёт заряды ульты" },
+    "Вибл": { rarity: "Обычный", ult: "Ставит стены на ульту" },
+    "Миззи": { rarity: "Обычный", ult: "Крадёт все баффы" },
+    "Рэтч": { rarity: "Редкий", ult: "Повышает защиту на 2.5%" },
+    "Оми": { rarity: "Редкий", ult: "Сбрасывает баффы" },
+    "Пайнэ": { rarity: "Редкий", ult: "Даёт случайный бафф" },
+    "Трики": { rarity: "Эпический", ult: "Гарантированный промах" },
+    "Блитцо": { rarity: "Эпический", ult: "+5% к макс. HP" },
+    "Мантикор": { rarity: "Эпический", ult: "Сбрасывает ульту" },
+    "Глим": { rarity: "Эпический", ult: "Снижает урон на 50%" },
+    "Фламшен": { rarity: "Мифический", ult: "Отражает 5% урона" },
+    "Линкс": { rarity: "Мифический", ult: "Гарантированное попадание" },
+    "Сталин": { rarity: "Легендарный", ult: "Призывает солдата" },
+    "Дринг": { rarity: "Мифический", ult: "Ставит метку" }
+};
+
+const LEVEL_UP_COSTS = {
+    2: { coins: 75, exp: 40 },
+    3: { coins: 200, exp: 120 },
+    4: { coins: 480, exp: 300 },
+    5: { coins: 1100, exp: 700 },
+    6: { coins: 2350, exp: 1550 },
+    7: { coins: 4900, exp: 3275 },
+    8: { coins: 10000, exp: 6800 },
+    9: { coins: 22000, exp: 14000 }
+};
+
+// ============================================================
+// СОСТОЯНИЕ
+// ============================================================
+
+let state = {
+    user: null,
+    tgUser: null,
+    isOwner: false,
+    color: "#00f0ff",
+    shopItems: [],
+    loaded: false
+};
+
+// ============================================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ============================================================
+
+function getTelegramUser() {
+    if (window.Telegram && window.Telegram.WebApp) {
+        const user = window.Telegram.WebApp.initDataUnsafe?.user;
+        if (user) {
+            return {
+                id: user.id,
+                username: user.username || 'player',
+                first_name: user.first_name || 'Игрок',
+                last_name: user.last_name || ''
+            };
+        }
+    }
+    // Для локальной разработки
+    return {
+        id: Math.floor(Math.random() * 1000000),
+        username: 'test_player',
+        first_name: 'Тестовый',
+        last_name: 'Игрок'
+    };
+}
+
+function createNewUser(tgUser) {
+    return {
+        id: tgUser.id,
+        telegram_id: tgUser.id,
+        username: tgUser.username || 'player',
+        display_name: tgUser.first_name || 'Игрок',
+        game_nick: 'Игрок_' + Math.floor(Math.random() * 10000),
+        coins: 100,
+        exp: 0,
+        gems: 10,
+        tokens: 0,
+        total_battles: 0,
+        total_wins: 0,
+        total_losses: 0,
+        current_elo: 0,
+        max_elo: 0,
+        selected_character: 'Мейдж',
+        luck_block_count: 3,
+        daily_lucky_blocks: 0,
+        last_lucky_block_date: new Date().toISOString().split('T')[0],
+        chars: {
+            'Мейдж': { level: 1, trophies: 0, owned: true },
+            'Глитч': { level: 1, trophies: 0, owned: false },
+            'Вибл': { level: 1, trophies: 0, owned: false },
+            'Миззи': { level: 1, trophies: 0, owned: false },
+            'Рэтч': { level: 1, trophies: 0, owned: false },
+            'Оми': { level: 1, trophies: 0, owned: false },
+            'Пайнэ': { level: 1, trophies: 0, owned: false },
+            'Трики': { level: 1, trophies: 0, owned: false },
+            'Блитцо': { level: 1, trophies: 0, owned: false },
+            'Мантикор': { level: 1, trophies: 0, owned: false },
+            'Глим': { level: 1, trophies: 0, owned: false },
+            'Фламшен': { level: 1, trophies: 0, owned: false },
+            'Линкс': { level: 1, trophies: 0, owned: false },
+            'Сталин': { level: 1, trophies: 0, owned: false },
+            'Дринг': { level: 1, trophies: 0, owned: false }
+        },
+        purchases: [],
+        created_at: new Date().toISOString(),
+        last_seen: new Date().toISOString()
+    };
+}
+
+function showToast(message) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
+        setTimeout(() => toast.remove(), 400);
+    }, 2500);
+}
+
+function showReward(emoji, title, sub) {
+    document.getElementById('rewardEmoji').textContent = emoji;
+    document.getElementById('rewardTitle').textContent = title;
+    document.getElementById('rewardSub').textContent = sub;
+    document.getElementById('rewardOverlay').classList.add('show');
+}
+
+function closeReward() {
+    document.getElementById('rewardOverlay').classList.remove('show');
+}
+
+// ============================================================
+// ЗАГРУЗКА ДАННЫХ
+// ============================================================
+
+async function loadData() {
+    try {
+        // Инициализируем базу
+        await DB.init();
+        
+        const tgUser = getTelegramUser();
+        state.tgUser = tgUser;
+        
+        if (!tgUser) {
+            showToast('⚠️ Ошибка получения пользователя');
+            return;
+        }
+        
+        // Загружаем пользователя
+        let userData = await DB.getUser(tgUser.id);
+        
+        if (!userData) {
+            // Создаём нового пользователя
+            userData = createNewUser(tgUser);
+            await DB.saveUser(tgUser.id, userData);
+            console.log('✅ Создан новый пользователь:', tgUser.id);
+        }
+        
+        state.user = userData;
+        
+        // Загружаем магазин
+        state.shopItems = await DB.getShop();
+        
+        // Если магазин пуст - создаём стандартный
+        if (!state.shopItems || state.shopItems.length === 0) {
+            state.shopItems = [
+                { id: 1, name: 'Набор монет', desc: '+500 монет', price: 10, currency: 'gems', type: 'coins', value: 500 },
+                { id: 2, name: 'Набор опыта', desc: '+300 опыта', price: 15, currency: 'gems', type: 'exp', value: 300 },
+                { id: 3, name: 'Лаки-блок', desc: '+1 лаки-блок', price: 5, currency: 'gems', type: 'lucky_blocks', value: 1 },
+                { id: 4, name: 'Персонаж: Трики', desc: 'Эпический персонаж', price: 50, currency: 'gems', type: 'character', value: 'Трики' },
+                { id: 5, name: 'Персонаж: Сталин', desc: 'Легендарный персонаж', price: 200, currency: 'gems', type: 'character', value: 'Сталин' }
+            ];
+            await DB.saveShop(state.shopItems);
+        }
+        
+        state.loaded = true;
+        
+        // Скрываем загрузку
+        const loading = document.getElementById('loadingIndicator');
+        if (loading) loading.style.display = 'none';
+        
+        // Показываем страницы
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const profilePage = document.getElementById('page-profile');
+        if (profilePage) profilePage.classList.add('active');
+        
+        renderAll();
+        showToast('✅ Данные загружены!');
+        
+    } catch (err) {
+        console.error('Ошибка загрузки:', err);
+        showToast('❌ Ошибка загрузки данных');
+    }
+}
+
+// ============================================================
+// СОХРАНЕНИЕ ДАННЫХ
+// ============================================================
+
+async function saveData() {
+    try {
+        if (state.user) {
+            await DB.saveUser(state.user.telegram_id, state.user);
+        }
+        if (state.shopItems) {
+            await DB.saveShop(state.shopItems);
+        }
+        return true;
+    } catch (err) {
+        console.error('Ошибка сохранения:', err);
+        return false;
+    }
+}
+
+// ============================================================
+// RENDER ФУНКЦИИ
+// ============================================================
+
+function renderAll() {
+    renderProfile();
+    renderChars();
+    renderShop();
+    renderLucky();
+    renderSettings();
+}
+
+function renderProfile() {
+    const u = state.user;
+    if (!u) return;
+    document.getElementById('displayName').textContent = u.display_name || 'Игрок';
+    document.getElementById('gameNick').textContent = u.game_nick || '@player';
+    document.getElementById('statCoins').textContent = u.coins || 0;
+    document.getElementById('statGems').textContent = u.gems || 0;
+    document.getElementById('statTrophies').textContent = u.trophies || 0;
+    document.getElementById('statElo').textContent = u.current_elo || 0;
+    document.getElementById('statBattlesWin').textContent = `${u.total_battles || 0} / ${u.total_wins || 0}`;
+
+    const char = u.chars?.[u.selected_character];
+    document.getElementById('currentChar').textContent = u.selected_character || 'Мейдж';
+    document.getElementById('currentCharLevel').textContent = char?.level || 1;
+    const rarity = CHARACTERS_DATA[u.selected_character]?.rarity || 'Обычный';
+    document.getElementById('currentCharRarity').textContent = rarity;
+}
+
+function renderChars() {
+    const grid = document.getElementById('charsGrid');
+    grid.innerHTML = '';
+    const u = state.user;
+    if (!u) return;
+
+    for (const [name, data] of Object.entries(CHARACTERS_DATA)) {
+        const charData = u.chars?.[name];
+        const owned = charData?.owned || false;
+        const level = charData?.level || 1;
+        const isSelected = u.selected_character === name;
+
+        const div = document.createElement('div');
+        div.className = `char-card ${owned ? '' : 'locked'} ${isSelected ? 'selected' : ''}`;
+
+        const canUpgrade = owned && level < 9;
+        const cost = LEVEL_UP_COSTS[level + 1];
+
+        div.innerHTML = `
+            <div class="char-name">${name}</div>
+            <div class="char-rarity">${data.rarity} ${owned ? '✅' : '🔒'}</div>
+            <div class="char-level">${owned ? 'Ур. ' + level : 'Не разблок.'}</div>
+            ${owned && canUpgrade && cost ? `
+                <div class="char-level-up" onclick="event.stopPropagation(); upgradeChar('${name}')">
+                    ⬆ ${cost.coins}🪙 ${cost.exp}⭐
+                </div>
+            ` : ''}
+            ${owned && level >= 9 ? `<div style="font-size:9px;color:#ffd700;margin-top:2px;">⭐ MAX</div>` : ''}
+        `;
+        div.onclick = () => selectChar(name);
+        grid.appendChild(div);
+    }
+}
+
+function renderShop() {
+    const container = document.getElementById('shopItems');
+    container.innerHTML = '';
+    const u = state.user;
+    if (!u) return;
+
+    const items = state.shopItems || [];
+    if (items.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 20px;">Магазин пуст</div>';
+        return;
+    }
+
+    for (const item of items) {
+        const bought = u.purchases?.includes(item.id) || false;
+        const div = document.createElement('div');
+        div.className = 'shop-item';
+        const priceLabel = item.currency === 'gems' ? '💎' : '🪙';
+        div.innerHTML = `
+            <div class="shop-item-info">
+                <div class="shop-item-name">${item.name}</div>
+                <div class="shop-item-desc">${item.desc || ''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="shop-item-price">${priceLabel} ${item.price}</span>
+                <button class="shop-btn ${bought ? 'bought' : ''}" onclick="buyItem(${item.id})">
+                    ${bought ? '✅' : 'Купить'}
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+}
+
+function renderLucky() {
+    const u = state.user;
+    if (!u) return;
+    document.getElementById('lbCount').textContent = u.luck_block_count || 0;
+    document.getElementById('dailyLb').textContent = u.daily_lucky_blocks || 0;
+    const btn = document.getElementById('openLbBtn');
+    btn.disabled = (u.luck_block_count || 0) <= 0 || (u.daily_lucky_blocks || 0) >= 15;
+}
+
+function renderSettings() {
+    const u = state.user;
+    if (!u) return;
+    document.getElementById('nickInput').value = (u.game_nick || '').replace('@', '');
+    document.querySelectorAll('.color-option').forEach(el => {
+        el.classList.toggle('active', el.dataset.color === state.color);
+        const check = el.querySelector('.check');
+        if (check) check.style.display = el.dataset.color === state.color ? 'block' : 'none';
     });
+    applyColor(state.color);
+}
 
-    // ============================================================
-    // ADMIN TOGGLE (двойной клик по логотипу)
-    // ============================================================
+function applyColor(color) {
+    document.documentElement.style.setProperty('--neon-color', color);
+    const app = document.getElementById('app');
+    app.style.setProperty('--neon-glow', `0 0 40px ${color}55, 0 0 80px ${color}22`);
+}
 
-    document.getElementById('logoTitle').addEventListener('dblclick', function() {
-        if (!state.loaded) return;
-        state.isOwner = !state.isOwner;
-        document.getElementById('adminPanel').style.display = state.isOwner ? 'block' : 'none';
-        if (state.isOwner) {
-            adminLog('👑 Админ-панель активирована');
-            showToast('👑 Режим админа');
+// ============================================================
+// ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ
+// ============================================================
+
+async function selectChar(name) {
+    if (!state.user.chars?.[name]?.owned) {
+        showToast('❌ Персонаж не разблокирован!');
+        return;
+    }
+    state.user.selected_character = name;
+    await saveData();
+    renderAll();
+    showToast('✅ Выбран ' + name);
+}
+
+async function upgradeChar(name) {
+    const u = state.user;
+    const charData = u.chars?.[name];
+    if (!charData?.owned) {
+        showToast('❌ Персонаж не разблокирован!');
+        return;
+    }
+    if (charData.level >= 9) {
+        showToast('⭐ Максимальный уровень!');
+        return;
+    }
+    const nextLevel = charData.level + 1;
+    const cost = LEVEL_UP_COSTS[nextLevel];
+    if (!cost) {
+        showToast('❌ Ошибка данных');
+        return;
+    }
+    if (u.coins < cost.coins) {
+        showToast(`❌ Не хватает монет! Нужно: ${cost.coins}`);
+        return;
+    }
+    if (u.exp < cost.exp) {
+        showToast(`❌ Не хватает опыта! Нужно: ${cost.exp}`);
+        return;
+    }
+
+    u.coins -= cost.coins;
+    u.exp -= cost.exp;
+    charData.level = nextLevel;
+
+    await saveData();
+    renderAll();
+    showToast(`⬆ ${name} повышен до ${nextLevel} уровня!`);
+}
+
+async function buyItem(id) {
+    const u = state.user;
+    const item = state.shopItems.find(i => i.id === id);
+    if (!item) {
+        showToast('❌ Товар не найден');
+        return;
+    }
+    if (u.purchases?.includes(id)) {
+        showToast('Уже куплено!');
+        return;
+    }
+
+    const balance = item.currency === 'gems' ? u.gems :
+                    item.currency === 'tokens' ? u.tokens : u.coins;
+
+    if (balance < item.price) {
+        showToast('❌ Не хватает ' + (item.currency === 'gems' ? 'гемов' : item.currency === 'tokens' ? 'жетонов' : 'монет'));
+        return;
+    }
+
+    // Списываем средства
+    if (item.currency === 'gems') u.gems -= item.price;
+    else if (item.currency === 'tokens') u.tokens -= item.price;
+    else u.coins -= item.price;
+
+    if (!u.purchases) u.purchases = [];
+    u.purchases.push(id);
+
+    // Применяем награду
+    if (item.type === 'coins') {
+        u.coins += item.value;
+    } else if (item.type === 'gems') {
+        u.gems += item.value;
+    } else if (item.type === 'tokens') {
+        u.tokens += item.value;
+    } else if (item.type === 'exp') {
+        u.exp += item.value;
+        showToast('✨ +' + item.value + ' опыта');
+    } else if (item.type === 'lucky_blocks') {
+        u.luck_block_count += item.value;
+        showToast('🎁 +' + item.value + ' лаки-блок');
+    } else if (item.type === 'character') {
+        if (!u.chars[item.value]) {
+            u.chars[item.value] = { level: 1, owned: true };
         } else {
-            showToast('👤 Режим игрока');
+            u.chars[item.value].owned = true;
         }
+        showToast('🎉 Получен ' + item.value);
+    }
+
+    await saveData();
+    renderAll();
+    showToast('✅ Покупка успешна!');
+}
+
+async function openLuckyBlock() {
+    const u = state.user;
+    if (!u || u.luck_block_count <= 0) {
+        showToast('❌ Нет лаки-блоков!');
+        return;
+    }
+    if (u.daily_lucky_blocks >= 15) {
+        showToast('❌ Дневной лимит (15) исчерпан!');
+        return;
+    }
+
+    u.luck_block_count--;
+    u.daily_lucky_blocks++;
+
+    // Генерируем награду
+    const rewards = [
+        { emoji: '🪙', label: 'Монеты', value: () => Math.floor(Math.random() * 100) + 50, type: 'coins' },
+        { emoji: '⭐', label: 'Опыт', value: () => Math.floor(Math.random() * 80) + 30, type: 'exp' },
+        { emoji: '💎', label: 'Гемы', value: () => Math.floor(Math.random() * 5) + 1, type: 'gems' },
+        { emoji: '🎭', label: 'Персонаж', value: () => {
+            const locked = Object.entries(u.chars).filter(([k, v]) => !v.owned);
+            if (locked.length === 0) return null;
+            return locked[Math.floor(Math.random() * locked.length)][0];
+        }, type: 'character' },
+    ];
+
+    const reward = rewards[Math.floor(Math.random() * rewards.length)];
+    let result = reward.value();
+
+    if (reward.type === 'coins') {
+        u.coins += result;
+        showReward('🪙', '+' + result + ' монет', 'Отличный улов! 💰');
+    } else if (reward.type === 'exp') {
+        u.exp += result;
+        showReward('⭐', '+' + result + ' опыта', 'Продолжай в том же духе! ⚡');
+    } else if (reward.type === 'gems') {
+        u.gems += result;
+        showReward('💎', '+' + result + ' гемов', 'Драгоценная находка! ✨');
+    } else if (reward.type === 'character' && result) {
+        if (!u.chars[result]) {
+            u.chars[result] = { level: 1, owned: true };
+        } else {
+            u.chars[result].owned = true;
+        }
+        showReward('🎭', 'Новый персонаж!', result + ' разблокирован! 🎉');
+    } else {
+        showReward('🎁', 'Удача!', 'Ты получил награду!');
+    }
+
+    await saveData();
+    renderAll();
+}
+
+// ============================================================
+// НАСТРОЙКИ
+// ============================================================
+
+async function saveSettings() {
+    const nick = document.getElementById('nickInput').value.trim();
+    if (nick) {
+        state.user.game_nick = nick;
+        await saveData();
+        renderProfile();
+        showToast('✅ Ник изменён!');
+    }
+}
+
+// ============================================================
+// АДМИН-ФУНКЦИИ
+// ============================================================
+
+function adminLog(msg) {
+    const log = document.getElementById('adminLog');
+    if (!log) return;
+    const time = new Date().toLocaleTimeString();
+    log.innerHTML += `[${time}] ${msg}\n`;
+    log.scrollTop = log.scrollHeight;
+}
+
+async function adminRefresh() {
+    adminLog('🔄 Выполнение /refresh (сброс сезона)...');
+    const u = state.user;
+
+    // Сбрасываем трофеи
+    let totalReset = 0;
+    for (const [name, data] of Object.entries(u.chars || {})) {
+        if (data.owned && data.trophies > 1500) {
+            const old = data.trophies;
+            data.trophies = Math.max(0, old - 500);
+            totalReset += old - data.trophies;
+            u.tokens += old - data.trophies;
+        }
+    }
+
+    u.current_elo = 0;
+    const rankBonus = Math.floor(u.current_elo / 100) * 2 + 2;
+    u.luck_block_count += rankBonus;
+
+    await saveData();
+    adminLog(`✅ Сброс выполнен! Сброшено ${totalReset} трофеев, +${rankBonus} лаки-блоков`);
+    renderAll();
+    showToast('🔄 Сезон обновлён!');
+}
+
+async function adminAddOffer() {
+    const input = document.getElementById('adminInput');
+    if (!input) return;
+    const params = input.value.trim().split(' ');
+    if (params.length < 4) {
+        adminLog('❌ Использование: /add_offer <название> <тип> <количество> <цена> [валюта]');
+        adminLog('Пример: "Набор монет coins 500 10 gems"');
+        return;
+    }
+    const name = params.slice(0, -3).join(' ');
+    const type = params[params.length - 3];
+    const value = parseInt(params[params.length - 2]);
+    const price = parseInt(params[params.length - 1]);
+    const currency = params.length > 4 ? params[params.length] : 'gems';
+
+    if (!name || isNaN(value) || isNaN(price)) {
+        adminLog('❌ Неверные параметры!');
+        return;
+    }
+
+    const newId = state.shopItems.length + 100;
+    state.shopItems.push({
+        id: newId,
+        name: name,
+        desc: `${type}: ${value}`,
+        price: price,
+        currency: currency,
+        type: type,
+        value: value
     });
 
-    // ============================================================
-    // ЗАПУСК
-    // ============================================================
+    await saveData();
+    adminLog(`✅ Акция "${name}" добавлена! ID: ${newId}`);
+    renderShop();
+    input.value = '';
+    showToast('✅ Акция добавлена!');
+}
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Проверяем, что Supabase настроен
-        if (SUPABASE_URL === 'https://ваш-проект.supabase.co') {
-            console.warn('⚠️ Настройте SUPABASE_URL и SUPABASE_KEY!');
-            showToast('⚠️ Настройте подключение к БД!');
-        }
+function adminAddCategory() {
+    const input = document.getElementById('adminInput');
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) {
+        adminLog('❌ Введите название категории');
+        return;
+    }
+    adminLog(`✅ Категория "${name}" создана!`);
+    input.value = '';
+    showToast('📁 Категория создана');
+}
+
+function adminDelCategory() {
+    const input = document.getElementById('adminInput');
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) {
+        adminLog('❌ Введите название категории для удаления');
+        return;
+    }
+    adminLog(`🗑️ Категория "${name}" удалена!`);
+    input.value = '';
+    showToast('🗑️ Категория удалена');
+}
+
+async function adminSync() {
+    adminLog('🔄 Синхронизация с БД...');
+    await loadData();
+    adminLog('✅ Синхронизация завершена');
+    showToast('🔄 Данные обновлены');
+}
+
+// ============================================================
+// НАВИГАЦИЯ
+// ============================================================
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (!state.loaded) return;
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const page = this.dataset.page;
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById('page-' + page);
+        if (target) target.classList.add('active');
+    });
+});
+
+// ============================================================
+// ЦВЕТ
+// ============================================================
+
+document.querySelectorAll('.color-option').forEach(el => {
+    el.addEventListener('click', function() {
+        document.querySelectorAll('.color-option').forEach(e => {
+            e.classList.remove('active');
+            const c = e.querySelector('.check');
+            if (c) c.style.display = 'none';
+        });
+        this.classList.add('active');
+        const c = this.querySelector('.check');
+        if (c) c.style.display = 'block';
+        state.color = this.dataset.color;
+        applyColor(state.color);
+        showToast('🎨 Цвет изменён');
+    });
+});
+
+// ============================================================
+// АДМИН-ПАНЕЛЬ (двойной клик по логотипу)
+// ============================================================
+
+document.getElementById('logoTitle').addEventListener('dblclick', function() {
+    if (!state.loaded) return;
+    state.isOwner = !state.isOwner;
+    const panel = document.getElementById('adminPanel');
+    if (panel) panel.style.display = state.isOwner ? 'block' : 'none';
+    if (state.isOwner) {
+        adminLog('👑 Админ-панель активирована');
+        showToast('👑 Режим админа');
+    } else {
+        showToast('👤 Режим игрока');
+    }
+});
+
+// ============================================================
+// ОБНОВЛЕНИЕ ДАННЫХ
+// ============================================================
+
+function refreshData() {
+    if (state.loaded) {
+        adminSync();
+    } else {
         loadData();
-    });
+    }
+}
 
-    console.log('🚀 MageClash v3.0 with Supabase');
-    console.log('📦 Все функции интегрированы с БД');
-    console.log('👑 Двойной клик по логотипу для админ-панели');
+// ============================================================
+// ЗАПУСК
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Проверяем настройки
+    if (BIN_ID === 'ваш_bin_id' || MASTER_KEY === 'ваш_master_ключ') {
+        console.warn('⚠️ Настройте BIN_ID и MASTER_KEY в коде!');
+        showToast('⚠️ Настройте подключение к JSONBin!');
+    }
+    loadData();
+});
+
+console.log('🚀 MageClash с JSONBin.io');
+console.log('📦 Bin ID:', BIN_ID);
+console.log('🔑 Master Key:', MASTER_KEY ? '✅ Установлен' : '❌ Не установлен');
+console.log('👑 Двойной клик по логотипу для админ-панели');
 </script>
 </body>
 </html>
