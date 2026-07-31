@@ -1,791 +1,1148 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Поле Чудес 3D</title>
     <style>
-        /* Глобальные стили */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #0b0e1a;
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            touch-action: pan-y;
-        }
-        #app {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a1a; color: #fff; overflow: hidden; height: 100vh; width: 100vw; }
+        #app { height: 100vh; width: 100vw; position: relative; }
+        
+        /* 3D Canvas */
+        #gameCanvas { width: 100%; height: 100%; display: block; }
+        
+        /* UI Overlay */
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 430px;
-            height: 100vh;
-            max-height: 860px;
-            background: radial-gradient(circle at 20% 20%, #1a1f33, #0b0e1a);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 60px rgba(0, 20, 255, 0.2);
-            border-radius: 32px;
-            border: 1px solid rgba(255, 215, 0, 0.15);
+            height: 100%;
+            pointer-events: none;
         }
-
+        
+        #ui-overlay > * { pointer-events: auto; }
+        
         /* Верхняя панель */
-        .header {
+        #top-panel {
             display: flex;
             justify-content: space-between;
-            padding: 16px 20px 8px;
             align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(4px);
-            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-            z-index: 10;
-        }
-        .currency {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 215, 0, 0.15);
-            padding: 6px 16px 6px 12px;
-            border-radius: 40px;
-            border: 1px solid #f0b90b;
-        }
-        .currency span {
-            font-weight: 700;
-            font-size: 18px;
-            color: #f5d742;
-        }
-        .currency img {
-            width: 24px;
-            height: 24px;
-            filter: drop-shadow(0 0 6px #f0b90b);
-        }
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.06);
-            padding: 4px 14px 4px 6px;
-            border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .avatar {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #ff7b2b, #ff2d55);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 0 12px rgba(255, 45, 85, 0.5);
-            transition: 0.3s;
-        }
-        .avatar.custom {
-            background: #3a3f5c;
-        }
-        .username {
-            font-weight: 600;
-            font-size: 15px;
-            letter-spacing: 0.3px;
-        }
-
-        /* Поле с буквами */
-        .word-area {
-            padding: 10px 12px 6px;
-            text-align: center;
-            min-height: 70px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            background: rgba(0, 0, 0, 0.25);
-            border-radius: 60px;
-            margin: 8px 16px 0;
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(255, 215, 0, 0.1);
-        }
-        .letter-slot {
-            width: 34px;
-            height: 44px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            font-weight: 700;
-            color: #fff;
-            text-transform: uppercase;
-            border-bottom: 3px solid rgba(255, 215, 0, 0.4);
-            transition: 0.2s;
-            box-shadow: 0 2px 0 #0b0e1a;
-        }
-        .letter-slot.revealed {
-            background: rgba(255, 215, 0, 0.08);
-            border-bottom-color: #f0b90b;
-            color: #f5d742;
-            text-shadow: 0 0 12px rgba(245, 215, 66, 0.3);
-        }
-
-        /* 3D-контейнер барабана */
-        .wheel-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            perspective: 1000px;
-            margin: -10px 0;
-            position: relative;
-        }
-        #wheel3d {
-            width: 200px;
-            height: 200px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
-            cursor: pointer;
-        }
-        .segment {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            clip-path: polygon(50% 50%, 50% 0%, 100% 0%);
-            transform-origin: 50% 50%;
-            backface-visibility: visible;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 800;
-            color: #fff;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-            transition: 0.1s;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
-        }
-        .segment span {
-            transform: rotate(0deg) translateY(-40px) scale(0.9);
-            display: block;
-            text-align: center;
-            line-height: 1.2;
-        }
-        .center-dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 40px;
-            height: 40px;
-            background: radial-gradient(circle, #f5d742, #b8860b);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 20;
-            border: 3px solid #fff;
-            box-shadow: 0 0 30px #f5d742;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 900;
-            color: #0b0e1a;
-        }
-
-        /* Игровая информация */
-        .info-panel {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 20px;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            border-top: 1px solid rgba(255,215,0,0.15);
-            border-bottom: 1px solid rgba(255,215,0,0.15);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .info-panel div {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .badge {
-            background: rgba(255, 215, 0, 0.2);
-            padding: 2px 14px;
-            border-radius: 40px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-
-        /* Кнопки и ввод */
-        .controls {
-            padding: 12px 16px 16px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(2px);
-        }
-        .ctrl-btn {
-            background: linear-gradient(145deg, #2a2f4a, #1a1f33);
-            border: none;
-            color: #fff;
-            font-weight: 700;
             padding: 12px 20px;
-            border-radius: 60px;
-            font-size: 16px;
-            flex: 1;
-            min-width: 80px;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 0 #0b0e1a, 0 8px 16px rgba(0,0,0,0.4);
-            transition: 0.08s linear;
-            border: 1px solid rgba(255, 215, 0, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            border-bottom: 2px solid #f0c040;
         }
-        .ctrl-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #0b0e1a;
-        }
-        .ctrl-btn.gold {
-            background: linear-gradient(145deg, #f5d742, #c99c0b);
-            color: #0b0e1a;
-            border-color: #f5d742;
-            text-shadow: 0 1px 2px rgba(255,255,200,0.6);
-        }
-        .ctrl-btn.gold:active {
-            background: #d4a820;
-        }
-        .input-letter {
-            width: 60px;
-            height: 50px;
-            text-align: center;
-            font-size: 28px;
-            font-weight: 700;
-            text-transform: uppercase;
-            background: rgba(255,255,255,0.06);
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            border-radius: 16px;
-            color: #fff;
-            outline: none;
-            caret-color: #f5d742;
-        }
-        .input-letter:focus {
-            border-color: #f5d742;
-            box-shadow: 0 0 20px rgba(245, 215, 66, 0.2);
-        }
-
-        /* Кастомизация (мини-панель) */
-        .customize-panel {
-            display: flex;
-            gap: 12px;
-            padding: 6px 16px 12px;
-            justify-content: center;
-            background: rgba(0,0,0,0.2);
-            border-top: 1px solid rgba(255,215,0,0.05);
-        }
-        .skin-item {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #2a2f4a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            border: 2px solid transparent;
-            transition: 0.2s;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-        .skin-item.active {
-            border-color: #f5d742;
-            box-shadow: 0 0 20px #f5d742;
-            transform: scale(1.1);
-        }
-        .skin-item:active {
-            transform: scale(0.9);
-        }
-        .skin-cost {
-            font-size: 10px;
-            background: rgba(0,0,0,0.6);
-            padding: 0 6px;
+        #lobby-info { display: flex; gap: 15px; align-items: center; font-size: 14px; }
+        #lobby-id { background: #f0c040; color: #000; padding: 4px 12px; border-radius: 20px; font-weight: bold; }
+        #players-count { color: #aaa; }
+        #action-buttons { display: flex; gap: 10px; }
+        .btn {
+            padding: 6px 16px;
+            border: none;
             border-radius: 20px;
-            margin-left: 4px;
+            background: #f0c040;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
         }
-
-        /* сообщения */
-        .toast {
+        .btn:hover { transform: scale(1.05); background: #ffd866; }
+        .btn-secondary { background: #444; color: #fff; }
+        .btn-secondary:hover { background: #555; }
+        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-danger:hover { background: #e74c3c; }
+        
+        /* Барабан и игроки - всё в 3D */
+        
+        /* Нижняя панель управления */
+        #control-panel {
             position: absolute;
-            bottom: 120px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 60px;
+            border: 1px solid #f0c040;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+        }
+        #word-display {
+            font-size: 28px;
+            letter-spacing: 8px;
+            font-weight: bold;
+            color: #f0c040;
+            text-shadow: 0 0 20px rgba(240,192,64,0.3);
+            min-width: 200px;
+            text-align: center;
+        }
+        #current-player {
+            font-size: 16px;
+            color: #aaa;
+            padding: 0 10px;
+        }
+        #spin-btn {
+            padding: 12px 30px;
+            background: #f0c040;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 30px rgba(240,192,64,0.3);
+        }
+        #spin-btn:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(240,192,64,0.6); }
+        #spin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        #letter-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #letter-input input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 2px solid #f0c040;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            outline: none;
+        }
+        #letter-input input:focus { border-color: #ffd866; background: rgba(255,255,255,0.2); }
+        #letter-input button {
+            padding: 10px 20px;
+            background: #2ecc71;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+        }
+        #letter-input button:hover { background: #27ae60; }
+        
+        /* Модальные окна */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0,0,0,0.8);
             backdrop-filter: blur(8px);
-            padding: 10px 24px;
-            border-radius: 60px;
-            border: 1px solid #f5d742;
-            font-weight: 600;
-            font-size: 16px;
-            color: #f5d742;
-            white-space: nowrap;
-            z-index: 100;
-            pointer-events: none;
-            transition: 0.25s;
-            opacity: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            pointer-events: auto;
         }
-        .toast.show {
-            opacity: 1;
-            bottom: 140px;
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid #f0c040;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h2 { color: #f0c040; margin-bottom: 20px; text-align: center; }
+        .modal-content p { margin: 10px 0; line-height: 1.6; }
+        .modal-content .btn { width: 100%; padding: 12px; margin-top: 15px; }
+        
+        /* Кастомизация */
+        #customize-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .skin-item {
+            background: #2a2a44;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .skin-item:hover { border-color: #f0c040; }
+        .skin-item.selected { border-color: #f0c040; background: #3a3a5e; }
+        .skin-item .price { color: #f0c040; font-size: 12px; }
+        
+        /* Адаптив */
+        @media (max-width: 768px) {
+            #control-panel { flex-direction: column; padding: 15px; width: 95%; bottom: 15px; border-radius: 30px; gap: 10px; }
+            #word-display { font-size: 22px; letter-spacing: 4px; min-width: auto; }
+            #top-panel { flex-direction: column; gap: 8px; padding: 10px; }
+            #action-buttons { width: 100%; justify-content: center; flex-wrap: wrap; }
+            #letter-input input { width: 40px; height: 40px; font-size: 20px; }
         }
     </style>
 </head>
 <body>
-<div id="app">
-    <!-- Верхняя панель -->
-    <div class="header">
-        <div class="currency">
-            <span>💰</span>
-            <span id="coinDisplay">250</span>
+    <div id="app">
+        <!-- 3D Canvas -->
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- UI Overlay -->
+        <div id="ui-overlay">
+            <!-- Верхняя панель -->
+            <div id="top-panel">
+                <div id="lobby-info">
+                    <span>🏆 Поле Чудес</span>
+                    <span id="lobby-id">Лобби: ---</span>
+                    <span id="players-count">👥 1</span>
+                </div>
+                <div id="action-buttons">
+                    <button class="btn" id="createLobbyBtn">➕ Создать лобби</button>
+                    <button class="btn btn-secondary" id="joinLobbyBtn">🔗 Присоединиться</button>
+                    <button class="btn btn-secondary" id="customizeBtn">👕 Кастомизация</button>
+                    <button class="btn btn-danger" id="resetGameBtn">🔄 Новая игра</button>
+                </div>
+            </div>
+            
+            <!-- Слово и управление -->
+            <div id="control-panel">
+                <div id="word-display">_ _ _ _ _</div>
+                <div id="current-player">Игрок: Вы</div>
+                <button id="spin-btn">🎰 Крутить!</button>
+                <div id="letter-input">
+                    <input type="text" id="letterInput" maxlength="1" placeholder="А">
+                    <button id="guessBtn">Назвать</button>
+                </div>
+            </div>
         </div>
-        <div class="profile">
-            <div class="avatar" id="avatarDisplay">😎</div>
-            <span class="username" id="usernameDisplay">Игрок</span>
+        
+        <!-- Модальные окна -->
+        <div class="modal" id="lobbyModal">
+            <div class="modal-content">
+                <h2>Лобби</h2>
+                <p id="lobbyModalText">Введите ID лобби для присоединения</p>
+                <input type="text" id="lobbyInput" placeholder="ID лобби" style="width:100%;padding:10px;border-radius:12px;border:2px solid #f0c040;background:#0a0a1a;color:#fff;font-size:16px;">
+                <button class="btn" id="lobbyModalAction">Присоединиться</button>
+                <button class="btn btn-secondary" id="closeLobbyModal">Отмена</button>
+            </div>
+        </div>
+        
+        <div class="modal" id="customizeModal">
+            <div class="modal-content">
+                <h2>👕 Кастомизация героя</h2>
+                <p>Выберите скин для своего 3D-героя</p>
+                <div id="customize-panel">
+                    <div class="skin-item selected" data-skin="default">⭐ Стандарт</div>
+                    <div class="skin-item" data-skin="gold">🌟 Золотой <span class="price">100 ⭐</span></div>
+                    <div class="skin-item" data-skin="knight">⚔️ Рыцарь <span class="price">200 ⭐</span></div>
+                    <div class="skin-item" data-skin="wizard">🧙 Маг <span class="price">150 ⭐</span></div>
+                    <div class="skin-item" data-skin="cyber">🤖 Кибер <span class="price">250 ⭐</span></div>
+                    <div class="skin-item" data-skin="royal">👑 Король <span class="price">300 ⭐</span></div>
+                </div>
+                <button class="btn" id="applySkinBtn">Применить</button>
+                <button class="btn btn-secondary" id="closeCustomizeModal">Закрыть</button>
+            </div>
+        </div>
+        
+        <div class="modal" id="infoModal">
+            <div class="modal-content">
+                <h2 id="infoModalTitle">Информация</h2>
+                <p id="infoModalText">Текст</p>
+                <button class="btn" id="closeInfoModal">ОК</button>
+            </div>
         </div>
     </div>
 
-    <!-- Слово -->
-    <div class="word-area" id="wordArea">
-        <!-- буквы генерируются js -->
-    </div>
-
-    <!-- 3D Барабан -->
-    <div class="wheel-wrapper">
-        <div id="wheel3d">
-            <!-- сегменты генерируются js -->
-            <div class="center-dot">🎯</div>
-        </div>
-    </div>
-
-    <!-- Инфо -->
-    <div class="info-panel">
-        <div>🎯 Ход: <span id="turnIndicator">Ваш</span></div>
-        <div>🏆 <span id="scoreDisplay">0</span></div>
-        <div class="badge" id="multiplierDisplay">×1</div>
-    </div>
-
-    <!-- Управление -->
-    <div class="controls">
-        <input class="input-letter" id="letterInput" maxlength="1" placeholder="А" />
-        <button class="ctrl-btn gold" id="spinBtn">🎰 Крутить</button>
-        <button class="ctrl-btn" id="guessBtn">🔍 Угадать</button>
-        <button class="ctrl-btn" id="resetBtn">🔄 Новое</button>
-    </div>
-
-    <!-- Кастомизация персонажей -->
-    <div class="customize-panel" id="skinPanel">
-        <div class="skin-item active" data-skin="😎" data-cost="0">😎</div>
-        <div class="skin-item" data-skin="🧙" data-cost="100">🧙<span class="skin-cost">100</span></div>
-        <div class="skin-item" data-skin="🦸" data-cost="150">🦸<span class="skin-cost">150</span></div>
-        <div class="skin-item" data-skin="👾" data-cost="200">👾<span class="skin-cost">200</span></div>
-        <div class="skin-item" data-skin="🤖" data-cost="250">🤖<span class="skin-cost">250</span></div>
-    </div>
-
-    <!-- Toast -->
-    <div class="toast" id="toastMsg"></div>
-</div>
-
-<script>
-    (function(){
-        // ---------- ИГРОВЫЕ ДАННЫЕ ----------
-        const WORDS = ['АВТОМОБИЛЬ', 'ПИАНИНО', 'СОКРОВИЩЕ', 'ФАНТАСТИКА', 'ЗОЛОТО', 'КОСМОС', 'ПУТЕШЕСТВИЕ', 'МЕЛОДИЯ', 'ВДОХНОВЕНИЕ'];
-        let currentWord = '';
-        let revealed = [];
-        let score = 0;
-        let multiplier = 1;
-        let coins = 250;
-        let currentSkin = '😎';
-        let turn = 0; // 0 - игрок, 1 - соперник (имитация)
-        let gameOver = false;
-
-        // Элементы
-        const wheelEl = document.getElementById('wheel3d');
-        const wordArea = document.getElementById('wordArea');
-        const coinDisplay = document.getElementById('coinDisplay');
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const multiplierDisplay = document.getElementById('multiplierDisplay');
-        const turnIndicator = document.getElementById('turnIndicator');
-        const avatarDisplay = document.getElementById('avatarDisplay');
-        const usernameDisplay = document.getElementById('usernameDisplay');
-        const letterInput = document.getElementById('letterInput');
-        const spinBtn = document.getElementById('spinBtn');
-        const guessBtn = document.getElementById('guessBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const toast = document.getElementById('toastMsg');
-
-        // Состояние барабана
-        let currentAngle = 0;
-        let spinning = false;
-        // Сектора (8 шт)
-        const SEGMENTS = [
-            { label: '500', color: '#e74c3c', value: 500 },
-            { label: 'X2', color: '#f39c12', value: 'x2' },
-            { label: '200', color: '#2ecc71', value: 200 },
-            { label: 'БАНК', color: '#e67e22', value: 'bankrupt' },
-            { label: '100', color: '#3498db', value: 100 },
-            { label: 'ПРИЗ', color: '#9b59b6', value: 'prize' },
-            { label: '300', color: '#1abc9c', value: 300 },
-            { label: 'ШАНС', color: '#e91e63', value: 'chance' }
-        ];
-        const SEG_COUNT = SEGMENTS.length;
-        const segAngle = 360 / SEG_COUNT;
-
-        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
-        function initGame() {
-            // случайное слово
-            currentWord = WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase();
-            revealed = new Array(currentWord.length).fill(false);
-            // открываем первую букву для подсказки (редко)
-            if (currentWord.length > 2) {
-                const idx = Math.floor(Math.random() * currentWord.length);
-                revealed[idx] = true;
-            }
-            score = 0;
-            multiplier = 1;
-            gameOver = false;
-            turn = 0;
-            updateUI();
-            renderWord();
-            renderWheel();
-            toastMsg('Новая игра! Крути барабан!');
+    <!-- Three.js и библиотеки -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <script>
+    // ============================================
+    // 1. КОНФИГУРАЦИЯ JSONBIN.IO
+    // ============================================
+    const JSONBIN_API = 'https://api.jsonbin.io/v3/b';
+    const BIN_ID = 'YOUR_BIN_ID'; // Замените на ваш ID
+    const API_KEY = 'YOUR_API_KEY'; // Замените на ваш API ключ
+    
+    // ============================================
+    // 2. СОСТОЯНИЕ ИГРЫ
+    // ============================================
+    const state = {
+        lobbyId: null,
+        players: [],
+        currentPlayerIndex: 0,
+        word: 'ПРИВЕТ',
+        displayWord: ['_','_','_','_','_','_'],
+        guessedLetters: [],
+        scores: {},
+        round: 0,
+        gameOver: false,
+        spinInProgress: false,
+        currentSkin: 'default',
+        coins: 500,
+        ownedSkins: ['default'],
+        // Сектора барабана
+        sectors: [
+            { label: '500', value: 500, type: 'points' },
+            { label: '300', value: 300, type: 'points' },
+            { label: '100', value: 100, type: 'points' },
+            { label: '200', value: 200, type: 'points' },
+            { label: 'ПРИЗ', value: 0, type: 'prize' },
+            { label: 'ПЛЮС', value: 0, type: 'plus' },
+            { label: 'ШАНС', value: 0, type: 'chance' },
+            { label: 'БАНКРОТ', value: 0, type: 'bankrupt' },
+            { label: 'Х2', value: 0, type: 'double' }
+        ],
+        currentSector: null,
+        lastSpinResult: null,
+        multiplier: 1
+    };
+    
+    // Слова для игры
+    const WORDS = ['ПРИВЕТ', 'СОЛНЦЕ', 'КОМПЬЮТЕР', 'ТЕЛЕФОН', 'АВТОМОБИЛЬ', 'САМОЛЕТ', 'ПОЕЗД', 'МОРЕ', 'ГОРОД', 'ШКОЛА'];
+    const CATEGORIES = ['Техника', 'Природа', 'Транспорт', 'Город', 'Учеба'];
+    
+    // ============================================
+    // 3. ИНИЦИАЛИЗАЦИЯ 3D СЦЕНЫ
+    // ============================================
+    const canvas = document.getElementById('gameCanvas');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a1a);
+    scene.fog = new THREE.Fog(0x0a0a1a, 20, 60);
+    
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 5, 15);
+    camera.lookAt(0, 0, 0);
+    
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    
+    // Освещение
+    const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
+    scene.add(ambientLight);
+    
+    const mainLight = new THREE.DirectionalLight(0xffeedd, 1);
+    mainLight.position.set(5, 10, 7);
+    mainLight.castShadow = true;
+    scene.add(mainLight);
+    
+    const fillLight = new THREE.DirectionalLight(0x4488ff, 0.5);
+    fillLight.position.set(-5, 5, -5);
+    scene.add(fillLight);
+    
+    const rimLight = new THREE.DirectionalLight(0xffaa44, 0.3);
+    rimLight.position.set(0, -5, 10);
+    scene.add(rimLight);
+    
+    const pointLight = new THREE.PointLight(0xf0c040, 0.5, 20);
+    pointLight.position.set(0, 5, 5);
+    scene.add(pointLight);
+    
+    // Пол
+    const floorGeometry = new THREE.CircleGeometry(12, 32);
+    const floorMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x1a1a2e, 
+        roughness: 0.8, 
+        metalness: 0.2,
+        transparent: true,
+        opacity: 0.8
+    });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -1;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    
+    // Декоративная сетка
+    const gridHelper = new THREE.GridHelper(20, 20, 0xf0c040, 0x444466);
+    gridHelper.position.y = -0.9;
+    scene.add(gridHelper);
+    
+    // ============================================
+    // 4. СОЗДАНИЕ 3D БАРАБАНА
+    // ============================================
+    const wheelGroup = new THREE.Group();
+    wheelGroup.position.set(0, 1.5, 0);
+    scene.add(wheelGroup);
+    
+    // Основа барабана
+    const cylinderGeo = new THREE.CylinderGeometry(2.5, 2.5, 0.5, 32);
+    const cylinderMat = new THREE.MeshStandardMaterial({ 
+        color: 0x2a2a44, 
+        roughness: 0.6, 
+        metalness: 0.3,
+        emissive: 0x111122,
+        emissiveIntensity: 0.2
+    });
+    const cylinder = new THREE.Mesh(cylinderGeo, cylinderMat);
+    cylinder.position.y = 0;
+    cylinder.castShadow = true;
+    wheelGroup.add(cylinder);
+    
+    // Сектора (кольцо с цветными сегментами)
+    const sectorCount = state.sectors.length;
+    const segmentAngle = (Math.PI * 2) / sectorCount;
+    
+    for (let i = 0; i < sectorCount; i++) {
+        const angle = i * segmentAngle;
+        const sectorGroup = new THREE.Group();
+        
+        // Цвет сектора
+        const hue = (i / sectorCount) * 0.8 + 0.1;
+        const color = new THREE.Color().setHSL(hue, 0.8, 0.5);
+        
+        // Сегмент
+        const shape = new THREE.Shape();
+        const radius = 2.3;
+        const innerRadius = 1.5;
+        const segments = 20;
+        
+        shape.moveTo(0, 0);
+        for (let j = 0; j <= segments; j++) {
+            const theta = (j / segments) * segmentAngle;
+            const r = (j === segments) ? innerRadius : radius;
+            const x = Math.sin(theta) * r;
+            const z = Math.cos(theta) * r;
+            shape.lineTo(x, z);
         }
-
-        // Отрисовка слова
-        function renderWord() {
-            wordArea.innerHTML = '';
-            for (let i = 0; i < currentWord.length; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'letter-slot';
-                if (revealed[i]) {
-                    slot.classList.add('revealed');
-                    slot.textContent = currentWord[i];
-                } else {
-                    slot.textContent = '_';
+        shape.lineTo(0, 0);
+        
+        const sectorGeo = new THREE.ShapeGeometry(shape);
+        const sectorMat = new THREE.MeshStandardMaterial({ 
+            color: color,
+            roughness: 0.4,
+            metalness: 0.3,
+            side: THREE.DoubleSide,
+            emissive: color,
+            emissiveIntensity: 0.1
+        });
+        const sector = new THREE.Mesh(sectorGeo, sectorMat);
+        sector.rotation.x = -Math.PI / 2;
+        sector.position.y = 0.05;
+        sector.castShadow = true;
+        sectorGroup.add(sector);
+        
+        // Текст сектора (используем спрайты или простые метки)
+        // В данном упрощенном варианте используем маленькие кубики с цветом
+        const labelGroup = new THREE.Group();
+        const labelPos = new THREE.Vector3(
+            Math.sin(angle + segmentAngle/2) * 2.8,
+            0.3,
+            Math.cos(angle + segmentAngle/2) * 2.8
+        );
+        labelGroup.position.copy(labelPos);
+        
+        // Маленькая сфера как метка
+        const dotGeo = new THREE.SphereGeometry(0.15, 8, 8);
+        const dotMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xf0c040, emissiveIntensity: 0.3 });
+        const dot = new THREE.Mesh(dotGeo, dotMat);
+        labelGroup.add(dot);
+        
+        // Текст в 3D сложно, используем спрайт
+        const canvas2 = document.createElement('canvas');
+        canvas2.width = 128;
+        canvas2.height = 64;
+        const ctx = canvas2.getContext('2d');
+        ctx.fillStyle = 'transparent';
+        ctx.fillRect(0, 0, 128, 64);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(state.sectors[i].label, 64, 32);
+        
+        const texture = new THREE.CanvasTexture(canvas2);
+        const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+        const sprite = new THREE.Sprite(spriteMat);
+        sprite.scale.set(1.2, 0.6, 1);
+        sprite.position.set(0, 0.5, 0);
+        labelGroup.add(sprite);
+        
+        sectorGroup.add(labelGroup);
+        sectorGroup.rotation.y = angle;
+        wheelGroup.add(sectorGroup);
+    }
+    
+    // Центральная часть
+    const centerGeo = new THREE.CircleGeometry(0.8, 16);
+    const centerMat = new THREE.MeshStandardMaterial({ 
+        color: 0xf0c040, 
+        roughness: 0.2, 
+        metalness: 0.8,
+        emissive: 0xf0c040,
+        emissiveIntensity: 0.2
+    });
+    const center = new THREE.Mesh(centerGeo, centerMat);
+    center.rotation.x = -Math.PI / 2;
+    center.position.y = 0.15;
+    wheelGroup.add(center);
+    
+    // Стрелка
+    const arrowGroup = new THREE.Group();
+    const arrowGeo = new THREE.ConeGeometry(0.4, 0.8, 8);
+    const arrowMat = new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff0000, emissiveIntensity: 0.3 });
+    const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+    arrow.position.set(0, 0.8, 2.8);
+    arrow.rotation.x = 0.2;
+    arrowGroup.add(arrow);
+    scene.add(arrowGroup);
+    
+    // ============================================
+    // 5. СОЗДАНИЕ 3D ГЕРОЕВ
+    // ============================================
+    const playersGroup = new THREE.Group();
+    scene.add(playersGroup);
+    
+    function createHero(color, skinType = 'default', name = 'Игрок') {
+        const group = new THREE.Group();
+        
+        // Тело
+        const bodyGeo = new THREE.CylinderGeometry(0.6, 0.8, 1.2, 8);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.6, metalness: 0.2 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.6;
+        body.castShadow = true;
+        group.add(body);
+        
+        // Голова
+        const headGeo = new THREE.SphereGeometry(0.45, 8, 8);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa, roughness: 0.4 });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.y = 1.4;
+        head.castShadow = true;
+        group.add(head);
+        
+        // Одежда (кастомизация)
+        let outfitColor = 0x4444ff;
+        let outfitType = 'default';
+        if (skinType === 'gold') outfitColor = 0xffd700;
+        else if (skinType === 'knight') outfitColor = 0x888899;
+        else if (skinType === 'wizard') outfitColor = 0x9944ff;
+        else if (skinType === 'cyber') outfitColor = 0x00ffaa;
+        else if (skinType === 'royal') outfitColor = 0xcc2244;
+        
+        // Плащ/накидка
+        const cloakGeo = new THREE.CylinderGeometry(0.7, 0.9, 0.8, 8);
+        const cloakMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.8, metalness: 0.1 });
+        const cloak = new THREE.Mesh(cloakGeo, cloakMat);
+        cloak.position.y = 0.6;
+        cloak.scale.set(1, 1, 0.8);
+        group.add(cloak);
+        
+        // Шляпа для некоторых скинов
+        if (skinType === 'wizard' || skinType === 'royal') {
+            const hatGeo = new THREE.ConeGeometry(0.6, 0.6, 6);
+            const hatMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.5 });
+            const hat = new THREE.Mesh(hatGeo, hatMat);
+            hat.position.y = 1.7;
+            hat.scale.set(1, 1, 0.7);
+            group.add(hat);
+        }
+        
+        // Имя над головой (спрайт)
+        const nameCanvas = document.createElement('canvas');
+        nameCanvas.width = 256;
+        nameCanvas.height = 64;
+        const ctx2 = nameCanvas.getContext('2d');
+        ctx2.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx2.roundRect(10, 10, 236, 44, 20);
+        ctx2.fill();
+        ctx2.fillStyle = '#f0c040';
+        ctx2.font = 'bold 28px Arial';
+        ctx2.textAlign = 'center';
+        ctx2.textBaseline = 'middle';
+        ctx2.fillText(name, 128, 34);
+        
+        const nameTexture = new THREE.CanvasTexture(nameCanvas);
+        const nameMat = new THREE.SpriteMaterial({ map: nameTexture, transparent: true });
+        const nameSprite = new THREE.Sprite(nameMat);
+        nameSprite.scale.set(2, 0.5, 1);
+        nameSprite.position.y = 2.3;
+        group.add(nameSprite);
+        
+        // Очки над головой
+        const scoreCanvas = document.createElement('canvas');
+        scoreCanvas.width = 128;
+        scoreCanvas.height = 64;
+        const ctx3 = scoreCanvas.getContext('2d');
+        ctx3.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx3.roundRect(10, 10, 108, 44, 15);
+        ctx3.fill();
+        ctx3.fillStyle = '#ffd700';
+        ctx3.font = 'bold 24px Arial';
+        ctx3.textAlign = 'center';
+        ctx3.textBaseline = 'middle';
+        ctx3.fillText('0', 64, 34);
+        
+        const scoreTexture = new THREE.CanvasTexture(scoreCanvas);
+        const scoreMat = new THREE.SpriteMaterial({ map: scoreTexture, transparent: true });
+        const scoreSprite = new THREE.Sprite(scoreMat);
+        scoreSprite.scale.set(1.2, 0.6, 1);
+        scoreSprite.position.y = 2.8;
+        group.add(scoreSprite);
+        
+        group.userData = { name, scoreSprite, nameSprite, skin: skinType };
+        
+        return group;
+    }
+    
+    // Инициализация игроков
+    let heroMeshes = [];
+    
+    function updatePlayers() {
+        // Очищаем старых героев
+        while(playersGroup.children.length > 0) {
+            playersGroup.remove(playersGroup.children[0]);
+        }
+        heroMeshes = [];
+        
+        const count = Math.max(1, state.players.length);
+        const radius = 4.5;
+        
+        for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 2 - Math.PI/2;
+            const x = Math.sin(angle) * radius;
+            const z = Math.cos(angle) * radius;
+            
+            const playerData = state.players[i] || { name: `Игрок ${i+1}`, score: 0, skin: 'default' };
+            const color = new THREE.Color().setHSL(i / count, 0.7, 0.5);
+            const hero = createHero(color, playerData.skin || 'default', playerData.name || `Игрок ${i+1}`);
+            hero.position.set(x, 0, z);
+            hero.rotation.y = -angle;
+            
+            // Обновляем очки
+            if (playerData.score !== undefined) {
+                updateScoreSprite(hero, playerData.score);
+            }
+            
+            playersGroup.add(hero);
+            heroMeshes.push(hero);
+        }
+    }
+    
+    function updateScoreSprite(hero, score) {
+        const scoreSprite = hero.userData.scoreSprite;
+        if (!scoreSprite) return;
+        
+        const canvas = scoreSprite.material.map.image;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.roundRect(10, 10, 108, 44, 15);
+        ctx.fill();
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(score.toString(), 64, 34);
+        scoreSprite.material.map.needsUpdate = true;
+    }
+    
+    // ============================================
+    // 6. ЛОГИКА ИГРЫ
+    // ============================================
+    function initGame() {
+        // Выбираем слово
+        const wordIndex = Math.floor(Math.random() * WORDS.length);
+        state.word = WORDS[wordIndex];
+        state.displayWord = Array(state.word.length).fill('_');
+        state.guessedLetters = [];
+        state.gameOver = false;
+        state.multiplier = 1;
+        
+        // Сброс очков
+        state.players.forEach(p => p.score = 0);
+        state.currentPlayerIndex = 0;
+        
+        updateWordDisplay();
+        updateUI();
+        updatePlayers();
+        showInfo('Новая игра', `Загадано слово из ${state.word.length} букв. Категория: ${CATEGORIES[wordIndex % CATEGORIES.length]}`);
+    }
+    
+    function updateWordDisplay() {
+        document.getElementById('word-display').textContent = state.displayWord.join(' ');
+    }
+    
+    function updateUI() {
+        const currentPlayer = state.players[state.currentPlayerIndex] || { name: 'Игрок' };
+        document.getElementById('current-player').textContent = `Игрок: ${currentPlayer.name}`;
+        document.getElementById('players-count').textContent = `👥 ${state.players.length}`;
+        document.getElementById('lobby-id').textContent = `Лобби: ${state.lobbyId || '---'}`;
+    }
+    
+    function spinWheel() {
+        if (state.spinInProgress || state.gameOver) return;
+        if (state.players.length === 0) {
+            showInfo('Ошибка', 'Нет игроков в лобби');
+            return;
+        }
+        
+        state.spinInProgress = true;
+        document.getElementById('spin-btn').disabled = true;
+        
+        // Анимация вращения
+        const targetRotation = state.currentSector !== null ? 
+            state.currentSector + Math.PI * 2 * (3 + Math.random() * 3) : 
+            Math.PI * 2 * (3 + Math.random() * 3);
+        
+        const duration = 2000 + Math.random() * 1000;
+        const startTime = Date.now();
+        const startRotation = wheelGroup.rotation.y;
+        
+        function animateSpin() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing
+            const ease = 1 - Math.pow(1 - progress, 3);
+            wheelGroup.rotation.y = startRotation + (targetRotation - startRotation) * ease;
+            
+            if (progress < 1) {
+                requestAnimationFrame(animateSpin);
+            } else {
+                // Определяем сектор
+                const angle = wheelGroup.rotation.y % (Math.PI * 2);
+                const sectorIndex = Math.floor((angle / (Math.PI * 2)) * sectorCount) % sectorCount;
+                state.currentSector = sectorIndex;
+                const sector = state.sectors[sectorIndex];
+                state.lastSpinResult = sector;
+                
+                handleSectorResult(sector);
+                state.spinInProgress = false;
+                document.getElementById('spin-btn').disabled = false;
+            }
+        }
+        
+        animateSpin();
+    }
+    
+    function handleSectorResult(sector) {
+        const currentPlayer = state.players[state.currentPlayerIndex];
+        if (!currentPlayer) return;
+        
+        switch(sector.type) {
+            case 'points':
+                const points = sector.value * state.multiplier;
+                showInfo('🎯 Результат', `${currentPlayer.name} выиграл ${points} очков!`);
+                currentPlayer.score += points;
+                state.multiplier = 1;
+                updatePlayers();
+                break;
+                
+            case 'prize':
+                showInfo('🎁 Приз!', `${currentPlayer.name} выиграл приз! Выберите: открыть букву или забрать приз и выбыть?`);
+                // В реальной игре здесь выбор, упрощенно - открываем букву
+                handlePrize(currentPlayer);
+                break;
+                
+            case 'plus':
+                showInfo('➕ Плюс', `${currentPlayer.name} может открыть любую букву!`);
+                handlePlus(currentPlayer);
+                break;
+                
+            case 'chance':
+                showInfo('🍀 Шанс', `Ведущий называет букву за ${currentPlayer.name}`);
+                handleChance(currentPlayer);
+                break;
+                
+            case 'bankrupt':
+                showInfo('💸 Банкрот!', `Все очки ${currentPlayer.name} сгорают!`);
+                currentPlayer.score = 0;
+                state.multiplier = 1;
+                nextTurn();
+                break;
+                
+            case 'double':
+                state.multiplier = 2;
+                showInfo('🔥 Х2', `Следующая буква принесет удвоенные очки!`);
+                break;
+        }
+        
+        updateUI();
+        checkWin();
+    }
+    
+    function handlePrize(player) {
+        // Упрощенно: открываем случайную букву
+        openRandomLetter(player);
+    }
+    
+    function handlePlus(player) {
+        // Упрощенно: открываем случайную букву
+        openRandomLetter(player);
+    }
+    
+    function handleChance(player) {
+        // Ведущий называет самую частую букву
+        const freq = {};
+        for (let ch of state.word) {
+            freq[ch] = (freq[ch] || 0) + 1;
+        }
+        let best = '';
+        let bestCount = 0;
+        for (let ch in freq) {
+            if (freq[ch] > bestCount && !state.guessedLetters.includes(ch)) {
+                best = ch;
+                bestCount = freq[ch];
+            }
+        }
+        if (best) {
+            guessLetter(best, player);
+        } else {
+            nextTurn();
+        }
+    }
+    
+    function openRandomLetter(player) {
+        // Ищем неоткрытую букву
+        for (let ch of state.word) {
+            if (!state.guessedLetters.includes(ch)) {
+                guessLetter(ch, player);
+                return;
+            }
+        }
+        nextTurn();
+    }
+    
+    function guessLetter(letter, player) {
+        letter = letter.toUpperCase();
+        if (state.guessedLetters.includes(letter)) {
+            showInfo('Повтор', 'Эта буква уже была названа');
+            return;
+        }
+        
+        state.guessedLetters.push(letter);
+        
+        let found = false;
+        let count = 0;
+        for (let i = 0; i < state.word.length; i++) {
+            if (state.word[i] === letter) {
+                state.displayWord[i] = letter;
+                found = true;
+                count++;
+            }
+        }
+        
+        if (found) {
+            const points = count * 50 * state.multiplier;
+            player.score += points;
+            state.multiplier = 1;
+            showInfo('✅ Есть!', `Буква "${letter}" есть в слове! +${points} очков`);
+            updateWordDisplay();
+            updatePlayers();
+            checkWin();
+        } else {
+            showInfo('❌ Нет', `Буквы "${letter}" нет в слове`);
+            state.multiplier = 1;
+            nextTurn();
+        }
+    }
+    
+    function nextTurn() {
+        if (state.gameOver) return;
+        state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+        updateUI();
+        document.getElementById('letterInput').value = '';
+    }
+    
+    function checkWin() {
+        if (state.displayWord.join('') === state.word) {
+            state.gameOver = true;
+            const winner = state.players[state.currentPlayerIndex];
+            showInfo('🏆 Победа!', `${winner.name} отгадал слово "${state.word}"!`);
+            // Суперигра (упрощенно)
+            setTimeout(() => {
+                if (confirm('Хотите сыграть в суперигру?')) {
+                    superGame(winner);
                 }
-                wordArea.appendChild(slot);
-            }
+            }, 500);
         }
-
-        // Обновить UI (монеты, счет, множитель, ход)
-        function updateUI() {
-            coinDisplay.textContent = coins;
-            scoreDisplay.textContent = score;
-            multiplierDisplay.textContent = `×${multiplier}`;
-            turnIndicator.textContent = turn === 0 ? 'Ваш' : 'Соперник';
-            avatarDisplay.textContent = currentSkin;
-            // подсветка активной скина
-            document.querySelectorAll('.skin-item').forEach(el => {
-                el.classList.toggle('active', el.dataset.skin === currentSkin);
+    }
+    
+    function superGame(player) {
+        // Упрощенная суперигра
+        const words = ['КОСМОС', 'ГАЛАКТИКА'];
+        const word = words[Math.floor(Math.random() * words.length)];
+        const display = Array(word.length).fill('_');
+        const guessed = [];
+        let attempts = 3;
+        let timer = 60;
+        
+        showInfo('🌟 Суперигра!', `Угадайте слово "${word.length} букв за ${timer} секунд. У вас ${attempts} попытки.`);
+        
+        // Простое управление через модалку
+        const interval = setInterval(() => {
+            timer--;
+            if (timer <= 0 || attempts <= 0) {
+                clearInterval(interval);
+                if (display.join('') === word) {
+                    showInfo('🎉 Суперприз!', `${player.name} выиграл суперприз! +500 очков!`);
+                    player.score += 500;
+                } else {
+                    showInfo('😔 Увы', 'Суперигра не удалась');
+                }
+                updatePlayers();
+                return;
+            }
+        }, 1000);
+    }
+    
+    // ============================================
+    // 7. РАБОТА С JSONBIN.IO
+    // ============================================
+    async function saveGameState() {
+        try {
+            const data = {
+                lobbyId: state.lobbyId,
+                players: state.players,
+                currentPlayerIndex: state.currentPlayerIndex,
+                word: state.word,
+                displayWord: state.displayWord,
+                guessedLetters: state.guessedLetters,
+                scores: state.scores,
+                round: state.round,
+                gameOver: state.gameOver
+            };
+            
+            const response = await fetch(`${JSONBIN_API}/${BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) throw new Error('Ошибка сохранения');
+            console.log('Сохранено в JSONBin');
+        } catch (e) {
+            console.error('Ошибка сохранения:', e);
+        }
+    }
+    
+    async function loadGameState() {
+        try {
+            const response = await fetch(`${JSONBIN_API}/${BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': API_KEY }
+            });
+            
+            if (!response.ok) throw new Error('Ошибка загрузки');
+            const result = await response.json();
+            const data = result.record;
+            
+            if (data) {
+                state.players = data.players || [];
+                state.currentPlayerIndex = data.currentPlayerIndex || 0;
+                state.word = data.word || 'ПРИВЕТ';
+                state.displayWord = data.displayWord || Array(state.word.length).fill('_');
+                state.guessedLetters = data.guessedLetters || [];
+                state.gameOver = data.gameOver || false;
+                state.lobbyId = data.lobbyId || null;
+                
+                updateWordDisplay();
+                updateUI();
+                updatePlayers();
+            }
+        } catch (e) {
+            console.error('Ошибка загрузки:', e);
+        }
+    }
+    
+    // ============================================
+    // 8. UI ОБРАБОТЧИКИ
+    // ============================================
+    function showInfo(title, text) {
+        document.getElementById('infoModalTitle').textContent = title;
+        document.getElementById('infoModalText').textContent = text;
+        document.getElementById('infoModal').classList.add('active');
+    }
+    
+    // Создание лобби
+    document.getElementById('createLobbyBtn').addEventListener('click', () => {
+        state.lobbyId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        state.players = [{ name: 'Вы', score: 0, skin: state.currentSkin }];
+        state.currentPlayerIndex = 0;
+        initGame();
+        saveGameState();
+        document.getElementById('lobby-id').textContent = `Лобби: ${state.lobbyId}`;
+        showInfo('Лобби создано', `ID лобби: ${state.lobbyId}\nПоделитесь с друзьями для присоединения!`);
+    });
+    
+    // Присоединение к лобби
+    document.getElementById('joinLobbyBtn').addEventListener('click', () => {
+        document.getElementById('lobbyModalText').textContent = 'Введите ID лобби для присоединения';
+        document.getElementById('lobbyModalAction').textContent = 'Присоединиться';
+        document.getElementById('lobbyModal').classList.add('active');
+    });
+    
+    document.getElementById('lobbyModalAction').addEventListener('click', () => {
+        const id = document.getElementById('lobbyInput').value.toUpperCase();
+        if (id) {
+            state.lobbyId = id;
+            // Загружаем состояние лобби
+            loadGameState().then(() => {
+                if (state.players.length === 0) {
+                    state.players = [{ name: 'Вы', score: 0, skin: state.currentSkin }];
+                } else {
+                    // Добавляем нового игрока
+                    state.players.push({ name: `Игрок ${state.players.length+1}`, score: 0, skin: 'default' });
+                }
+                updateUI();
+                updatePlayers();
+                saveGameState();
+                document.getElementById('lobbyModal').classList.remove('active');
+                showInfo('Присоединено', `Вы присоединились к лобби ${state.lobbyId}`);
             });
         }
-
-        // Toast
-        let toastTimeout = null;
-        function toastMsg(text) {
-            toast.textContent = text;
-            toast.classList.add('show');
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => toast.classList.remove('show'), 2200);
-        }
-
-        // ---------- 3D БАРАБАН ----------
-        function renderWheel() {
-            wheelEl.innerHTML = '';
-            // Создаем сегменты
-            for (let i = 0; i < SEG_COUNT; i++) {
-                const seg = document.createElement('div');
-                seg.className = 'segment';
-                const angle = i * segAngle;
-                // clip-path полигон для сектора
-                const deg = angle;
-                seg.style.transform = `rotate(${deg}deg)`;
-                seg.style.background = `conic-gradient(from ${deg}deg, ${SEGMENTS[i].color}, ${SEGMENTS[i].color} ${segAngle}deg, transparent ${segAngle}deg)`;
-                seg.style.clipPath = `polygon(50% 50%, 50% 0%, 100% 0%)`;
-                // текст внутри
-                const span = document.createElement('span');
-                span.textContent = SEGMENTS[i].label;
-                seg.appendChild(span);
-                wheelEl.appendChild(seg);
-            }
-            // центр
-            const center = document.createElement('div');
-            center.className = 'center-dot';
-            center.textContent = '🎯';
-            wheelEl.appendChild(center);
-        }
-
-        // Вращение
-        function spinWheel() {
-            if (spinning || gameOver) return;
-            if (turn !== 0) {
-                toastMsg('Сейчас ход соперника!');
-                return;
-            }
-            spinning = true;
-            const spins = 5 + Math.floor(Math.random() * 8);
-            const extra = Math.random() * 360;
-            const targetAngle = currentAngle + spins * 360 + extra;
-            wheelEl.style.transform = `rotate(${targetAngle}deg)`;
-            currentAngle = targetAngle;
-
-            // Определяем сектор через 1.2с
-            setTimeout(() => {
-                const norm = ((targetAngle % 360) + 360) % 360;
-                const segIndex = Math.floor(norm / segAngle) % SEG_COUNT;
-                const seg = SEGMENTS[segIndex];
-                handleSegment(seg);
-                spinning = false;
-            }, 1300);
-        }
-
-        // Обработка сектора
-        function handleSegment(seg) {
-            if (gameOver) return;
-            const val = seg.value;
-            if (val === 'x2') {
-                multiplier = 2;
-                toastMsg('X2! Следующая буква удвоит очки!');
-                updateUI();
-                // ход продолжается (можно крутить снова)
-                return;
-            } else if (val === 'bankrupt') {
-                score = 0;
-                multiplier = 1;
-                toastMsg('Банкрот! Очки сгорели!');
-                turn = 1; // переход хода
-                updateUI();
-                return;
-            } else if (val === 'prize') {
-                coins += 50;
-                toastMsg('Приз! +50 монет!');
-                // выбор: открыть букву или выбыть, но для простоты даём открыть
-                openRandomLetter();
-                updateUI();
-                return;
-            } else if (val === 'chance') {
-                // ведущий называет самую частую букву
-                const freq = getMostFrequentLetter();
-                if (freq) {
-                    revealLetter(freq);
-                    toastMsg(`Шанс! Ведущий называет "${freq}"`);
+    });
+    
+    document.getElementById('closeLobbyModal').addEventListener('click', () => {
+        document.getElementById('lobbyModal').classList.remove('active');
+    });
+    
+    // Кастомизация
+    document.getElementById('customizeBtn').addEventListener('click', () => {
+        document.getElementById('customizeModal').classList.add('active');
+    });
+    
+    document.querySelectorAll('.skin-item').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.skin-item').forEach(el => el.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+    
+    document.getElementById('applySkinBtn').addEventListener('click', () => {
+        const selected = document.querySelector('.skin-item.selected');
+        if (selected) {
+            const skin = selected.dataset.skin;
+            if (skin !== 'default' && !state.ownedSkins.includes(skin)) {
+                const price = parseInt(selected.querySelector('.price')?.textContent || '100');
+                if (state.coins >= price) {
+                    state.coins -= price;
+                    state.ownedSkins.push(skin);
                 } else {
-                    toastMsg('Шанс! Букв нет?');
-                }
-                updateUI();
-                return;
-            } else {
-                // числовое значение
-                const points = parseInt(val, 10);
-                const earned = points * multiplier;
-                // просим ввести букву
-                toastMsg(`Выпало ${points} × ${multiplier} = ${earned} очков! Введите букву`);
-                // Ожидаем ввод буквы
-                const guessLetter = () => {
-                    const letter = letterInput.value.trim().toUpperCase();
-                    if (!letter || letter.length !== 1 || !/^[А-Я]$/.test(letter)) {
-                        toastMsg('Введите одну русскую букву');
-                        return;
-                    }
-                    if (revealLetter(letter)) {
-                        score += earned;
-                        // если буква есть, ход продолжается
-                        toastMsg(`Буква "${letter}" есть! +${earned} очков`);
-                        multiplier = 1;
-                        // проверка победы
-                        if (checkWin()) {
-                            gameOver = true;
-                            toastMsg('Поздравляю! Вы угадали слово! 🎉');
-                            coins += 100;
-                            updateUI();
-                            return;
-                        }
-                    } else {
-                        toastMsg(`Буквы "${letter}" нет! Ход переходит`);
-                        turn = 1;
-                        multiplier = 1;
-                    }
-                    updateUI();
-                    letterInput.value = '';
-                    document.removeEventListener('keydown', onEnter);
-                };
-                const onEnter = (e) => {
-                    if (e.key === 'Enter') {
-                        guessLetter();
-                    }
-                };
-                document.addEventListener('keydown', onEnter);
-                // также по кнопке
-                guessBtn.onclick = () => {
-                    guessLetter();
-                    document.removeEventListener('keydown', onEnter);
-                };
-                // Если кликнуть крутить — отключаем обработку
-                spinBtn.onclick = () => {
-                    document.removeEventListener('keydown', onEnter);
-                    spinWheel();
-                };
-                return;
-            }
-        }
-
-        // Открыть случайную букву (для приза)
-        function openRandomLetter() {
-            const hidden = [];
-            for (let i = 0; i < currentWord.length; i++) {
-                if (!revealed[i]) hidden.push(i);
-            }
-            if (hidden.length === 0) {
-                toastMsg('Все буквы уже открыты!');
-                return;
-            }
-            const idx = hidden[Math.floor(Math.random() * hidden.length)];
-            revealed[idx] = true;
-            renderWord();
-            if (checkWin()) {
-                gameOver = true;
-                toastMsg('Вы угадали слово! 🎉');
-                coins += 100;
-                updateUI();
-            }
-        }
-
-        // Открыть конкретную букву
-        function revealLetter(letter) {
-            let found = false;
-            for (let i = 0; i < currentWord.length; i++) {
-                if (currentWord[i] === letter && !revealed[i]) {
-                    revealed[i] = true;
-                    found = true;
-                }
-            }
-            if (found) {
-                renderWord();
-                checkWin();
-                updateUI();
-                return true;
-            }
-            return false;
-        }
-
-        // Самая частая буква в слове (не открытая)
-        function getMostFrequentLetter() {
-            const freq = {};
-            for (let ch of currentWord) {
-                if (!freq[ch]) freq[ch] = 0;
-                freq[ch]++;
-            }
-            let best = '';
-            let max = 0;
-            for (let ch in freq) {
-                if (freq[ch] > max && !revealed[currentWord.indexOf(ch)]) {
-                    max = freq[ch];
-                    best = ch;
-                }
-            }
-            return best;
-        }
-
-        // Проверка победы
-        function checkWin() {
-            const allRevealed = revealed.every(v => v === true);
-            if (allRevealed) {
-                gameOver = true;
-                toastMsg('🎉 Слово угадано! +100 монет');
-                coins += 100;
-                updateUI();
-                return true;
-            }
-            return false;
-        }
-
-        // ---------- КАСТОМИЗАЦИЯ ----------
-        document.querySelectorAll('.skin-item').forEach(el => {
-            el.addEventListener('click', function() {
-                const skin = this.dataset.skin;
-                const cost = parseInt(this.dataset.cost, 10);
-                if (currentSkin === skin) return;
-                if (cost > coins) {
-                    toastMsg(`Не хватает монет! Нужно ${cost}`);
+                    showInfo('Недостаточно монет', `Вам нужно ${price} монет для покупки этого скина`);
                     return;
                 }
-                coins -= cost;
-                currentSkin = skin;
-                updateUI();
-                toastMsg(`Новый образ: ${skin}`);
-                // активный класс
-                document.querySelectorAll('.skin-item').forEach(item => item.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        // ---------- СОБЫТИЯ ----------
-        spinBtn.addEventListener('click', spinWheel);
-
-        resetBtn.addEventListener('click', function() {
-            initGame();
-            renderWheel();
-            updateUI();
-        });
-
-        // Буква по умолчанию
-        letterInput.addEventListener('input', function() {
-            this.value = this.value.toUpperCase().replace(/[^А-Я]/g, '').slice(0, 1);
-        });
-
-        // Инициализация
-        initGame();
-        renderWheel();
-        updateUI();
-
-        // Соперник (имитация хода)
-        setInterval(() => {
-            if (gameOver) return;
-            if (turn === 1 && !spinning) {
-                // соперник "ходит" через 2-4 сек
-                const letters = ['А','Е','И','О','Н','Т','С'];
-                const letter = letters[Math.floor(Math.random() * letters.length)];
-                const found = revealLetter(letter);
-                if (found) {
-                    toastMsg(`Соперник угадал "${letter}"!`);
-                    // соперник получает очки (для простоты)
-                    score += 50;
-                } else {
-                    toastMsg(`Соперник: "${letter}" нет!`);
-                    turn = 0; // ход игроку
-                }
-                updateUI();
-                if (checkWin()) {
-                    toastMsg('Соперник победил! Попробуйте снова');
-                    gameOver = true;
-                }
             }
-        }, 5000);
-
-        // Дополнительно: если игра окончена, кнопка "Новое"
-        window.initGame = initGame;
-
-        // Корректировка при касании
-    })();
-</script>
+            state.currentSkin = skin;
+            state.players.forEach(p => p.skin = skin);
+            updatePlayers();
+            saveGameState();
+            document.getElementById('customizeModal').classList.remove('active');
+            showInfo('Готово', 'Скин применен!');
+        }
+    });
+    
+    document.getElementById('closeCustomizeModal').addEventListener('click', () => {
+        document.getElementById('customizeModal').classList.remove('active');
+    });
+    
+    // Управление игрой
+    document.getElementById('spin-btn').addEventListener('click', spinWheel);
+    
+    document.getElementById('guessBtn').addEventListener('click', () => {
+        const input = document.getElementById('letterInput');
+        const letter = input.value.toUpperCase();
+        if (letter && /[А-Я]/.test(letter)) {
+            const player = state.players[state.currentPlayerIndex];
+            if (player) {
+                guessLetter(letter, player);
+                input.value = '';
+            }
+        } else {
+            showInfo('Ошибка', 'Введите русскую букву');
+        }
+    });
+    
+    document.getElementById('letterInput').addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('guessBtn').click();
+        }
+    });
+    
+    document.getElementById('resetGameBtn').addEventListener('click', () => {
+        if (confirm('Начать новую игру?')) {
+            initGame();
+            saveGameState();
+        }
+    });
+    
+    document.getElementById('closeInfoModal').addEventListener('click', () => {
+        document.getElementById('infoModal').classList.remove('active');
+    });
+    
+    // ============================================
+    // 9. АНИМАЦИЯ И РЕНДЕРИНГ
+    // ============================================
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        // Вращение героев
+        heroMeshes.forEach((hero, i) => {
+            hero.rotation.y += 0.001;
+        });
+        
+        renderer.render(scene, camera);
+    }
+    
+    // ============================================
+    // 10. ОБРАБОТКА РАЗМЕРА ОКНА
+    // ============================================
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    // ============================================
+    // 11. ИНИЦИАЛИЗАЦИЯ
+    // ============================================
+    // Добавляем метод roundRect для Canvas
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+            if (r > w/2) r = w/2;
+            if (r > h/2) r = h/2;
+            this.moveTo(x + r, y);
+            this.arcTo(x + w, y, x + w, y + h, r);
+            this.arcTo(x + w, y + h, x, y + h, r);
+            this.arcTo(x, y + h, x, y, r);
+            this.arcTo(x, y, x + w, y, r);
+            return this;
+        };
+    }
+    
+    // Запуск
+    state.players = [{ name: 'Вы', score: 0, skin: 'default' }];
+    initGame();
+    animate();
+    
+    // Загружаем сохраненное состояние
+    loadGameState();
+    
+    console.log('🎰 Поле Чудес 3D загружено!');
+    console.log('💡 Используйте JSONBin.io для сохранения состояния игры');
+    </script>
 </body>
 </html>
