@@ -8,7 +8,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a1a; color: #fff; overflow: hidden; height: 100vh; width: 100vw; }
         #app { height: 100vh; width: 100vw; position: relative; }
-        
         #gameCanvas { width: 100%; height: 100%; display: block; }
         
         #ui-overlay {
@@ -19,7 +18,6 @@
             height: 100%;
             pointer-events: none;
         }
-        
         #ui-overlay > * { pointer-events: auto; }
         
         #top-panel {
@@ -54,6 +52,8 @@
         .btn-secondary:hover:not(:disabled) { background: #555; }
         .btn-danger { background: #c0392b; color: #fff; }
         .btn-danger:hover:not(:disabled) { background: #e74c3c; }
+        .btn-success { background: #2ecc71; color: #000; }
+        .btn-success:hover:not(:disabled) { background: #27ae60; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         
         #control-panel {
@@ -154,7 +154,6 @@
             display: none;
             z-index: 100;
             pointer-events: none;
-            animation: none;
         }
         #sector-result.show {
             display: block;
@@ -224,6 +223,23 @@
         .skin-item .price { color: #f0c040; font-size: 12px; }
         .skin-item .owned { color: #2ecc71; font-size: 12px; }
         
+        #players-list {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .player-item:last-child { border-bottom: none; }
+        .player-item .name { color: #fff; }
+        .player-item .score { color: #f0c040; font-weight: bold; }
+        .player-item.active { background: rgba(240,192,64,0.1); border-radius: 8px; }
+        
         @media (max-width: 768px) {
             #control-panel { flex-direction: column; padding: 15px; width: 95%; bottom: 15px; border-radius: 30px; gap: 10px; }
             #word-display { font-size: 22px; letter-spacing: 4px; min-width: auto; }
@@ -253,6 +269,7 @@
                     <button class="btn btn-secondary" id="joinLobbyBtn">🔗 Присоединиться</button>
                     <button class="btn btn-secondary" id="customizeBtn">👕 Кастомизация</button>
                     <button class="btn btn-danger" id="resetGameBtn">🔄 Новая игра</button>
+                    <button class="btn btn-success" id="saveGameBtn">💾 Сохранить</button>
                 </div>
             </div>
             
@@ -301,96 +318,92 @@
                 <button class="btn" id="closeInfoModal">ОК</button>
             </div>
         </div>
+        
+        <div class="modal" id="playersModal">
+            <div class="modal-content">
+                <h2>👥 Игроки в лобби</h2>
+                <div id="players-list"></div>
+                <button class="btn btn-secondary" id="closePlayersModal">Закрыть</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
     // ============================================
-    // 1. КОНФИГУРАЦИЯ - ВАШИ ДАННЫЕ
+    // 1. ХРАНИЛИЩЕ ДАННЫХ (localStorage)
     // ============================================
-    const CONFIG = {
-        BIN_ID: '6a6d0e33f5f4af5e29dbb2fa', // ВАШ BIN ID
-        API_KEY: '$2a$10$sa0sf5mD.2daJe70zEh8IuGxCuNdkPcSUAweK.5OduT.wLvuk.cqm', // ЗАМЕНИТЕ НА ВАШ API КЛЮЧ
-        API_URL: 'https://api.jsonbin.io/v3/b'
-    };
-
-    // ============================================
-    // 2. РАБОТА С БАЗОЙ ДАННЫХ
-    // ============================================
-    class GameDatabase {
+    class GameStorage {
         constructor() {
-            this.binId = CONFIG.BIN_ID;
-            this.apiKey = CONFIG.API_KEY;
-            this.apiUrl = CONFIG.API_URL;
-            this.cache = null;
+            this.STORAGE_KEY = 'pole_chudes_game_data';
         }
 
-        async load() {
+        save(data) {
             try {
-                const response = await fetch(`${this.apiUrl}/${this.binId}/latest`, {
-                    headers: { 'X-Master-Key': this.apiKey }
-                });
-                if (!response.ok) throw new Error('Ошибка загрузки');
-                const result = await response.json();
-                this.cache = result.record;
-                return this.cache;
-            } catch (error) {
-                console.error('Ошибка загрузки:', error);
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+                return true;
+            } catch (e) {
+                console.error('Ошибка сохранения:', e);
+                return false;
+            }
+        }
+
+        load() {
+            try {
+                const data = localStorage.getItem(this.STORAGE_KEY);
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                console.error('Ошибка загрузки:', e);
                 return null;
             }
         }
 
-        async save(data) {
+        clear() {
+            localStorage.removeItem(this.STORAGE_KEY);
+        }
+
+        // Сохранение в GitHub Gist (опционально для облачного сохранения)
+        async saveToGist(gistId, token, data) {
             try {
-                const response = await fetch(`${this.apiUrl}/${this.binId}`, {
-                    method: 'PUT',
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': this.apiKey
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        ...this.cache,
-                        ...data,
-                        lastUpdated: new Date().toISOString()
+                        files: {
+                            'game_data.json': {
+                                content: JSON.stringify(data, null, 2)
+                            }
+                        }
                     })
                 });
-                if (!response.ok) throw new Error('Ошибка сохранения');
+                return response.ok;
+            } catch (e) {
+                console.error('Ошибка сохранения в Gist:', e);
+                return false;
+            }
+        }
+
+        async loadFromGist(gistId, token) {
+            try {
+                const response = await fetch(`https://api.github.com/gists/${gistId}`);
+                if (!response.ok) throw new Error('Ошибка загрузки');
                 const result = await response.json();
-                this.cache = result.record;
-                return this.cache;
-            } catch (error) {
-                console.error('Ошибка сохранения:', error);
+                const content = result.files['game_data.json']?.content;
+                return content ? JSON.parse(content) : null;
+            } catch (e) {
+                console.error('Ошибка загрузки из Gist:', e);
                 return null;
             }
-        }
-
-        async addPlayer(playerData) {
-            const data = this.cache || await this.load();
-            if (!data.players) data.players = [];
-            
-            const exists = data.players.some(p => p.name === playerData.name);
-            if (!exists) {
-                data.players.push({
-                    ...playerData,
-                    joinedAt: new Date().toISOString(),
-                    stats: { gamesPlayed: 0, gamesWon: 0, totalScore: 0 }
-                });
-                if (data.lobby) data.lobby.currentPlayers = data.players.length;
-                await this.save(data);
-            }
-            return data.players;
-        }
-
-        async updateGameState(gameData) {
-            const data = this.cache || await this.load();
-            data.currentGame = { ...data.currentGame, ...gameData };
-            await this.save(data);
-            return data;
         }
     }
 
+    const storage = new GameStorage();
+
     // ============================================
-    // 3. СОСТОЯНИЕ ИГРЫ
+    // 2. СОСТОЯНИЕ ИГРЫ
     // ============================================
     const state = {
         lobbyId: null,
@@ -407,7 +420,7 @@
         canGuess: false,
         multiplier: 1,
         isMyTurn: false,
-        db: null,
+        round: 0,
         sectors: [
             { label: '850', value: 850, type: 'points' },
             { label: '450', value: 450, type: 'points' },
@@ -424,33 +437,54 @@
                    'САМОЛЕТ', 'ПОЕЗД', 'МОРЕ', 'ГОРОД', 'ШКОЛА', 'МУЗЫКА', 'КНИГА'];
 
     // ============================================
-    // 4. ИНИЦИАЛИЗАЦИЯ БАЗЫ ДАННЫХ
+    // 3. ЗАГРУЗКА/СОХРАНЕНИЕ СОСТОЯНИЯ
     // ============================================
-    async function initDatabase() {
-        state.db = new GameDatabase();
-        await state.db.load();
-        
-        // Если база пустая, создаем структуру
-        if (!state.db.cache) {
-            await state.db.save({
-                lobbyId: null,
-                players: [],
-                currentGame: {
-                    word: null,
-                    displayWord: [],
-                    guessedLetters: [],
-                    currentPlayerIndex: 0,
-                    round: 0,
-                    gameOver: false
-                },
-                settings: { maxPlayers: 6, roundTime: 60, superGameTime: 60 }
-            });
+    function saveGame() {
+        const data = {
+            lobbyId: state.lobbyId,
+            players: state.players,
+            currentPlayerIndex: state.currentPlayerIndex,
+            word: state.word,
+            displayWord: state.displayWord,
+            guessedLetters: state.guessedLetters,
+            gameOver: state.gameOver,
+            round: state.round,
+            currentSkin: state.currentSkin,
+            coins: state.coins,
+            ownedSkins: state.ownedSkins,
+            timestamp: Date.now()
+        };
+        storage.save(data);
+        showInfo('💾 Сохранено', 'Игра сохранена в локальном хранилище');
+        return data;
+    }
+
+    function loadGame() {
+        const data = storage.load();
+        if (data) {
+            state.lobbyId = data.lobbyId || null;
+            state.players = data.players || [{ name: 'Вы', score: 0, skin: 'default' }];
+            state.currentPlayerIndex = data.currentPlayerIndex || 0;
+            state.word = data.word || WORDS[0];
+            state.displayWord = data.displayWord || Array(state.word.length).fill('_');
+            state.guessedLetters = data.guessedLetters || [];
+            state.gameOver = data.gameOver || false;
+            state.round = data.round || 0;
+            state.currentSkin = data.currentSkin || 'default';
+            state.coins = data.coins || 500;
+            state.ownedSkins = data.ownedSkins || ['default'];
+            
+            updateWordDisplay();
+            updateUI();
+            updatePlayers3D();
+            updateControls();
+            return true;
         }
-        return state.db.cache;
+        return false;
     }
 
     // ============================================
-    // 5. THREE.JS 3D СЦЕНА
+    // 4. THREE.JS 3D СЦЕНА
     // ============================================
     const canvas = document.getElementById('gameCanvas');
     const scene = new THREE.Scene();
@@ -498,13 +532,12 @@
     scene.add(gridHelper);
 
     // ============================================
-    // 6. СОЗДАНИЕ БАРАБАНА
+    // 5. БАРАБАН
     // ============================================
     const wheelGroup = new THREE.Group();
     wheelGroup.position.set(0, 1.5, 0);
     scene.add(wheelGroup);
     
-    // Основной диск
     const diskGeo = new THREE.CylinderGeometry(2.8, 2.8, 0.3, 32);
     const diskMat = new THREE.MeshStandardMaterial({ 
         color: 0x1a1a2e, 
@@ -518,7 +551,6 @@
     disk.castShadow = true;
     wheelGroup.add(disk);
     
-    // Сектора
     const sectorCount = state.sectors.length;
     const segmentAngle = (Math.PI * 2) / sectorCount;
     const sectorColors = [0xff4444, 0x44ff44, 0x4444ff, 0xffff44, 0xff44ff, 0x44ffff, 0xff8844, 0x88ff44];
@@ -640,7 +672,7 @@
     scene.add(arrowGroup);
 
     // ============================================
-    // 7. 3D ГЕРОИ
+    // 6. 3D ГЕРОИ
     // ============================================
     const playersGroup = new THREE.Group();
     scene.add(playersGroup);
@@ -777,7 +809,7 @@
     }
 
     // ============================================
-    // 8. ЛОГИКА ИГРЫ
+    // 7. ЛОГИКА ИГРЫ
     // ============================================
     function initGame() {
         const wordIndex = Math.floor(Math.random() * WORDS.length);
@@ -787,6 +819,7 @@
         state.gameOver = false;
         state.multiplier = 1;
         state.canGuess = false;
+        state.round++;
         
         state.players.forEach(p => p.score = 0);
         state.currentPlayerIndex = 0;
@@ -796,8 +829,8 @@
         updatePlayers3D();
         updateControls();
         
-        showInfo('Новая игра', `Загадано слово из ${state.word.length} букв`);
-        saveToDatabase();
+        showInfo('Новая игра', `Загадано слово из ${state.word.length} букв. Раунд ${state.round}`);
+        saveGame();
     }
     
     function updateWordDisplay() {
@@ -824,10 +857,6 @@
         document.getElementById('spin-btn').disabled = !isMyTurn || state.gameOver || state.spinInProgress;
         document.getElementById('letterInput').disabled = !isMyTurn || !state.canGuess || state.gameOver;
         document.getElementById('guessBtn').disabled = !isMyTurn || !state.canGuess || state.gameOver;
-        
-        if (isMyTurn && !state.gameOver && !state.spinInProgress) {
-            document.getElementById('spin-btn').style.opacity = '1';
-        }
     }
     
     function spinWheel() {
@@ -849,7 +878,6 @@
         document.getElementById('letterInput').disabled = true;
         document.getElementById('guessBtn').disabled = true;
         
-        // Анимация вращения
         const targetRotation = wheelGroup.rotation.y + Math.PI * 2 * (3 + Math.random() * 4);
         const duration = 2500 + Math.random() * 1500;
         const startTime = Date.now();
@@ -864,7 +892,6 @@
             if (progress < 1) {
                 requestAnimationFrame(animateSpin);
             } else {
-                // Определяем сектор
                 const angle = ((wheelGroup.rotation.y % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
                 const sectorIndex = Math.floor((angle / (Math.PI * 2)) * sectorCount) % sectorCount;
                 state.currentSector = sectorIndex;
@@ -884,7 +911,6 @@
         const currentPlayer = state.players[state.currentPlayerIndex];
         if (!currentPlayer) return;
         
-        // Показываем результат
         const resultDiv = document.getElementById('sector-result');
         resultDiv.textContent = sector.label;
         resultDiv.className = 'show';
@@ -933,7 +959,7 @@
         updateUI();
         updatePlayers3D();
         updateControls();
-        saveToDatabase();
+        saveGame();
         
         if (state.canGuess && !state.gameOver) {
             document.getElementById('letterInput').disabled = false;
@@ -1009,7 +1035,7 @@
         
         updateUI();
         updateControls();
-        saveToDatabase();
+        saveGame();
         
         if (!state.gameOver && state.canGuess) {
             document.getElementById('letterInput').disabled = false;
@@ -1026,7 +1052,7 @@
         updateUI();
         updatePlayers3D();
         updateControls();
-        saveToDatabase();
+        saveGame();
     }
     
     function checkWin() {
@@ -1038,28 +1064,12 @@
             document.getElementById('letterInput').disabled = true;
             document.getElementById('guessBtn').disabled = true;
             showInfo('🏆 Победа!', `${winner.name} отгадал слово "${state.word}"!`);
-            saveToDatabase();
+            saveGame();
         }
     }
 
     // ============================================
-    // 9. РАБОТА С БАЗОЙ ДАННЫХ
-    // ============================================
-    async function saveToDatabase() {
-        if (!state.db) return;
-        await state.db.updateGameState({
-            word: state.word,
-            displayWord: state.displayWord,
-            guessedLetters: state.guessedLetters,
-            currentPlayerIndex: state.currentPlayerIndex,
-            gameOver: state.gameOver,
-            round: state.round || 0
-        });
-        await state.db.save({ players: state.players });
-    }
-
-    // ============================================
-    // 10. UI ОБРАБОТЧИКИ
+    // 8. UI ОБРАБОТЧИКИ
     // ============================================
     function showInfo(title, text) {
         document.getElementById('infoModalTitle').textContent = title;
@@ -1068,12 +1078,11 @@
     }
     
     // Создание лобби
-    document.getElementById('createLobbyBtn').addEventListener('click', async () => {
+    document.getElementById('createLobbyBtn').addEventListener('click', () => {
         state.lobbyId = Math.random().toString(36).substring(2, 8).toUpperCase();
         state.players = [{ name: 'Вы', score: 0, skin: state.currentSkin }];
         state.currentPlayerIndex = 0;
         initGame();
-        await saveToDatabase();
         document.getElementById('lobby-id').textContent = `Лобби: ${state.lobbyId}`;
         showInfo('Лобби создано', `ID лобби: ${state.lobbyId}\nПоделитесь с друзьями для присоединения!`);
     });
@@ -1083,32 +1092,24 @@
         document.getElementById('lobbyModal').classList.add('active');
     });
     
-    document.getElementById('lobbyModalAction').addEventListener('click', async () => {
+    document.getElementById('lobbyModalAction').addEventListener('click', () => {
         const id = document.getElementById('lobbyInput').value.toUpperCase();
         if (id) {
             state.lobbyId = id;
-            const data = await state.db.load();
-            if (data && data.players) {
-                state.players = data.players;
-                const exists = state.players.some(p => p.name === 'Вы');
-                if (!exists) {
-                    state.players.push({ name: 'Вы', score: 0, skin: state.currentSkin });
-                    await state.db.save({ players: state.players });
-                }
-                // Загружаем состояние игры
-                if (data.currentGame) {
-                    state.word = data.currentGame.word || WORDS[0];
-                    state.displayWord = data.currentGame.displayWord || Array(state.word.length).fill('_');
-                    state.guessedLetters = data.currentGame.guessedLetters || [];
-                    state.currentPlayerIndex = data.currentGame.currentPlayerIndex || 0;
-                    state.gameOver = data.currentGame.gameOver || false;
-                }
-                updateWordDisplay();
-                updateUI();
-                updatePlayers3D();
-                updateControls();
+            // Загружаем сохраненную игру
+            const data = storage.load();
+            if (data && data.lobbyId === id) {
+                loadGame();
                 document.getElementById('lobbyModal').classList.remove('active');
                 showInfo('Присоединено', `Вы присоединились к лобби ${state.lobbyId}`);
+            } else {
+                // Создаем новое лобби с этим ID
+                state.players = [{ name: 'Вы', score: 0, skin: state.currentSkin }];
+                state.currentPlayerIndex = 0;
+                initGame();
+                document.getElementById('lobby-id').textContent = `Лобби: ${state.lobbyId}`;
+                document.getElementById('lobbyModal').classList.remove('active');
+                showInfo('Лобби создано', `ID лобби: ${state.lobbyId}`);
             }
         }
     });
@@ -1121,6 +1122,23 @@
     document.getElementById('customizeBtn').addEventListener('click', () => {
         document.getElementById('customizeModal').classList.add('active');
         document.getElementById('coinsDisplay').textContent = state.coins;
+        
+        // Обновляем статус скинов
+        document.querySelectorAll('.skin-item').forEach(item => {
+            const skin = item.dataset.skin;
+            const owned = state.ownedSkins.includes(skin);
+            const priceEl = item.querySelector('.price');
+            if (owned) {
+                if (priceEl) priceEl.textContent = '✅ Владелец';
+            } else {
+                if (priceEl) {
+                    const price = parseInt(priceEl.textContent);
+                    if (!isNaN(price)) {
+                        priceEl.textContent = `${price} ⭐`;
+                    }
+                }
+            }
+        });
     });
     
     document.querySelectorAll('.skin-item').forEach(item => {
@@ -1140,7 +1158,7 @@
                 if (state.coins >= price) {
                     state.coins -= price;
                     state.ownedSkins.push(skin);
-                    selected.querySelector('.price').textContent = '✅ Куплено';
+                    selected.querySelector('.price').textContent = '✅ Владелец';
                 } else {
                     showInfo('Недостаточно монет', `Вам нужно ${price} монет для покупки этого скина`);
                     return;
@@ -1149,7 +1167,7 @@
             state.currentSkin = skin;
             state.players.forEach(p => p.skin = skin);
             updatePlayers3D();
-            saveToDatabase();
+            saveGame();
             document.getElementById('customizeModal').classList.remove('active');
             showInfo('Готово', 'Скин применен!');
         }
@@ -1157,6 +1175,11 @@
     
     document.getElementById('closeCustomizeModal').addEventListener('click', () => {
         document.getElementById('customizeModal').classList.remove('active');
+    });
+    
+    // Сохранение игры
+    document.getElementById('saveGameBtn').addEventListener('click', () => {
+        saveGame();
     });
     
     // Управление игрой
@@ -1180,10 +1203,9 @@
         }
     });
     
-    document.getElementById('resetGameBtn').addEventListener('click', async () => {
+    document.getElementById('resetGameBtn').addEventListener('click', () => {
         if (confirm('Начать новую игру?')) {
             initGame();
-            await saveToDatabase();
         }
     });
     
@@ -1192,7 +1214,7 @@
     });
 
     // ============================================
-    // 11. АНИМАЦИЯ
+    // 9. АНИМАЦИЯ
     // ============================================
     function animate() {
         requestAnimationFrame(animate);
@@ -1203,9 +1225,8 @@
     }
 
     // ============================================
-    // 12. ИНИЦИАЛИЗАЦИЯ
+    // 10. ИНИЦИАЛИЗАЦИЯ
     // ============================================
-    // Добавляем roundRect
     if (!CanvasRenderingContext2D.prototype.roundRect) {
         CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
             if (r > w/2) r = w/2;
@@ -1226,14 +1247,15 @@
     });
     
     // Запуск
-    async function start() {
-        await initDatabase();
-        state.players = state.db.cache?.players || [{ name: 'Вы', score: 0, skin: 'default' }];
-        state.word = state.db.cache?.currentGame?.word || WORDS[0];
-        state.displayWord = state.db.cache?.currentGame?.displayWord || Array(state.word.length).fill('_');
-        state.guessedLetters = state.db.cache?.currentGame?.guessedLetters || [];
-        state.currentPlayerIndex = state.db.cache?.currentGame?.currentPlayerIndex || 0;
-        state.gameOver = state.db.cache?.currentGame?.gameOver || false;
+    function start() {
+        // Пытаемся загрузить сохраненную игру
+        const loaded = loadGame();
+        
+        if (!loaded) {
+            // Если нет сохранения, создаем новую игру
+            state.players = [{ name: 'Вы', score: 0, skin: 'default' }];
+            initGame();
+        }
         
         updateWordDisplay();
         updateUI();
@@ -1242,8 +1264,9 @@
         animate();
         
         console.log('🎰 Поле Чудес 3D загружено!');
-        console.log('📦 BIN ID:', CONFIG.BIN_ID);
         console.log('👥 Игроков:', state.players.length);
+        console.log('📝 Данные сохраняются в localStorage');
+        console.log('💾 Нажмите "Сохранить" чтобы сохранить прогресс');
     }
     
     start();
