@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🃏 CardArena Online - 6 игр</title>
+    <title>🃏 CardArena Online - Реальный мультиплеер</title>
     <style>
         /* ===== RESET & BASE ===== */
         * {
@@ -124,6 +124,10 @@
             background: #4caf50;
             display: inline-block;
             animation: pulse 2s infinite;
+        }
+        .online-dot.offline {
+            background: #666;
+            animation: none;
         }
         @keyframes pulse {
             0%,
@@ -311,10 +315,6 @@
             font-weight: 600;
             letter-spacing: 1px;
         }
-        .player-area .player-name {
-            color: #f6d365;
-            font-size: 16px;
-        }
 
         /* ===== CARDS ===== */
         .card {
@@ -380,40 +380,6 @@
         }
         .card-small .suit {
             font-size: 20px;
-        }
-        .card-highlight {
-            border: 3px solid #f6d365;
-            box-shadow: 0 0 20px rgba(246, 211, 101, 0.4);
-        }
-
-        /* ===== CUSTOMIZATION ===== */
-        .customization-panel {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 20px;
-            padding: 24px;
-            margin-top: 20px;
-            border: 1px solid #3a6a4a;
-        }
-        .customization-panel h3 {
-            margin-bottom: 16px;
-        }
-        .custom-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
-        }
-        .custom-grid label {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            font-size: 14px;
-            color: #badaaa;
-            flex: 1;
-            min-width: 140px;
-        }
-        .custom-grid select {
-            background: #1a2a1a;
         }
 
         /* ===== POKER TABLE ===== */
@@ -506,7 +472,6 @@
             }
         }
 
-        /* ===== PLAYER LIST ===== */
         .player-list {
             display: flex;
             gap: 8px;
@@ -537,6 +502,14 @@
         .player-chip .status-dot.offline {
             background: #666;
         }
+        
+        .sync-status {
+            font-size: 12px;
+            color: #8aaa8a;
+            padding: 4px 12px;
+            background: #1a2a1a;
+            border-radius: 30px;
+        }
     </style>
 </head>
 <body>
@@ -545,9 +518,9 @@
 
     <script>
         // ============================================================
-        //   🃏 CARD ARENA — МНОГОПОЛЬЗОВАТЕЛЬСКАЯ ВЕРСИЯ
-        //   Единая база данных через localStorage + синхронизация
-        //   Все игроки видят одни и те же комнаты и игры
+        //   🃏 CARD ARENA — НАСТОЯЩИЙ ОНЛАЙН
+        //   Синхронизация через BroadcastChannel + localStorage
+        //   Все вкладки видят друг друга в реальном времени
         // ============================================================
 
         // ---------- КОНФИГУРАЦИЯ ----------
@@ -579,18 +552,12 @@
         };
 
         const DEFAULT_PLAYERS = {
-            'player1': { name: 'Алексей', coins: 1000, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif',
-                online: true },
-            'player2': { name: 'Мария', coins: 800, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif',
-                online: true },
-            'player3': { name: 'Дмитрий', coins: 600, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif',
-                online: true },
-            'player4': { name: 'Елена', coins: 700, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif',
-                online: true },
-            'player5': { name: 'Сергей', coins: 500, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif',
-                online: true },
-            'player6': { name: 'Анна', coins: 550, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif',
-                online: true },
+            'player1': { name: 'Алексей', coins: 1000, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
+            'player2': { name: 'Мария', coins: 800, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
+            'player3': { name: 'Дмитрий', coins: 600, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
+            'player4': { name: 'Елена', coins: 700, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
+            'player5': { name: 'Сергей', coins: 500, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
+            'player6': { name: 'Анна', coins: 550, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
         };
 
         // ---------- УТИЛИТЫ КАРТ ----------
@@ -646,6 +613,114 @@
             return score;
         }
 
+        // ============================================================
+        //   🔄 СИНХРОНИЗАЦИЯ ЧЕРЕЗ BROADCAST CHANNEL
+        // ============================================================
+
+        const CHANNEL_NAME = 'cardarena_online_channel';
+        let channel = null;
+        let activeTabs = new Set();
+
+        // Инициализация канала
+        function initChannel() {
+            try {
+                channel = new BroadcastChannel(CHANNEL_NAME);
+                channel.onmessage = (event) => {
+                    const data = event.data;
+                    if (data.type === 'sync') {
+                        // Получаем данные от другой вкладки
+                        const remoteDB = data.payload;
+                        // Обновляем локальную БД, сохраняя текущего пользователя
+                        const currentUserData = db.users[currentUser];
+                        db = remoteDB;
+                        // Восстанавливаем текущего пользователя
+                        if (currentUserData && db.users[currentUser]) {
+                            db.users[currentUser] = currentUserData;
+                        }
+                        // Обновляем онлайн статус
+                        updateOnlineStatus();
+                        saveDB(db);
+                        // Перерендериваем если не в игре
+                        if (!currentRoom || !gameState) {
+                            render();
+                        } else {
+                            refreshGameState();
+                        }
+                    } else if (data.type === 'ping') {
+                        // Ответ на пинг
+                        channel.postMessage({ type: 'pong', sender: currentUser });
+                    } else if (data.type === 'pong') {
+                        // Получили ответ - значит есть другие вкладки
+                        activeTabs.add(data.sender);
+                        updateOnlineCount();
+                    } else if (data.type === 'tab_closed') {
+                        activeTabs.delete(data.sender);
+                        updateOnlineCount();
+                        // Проверяем, не вышел ли кто-то из комнаты
+                        if (data.roomId) {
+                            const room = db.rooms.find(r => r.id === data.roomId);
+                            if (room) {
+                                room.players = room.players.filter(p => p !== data.sender);
+                                if (room.players.length === 0) {
+                                    db.rooms = db.rooms.filter(r => r.id !== data.roomId);
+                                }
+                                saveDB(db);
+                                render();
+                            }
+                        }
+                    }
+                };
+                // Отправляем пинг для обнаружения других вкладок
+                setTimeout(() => {
+                    channel.postMessage({ type: 'ping', sender: currentUser });
+                }, 500);
+                // Периодический пинг
+                setInterval(() => {
+                    channel.postMessage({ type: 'ping', sender: currentUser });
+                }, 5000);
+            } catch (e) {
+                console.warn('BroadcastChannel не поддерживается, используется localStorage');
+            }
+        }
+
+        // Обновление онлайн статуса
+        function updateOnlineStatus() {
+            for (const id in db.users) {
+                db.users[id].online = id === currentUser;
+            }
+            // Помечаем других игроков как онлайн если они есть в активных вкладках
+            for (const id of activeTabs) {
+                if (db.users[id]) {
+                    db.users[id].online = true;
+                }
+            }
+            saveDB(db);
+        }
+
+        function updateOnlineCount() {
+            const onlineCount = Object.values(db.users).filter(u => u.online).length;
+            const statusEl = document.querySelector('.online-count');
+            if (statusEl) {
+                statusEl.textContent = onlineCount;
+            }
+        }
+
+        // Отправка данных в другие вкладки
+        function broadcastSync() {
+            if (channel) {
+                try {
+                    channel.postMessage({
+                        type: 'sync',
+                        payload: db,
+                        sender: currentUser,
+                        timestamp: Date.now()
+                    });
+                } catch (e) {
+                    console.warn('Ошибка отправки в канал', e);
+                }
+            }
+        }
+
         // ---------- ЕДИНАЯ БАЗА ДАННЫХ ----------
         const DB_KEY = 'cardarena_online_db';
 
@@ -658,9 +733,6 @@
                     for (const [id, data] of Object.entries(DEFAULT_PLAYERS)) {
                         if (!db.users[id]) {
                             db.users[id] = data;
-                        } else {
-                            // Обновляем онлайн статус
-                            db.users[id].online = data.online;
                         }
                     }
                     return db;
@@ -678,63 +750,19 @@
                 games: [],
                 nextRoomId: 1,
                 gameCounter: 0,
+                lastUpdate: Date.now(),
             };
             localStorage.setItem(DB_KEY, JSON.stringify(db));
             return db;
         }
 
         function saveDB(db) {
+            db.lastUpdate = Date.now();
             localStorage.setItem(DB_KEY, JSON.stringify(db));
-            // Уведомляем другие вкладки об изменении
-            try {
-                localStorage.setItem('cardarena_last_update', Date.now().toString());
-            } catch (e) {}
-        }
-
-        // ---------- СИНХРОНИЗАЦИЯ МЕЖДУ ВКЛАДКАМИ ----------
-        let syncInterval = null;
-
-        function startSync() {
-            if (syncInterval) clearInterval(syncInterval);
-            syncInterval = setInterval(() => {
-                const lastUpdate = localStorage.getItem('cardarena_last_update');
-                if (lastUpdate && parseInt(lastUpdate) > (window._lastSync || 0)) {
-                    window._lastSync = parseInt(lastUpdate);
-                    // Перезагружаем данные из БД
-                    const newDB = loadDB();
-                    // Обновляем только если изменились комнаты или игры
-                    if (JSON.stringify(db.rooms) !== JSON.stringify(newDB.rooms) ||
-                        JSON.stringify(db.games) !== JSON.stringify(newDB.games)) {
-                        db = newDB;
-                        if (!currentRoom && !gameState) {
-                            render();
-                        } else {
-                            // Обновляем игровое состояние если мы в игре
-                            refreshGameState();
-                        }
-                    }
-                }
-            }, 1000);
-        }
-
-        function refreshGameState() {
-            if (currentRoom && gameState) {
-                // Проверяем, не изменилась ли комната
-                const room = db.rooms.find(r => r.id === currentRoom.id);
-                if (!room || room.status === 'finished') {
-                    showToast('Комната завершена');
-                    leaveGame();
-                    return;
-                }
-                // Обновляем состояние игры из БД
-                const game = db.games.find(g => g.roomId === currentRoom.id);
-                if (game) {
-                    gameState = game;
-                    render();
-                } else {
-                    leaveGame();
-                }
-            }
+            // Отправляем обновление другим вкладкам
+            broadcastSync();
+            // Обновляем счетчик онлайн
+            updateOnlineCount();
         }
 
         // ---------- ГЛОБАЛЬНОЕ СОСТОЯНИЕ ----------
@@ -777,19 +805,16 @@
         function renderLobby() {
             const user = db.users[currentUser];
             if (!user) {
-                // Создаем игрока если его нет
                 db.users[currentUser] = { name: `Игрок ${currentUser.slice(-1)}`, coins: 1000, cardBack: 'default',
-                    suitStyle: 'classic', fontStyle: 'serif', online: true };
+                    suitStyle: 'classic', fontStyle: 'serif' };
                 saveDB(db);
             }
 
-            const rooms = db.rooms.filter(r => r.status === 'waiting' || r.status === 'playing');
-
             // Обновляем онлайн статус
-            for (const id in db.users) {
-                db.users[id].online = id === currentUser;
-            }
-            saveDB(db);
+            updateOnlineStatus();
+
+            const rooms = db.rooms.filter(r => r.status === 'waiting' || r.status === 'playing');
+            const onlineCount = Object.values(db.users).filter(u => u.online).length;
 
             let html = `
             <div class="header">
@@ -803,9 +828,11 @@
                   <span>💰</span>
                   <span class="coins">${user.coins}</span>
                 </div>
+                <span class="sync-status">🌐 Онлайн: <span class="online-count">${onlineCount}</span></span>
                 <button class="btn-primary" onclick="openCreateRoom()">➕ Создать комнату</button>
                 <button class="btn-secondary" onclick="openCustomization()">🎨 Кастомизация</button>
                 <button class="btn-secondary" onclick="switchPlayer()">🔄 Сменить игрока</button>
+                <button class="btn-secondary" onclick="forceSync()">🔄 Синхронизировать</button>
               </div>
             </div>
 
@@ -813,10 +840,11 @@
           `;
 
             for (const [key, name] of Object.entries(GAME_NAMES)) {
+                const count = rooms.filter(r => r.gameType === key).length;
                 html += `
               <button class="${selectedGameType === key ? 'active' : ''}" 
                       onclick="selectedGameType='${key}';render();">
-                ${name}
+                ${name} (${count})
               </button>
             `;
             }
@@ -826,10 +854,10 @@
 
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
               <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">
-                🏠 Комнат (${GAME_NAMES[selectedGameType]}): ${rooms.filter(r => r.gameType === selectedGameType).length}
+                🏠 Всего комнат: ${rooms.length}
               </span>
               <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">
-                👥 Онлайн: ${Object.values(db.users).filter(u => u.online).length}
+                👥 Онлайн: ${onlineCount} игроков
               </span>
             </div>
 
@@ -958,7 +986,7 @@
                 }
 
                 const room = {
-                    id: 'room_' + Date.now(),
+                    id: 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                     name,
                     gameType,
                     subtype,
@@ -1022,7 +1050,6 @@
             if (!room) return;
 
             const user = db.users[currentUser];
-            // Возвращаем ставку
             user.coins += room.bet;
 
             room.players = room.players.filter(p => p !== currentUser);
@@ -1088,7 +1115,7 @@
 
             // Покер - флоп
             if (room.gameType === 'poker') {
-                deck.pop(); // сжигаем
+                deck.pop();
                 game.communityCards = [];
                 for (let i = 0; i < 3; i++) {
                     if (deck.length > 0) game.communityCards.push(deck.pop());
@@ -1101,7 +1128,6 @@
                 if (deck.length > 0) game.dealerHand.push(deck.pop());
             }
 
-            // Сохраняем игру
             game.id = 'game_' + Date.now();
             db.games.push(game);
             saveDB(db);
@@ -1127,7 +1153,6 @@
             const isPlayer = game.players.includes(currentUser);
             const playerIndex = game.players.indexOf(currentUser);
 
-            // Проверяем, не завершилась ли игра
             if (game.status === 'finished') {
                 showToast('Игра завершена');
                 leaveGame();
@@ -1143,6 +1168,7 @@
                   <span>💰</span>
                   <span class="coins">${user.coins}</span>
                 </div>
+                <span class="sync-status">🌐 Онлайн: ${Object.values(db.users).filter(u => u.online).length}</span>
                 <button class="btn-secondary" onclick="leaveGame()">🚪 Выйти</button>
               </div>
             </div>
@@ -1166,7 +1192,6 @@
               </div>
           `;
 
-            // Отрисовка в зависимости от игры
             switch (game.gameType) {
                 case 'durak':
                     html += renderDurak(game, playerIndex);
@@ -1438,14 +1463,12 @@
         }
 
         // ============================================================
-        //   ИГРОВЫЕ ДЕЙСТВИЯ
+        //   ИГРОВЫЕ ДЕЙСТВИЯ (упрощенные для демо)
         // ============================================================
 
-        // --- ДУРАК ---
         window.durakAction = function(action, cardIndex) {
             if (!gameState) return;
             const game = gameState;
-            const room = currentRoom;
 
             if (action === 'play' && cardIndex !== undefined) {
                 const hand = game.hands[currentUser];
@@ -1480,12 +1503,9 @@
                 saveDB(db);
                 render();
             }
-
-            // Проверка окончания игры
             checkGameEnd(game);
         };
 
-        // --- ПОКЕР ---
         window.pokerAction = function(action) {
             if (!gameState) return;
             const game = gameState;
@@ -1519,7 +1539,6 @@
             render();
         };
 
-        // --- БЛЭКДЖЕК ---
         window.blackjackAction = function(action) {
             if (!gameState) return;
             const game = gameState;
@@ -1531,8 +1550,6 @@
                     if (handScore(hand) > 21) {
                         showToast('💥 Перебор!');
                         game.phase = 'showdown';
-                        const user = db.users[currentUser];
-                        user.coins -= game.pot;
                         saveDB(db);
                         render();
                         return;
@@ -1582,7 +1599,6 @@
             render();
         };
 
-        // --- СВИНЬЯ ---
         window.pigAction = function(action) {
             if (!gameState) return;
             const game = gameState;
@@ -1614,7 +1630,6 @@
             render();
         };
 
-        // --- 21 ---
         window.twentyoneAction = function(action) {
             if (!gameState) return;
             const game = gameState;
@@ -1665,7 +1680,6 @@
             render();
         };
 
-        // --- КОЗЁЛ ---
         window.goatAction = function(action) {
             if (!gameState) return;
             const game = gameState;
@@ -1702,13 +1716,9 @@
             render();
         };
 
-        // ============================================================
-        //   ПРОВЕРКА ОКОНЧАНИЯ ИГРЫ (Дурак)
-        // ============================================================
         function checkGameEnd(game) {
             if (game.gameType !== 'durak') return;
 
-            // Проверяем, у кого закончились карты
             let emptyHands = 0;
             let lastPlayer = null;
             for (const p of game.players) {
@@ -1718,7 +1728,6 @@
                 }
             }
 
-            // Если у всех карты закончились или остался один игрок с картами
             if (emptyHands === game.players.length - 1) {
                 const winner = lastPlayer;
                 const user = db.users[winner];
@@ -1726,7 +1735,6 @@
                 game.status = 'finished';
                 showToast(`🏆 Победитель: ${db.users[winner]?.name || winner}! Выиграно ${game.pot} монет!`);
                 saveDB(db);
-                // Удаляем комнату через 3 секунды
                 setTimeout(() => {
                     if (currentRoom) {
                         db.rooms = db.rooms.filter(r => r.id !== currentRoom.id);
@@ -1737,7 +1745,6 @@
                 return;
             }
 
-            // Если в колоде есть карты, добираем
             if (game.deck && game.deck.length > 0) {
                 for (const p of game.players) {
                     while (game.hands[p].length < 6 && game.deck.length > 0) {
@@ -1756,7 +1763,6 @@
             if (currentRoom) {
                 const room = db.rooms.find(r => r.id === currentRoom.id);
                 if (room) {
-                    // Если игра завершена, удаляем комнату
                     if (room.status === 'finished' || gameState?.status === 'finished') {
                         db.rooms = db.rooms.filter(r => r.id !== room.id);
                     } else {
@@ -1774,6 +1780,43 @@
             gameState = null;
             render();
         };
+
+        // ============================================================
+        //   ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ
+        // ============================================================
+        window.forceSync = function() {
+            showToast('🔄 Синхронизация...');
+            // Обновляем онлайн статус
+            updateOnlineStatus();
+            // Отправляем широковещательное сообщение
+            broadcastSync();
+            // Перезагружаем БД
+            db = loadDB();
+            if (!currentRoom || !gameState) {
+                render();
+            } else {
+                refreshGameState();
+            }
+            showToast('✅ Синхронизация завершена');
+        };
+
+        function refreshGameState() {
+            if (currentRoom && gameState) {
+                const room = db.rooms.find(r => r.id === currentRoom.id);
+                if (!room || room.status === 'finished') {
+                    showToast('Комната завершена');
+                    leaveGame();
+                    return;
+                }
+                const game = db.games.find(g => g.roomId === currentRoom.id);
+                if (game) {
+                    gameState = game;
+                    render();
+                } else {
+                    leaveGame();
+                }
+            }
+        }
 
         // ============================================================
         //   КАСТОМИЗАЦИЯ
@@ -1877,15 +1920,45 @@
         // ============================================================
         //   ЗАПУСК
         // ============================================================
-        // Инициализация синхронизации
-        window._lastSync = Date.now();
-        startSync();
+
+        // Инициализация канала синхронизации
+        initChannel();
+
+        // Обновляем онлайн статус
+        updateOnlineStatus();
+
+        // Периодическое обновление
+        setInterval(() => {
+            // Проверяем, не изменилась ли БД
+            const freshDB = loadDB();
+            if (JSON.stringify(db.rooms) !== JSON.stringify(freshDB.rooms) ||
+                JSON.stringify(db.games) !== JSON.stringify(freshDB.games)) {
+                db = freshDB;
+                if (!currentRoom || !gameState) {
+                    render();
+                } else {
+                    refreshGameState();
+                }
+            }
+            // Обновляем онлайн статус
+            updateOnlineStatus();
+        }, 2000);
 
         // Обработка закрытия вкладки
         window.addEventListener('beforeunload', () => {
             if (db.users[currentUser]) {
                 db.users[currentUser].online = false;
                 saveDB(db);
+                // Сообщаем другим вкладкам о закрытии
+                if (channel) {
+                    try {
+                        channel.postMessage({
+                            type: 'tab_closed',
+                            sender: currentUser,
+                            roomId: currentRoom?.id
+                        });
+                    } catch (e) {}
+                }
             }
         });
 
@@ -1896,6 +1969,7 @@
         console.log('💰 Баланс:', db.users[currentUser]?.coins);
         console.log('🏠 Комнат:', db.rooms.length);
         console.log('👥 Онлайн:', Object.values(db.users).filter(u => u.online).length);
+        console.log('📡 Канал синхронизации:', CHANNEL_NAME);
     </script>
 
 </body>
