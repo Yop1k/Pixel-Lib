@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🃏 CardArena Online - Автосинхронизация</title>
+    <title>🃏 CardArena - Настоящий онлайн</title>
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <style>
-        /* ===== RESET & BASE ===== */
         * {
             margin: 0;
             padding: 0;
@@ -17,7 +17,6 @@
             color: #e8f0e8;
             min-height: 100vh;
             padding: 16px;
-            overflow-x: hidden;
         }
         button {
             cursor: pointer;
@@ -46,14 +45,6 @@
             font-size: 16px;
             width: 100%;
         }
-        input::placeholder {
-            color: #8aaa8a;
-        }
-        select option {
-            background: #1a2a1a;
-        }
-
-        /* ===== LAYOUT ===== */
         .app {
             max-width: 1400px;
             margin: 0 auto;
@@ -74,7 +65,6 @@
         .logo {
             font-size: 28px;
             font-weight: 800;
-            letter-spacing: -0.5px;
             background: linear-gradient(135deg, #f6d365, #fda085);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -92,23 +82,6 @@
             font-size: 20px;
             font-weight: 700;
             color: #f6d365;
-        }
-        .game-selector {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .game-selector button {
-            background: #1a2a1a;
-            color: #aacaaa;
-            padding: 8px 16px;
-            font-size: 14px;
-            border: 2px solid transparent;
-        }
-        .game-selector button.active {
-            border-color: #f6d365;
-            color: #f6d365;
-            background: #1a2a1a;
         }
         .online-status {
             display: flex;
@@ -138,8 +111,6 @@
                 opacity: 0.3;
             }
         }
-
-        /* ===== ROOMS ===== */
         .rooms-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -189,8 +160,18 @@
             padding: 12px;
             font-size: 16px;
         }
-
-        /* ===== MODAL ===== */
+        .btn-primary {
+            background: linear-gradient(135deg, #f6d365, #fda085);
+            color: #1a2a1a;
+        }
+        .btn-secondary {
+            background: #2a4a2a;
+            color: #e8f0e8;
+        }
+        .btn-danger {
+            background: #8a2a2a;
+            color: white;
+        }
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -237,86 +218,81 @@
             padding: 14px;
             font-size: 16px;
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #f6d365, #fda085);
+        .game-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .game-selector button {
+            background: #1a2a1a;
+            color: #aacaaa;
+            padding: 8px 16px;
+            font-size: 14px;
+            border: 2px solid transparent;
+        }
+        .game-selector button.active {
+            border-color: #f6d365;
+            color: #f6d365;
+            background: #1a2a1a;
+        }
+        .player-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .player-chip {
+            background: #1a2a1a;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .player-chip.active {
+            background: #f6d365;
             color: #1a2a1a;
         }
-        .btn-secondary {
-            background: #2a4a2a;
+        .player-chip .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .player-chip .status-dot.online {
+            background: #4caf50;
+        }
+        .player-chip .status-dot.offline {
+            background: #666;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 16px 32px;
+            border-radius: 16px;
+            border: 1px solid #f6d365;
             color: #e8f0e8;
-        }
-        .btn-danger {
-            background: #8a2a2a;
-            color: white;
-        }
-        .btn-success {
-            background: #2a8a3a;
-            color: white;
-        }
-
-        /* ===== GAME TABLE ===== */
-        .game-table {
-            background: radial-gradient(ellipse at center, #1a4a1a, #0a1a0a);
-            border-radius: 60px;
-            padding: 30px 24px;
-            min-height: 500px;
-            border: 3px solid #3a6a4a;
-            position: relative;
-        }
-        .game-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .game-info {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            font-size: 16px;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 10px 20px;
-            border-radius: 40px;
-        }
-        .game-info .trump {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .trump-suit {
-            font-size: 28px;
-        }
-        .game-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-            justify-content: center;
-        }
-
-        .player-area {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
-            padding: 16px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 30px;
-            min-height: 100px;
-            margin: 8px 0;
-        }
-        .player-area .label {
-            width: 100%;
-            text-align: center;
-            font-size: 14px;
-            color: #8aaa8a;
             font-weight: 600;
-            letter-spacing: 1px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
         }
-
-        /* ===== CARDS ===== */
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
         .card {
             width: 80px;
             height: 120px;
@@ -359,9 +335,6 @@
             color: transparent;
             cursor: default;
         }
-        .card-back:hover {
-            transform: none;
-        }
         @keyframes shimmer {
             0% {
                 background-position: 0% 50%;
@@ -373,16 +346,57 @@
                 background-position: 0% 50%;
             }
         }
-        .card-small {
-            width: 60px;
-            height: 88px;
+        .game-table {
+            background: radial-gradient(ellipse at center, #1a4a1a, #0a1a0a);
+            border-radius: 60px;
+            padding: 30px 24px;
+            min-height: 500px;
+            border: 3px solid #3a6a4a;
+            position: relative;
+        }
+        .game-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .game-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
             font-size: 16px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 20px;
+            border-radius: 40px;
         }
-        .card-small .suit {
-            font-size: 20px;
+        .game-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            justify-content: center;
         }
-
-        /* ===== POKER TABLE ===== */
+        .player-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 30px;
+            min-height: 100px;
+            margin: 8px 0;
+        }
+        .player-area .label {
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #8aaa8a;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
         .poker-pot {
             text-align: center;
             font-size: 24px;
@@ -404,8 +418,17 @@
             margin: 12px 0;
             flex-wrap: wrap;
         }
-
-        /* ===== RESPONSIVE ===== */
+        .peer-id {
+            font-size: 12px;
+            color: #8aaa8a;
+            background: #1a2a1a;
+            padding: 4px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .peer-id:hover {
+            background: #2a4a2a;
+        }
         @media (max-width: 768px) {
             .card {
                 width: 60px;
@@ -414,14 +437,6 @@
             }
             .card .suit {
                 font-size: 20px;
-            }
-            .card-small {
-                width: 48px;
-                height: 72px;
-                font-size: 12px;
-            }
-            .card-small .suit {
-                font-size: 16px;
             }
             .game-table {
                 padding: 16px 12px;
@@ -435,109 +450,9 @@
             .wallet {
                 justify-content: center;
             }
-            .game-selector {
-                justify-content: center;
-            }
             .rooms-grid {
                 grid-template-columns: 1fr;
             }
-        }
-
-        /* ===== TOAST ===== */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(8px);
-            padding: 16px 32px;
-            border-radius: 16px;
-            border: 1px solid #f6d365;
-            color: #e8f0e8;
-            font-weight: 600;
-            z-index: 2000;
-            animation: slideUp 0.3s ease;
-            max-width: 90%;
-            text-align: center;
-        }
-        @keyframes slideUp {
-            from {
-                transform: translateX(-50%) translateY(100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(-50%) translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .player-list {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .player-chip {
-            background: #1a2a1a;
-            padding: 4px 14px;
-            border-radius: 30px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .player-chip.active {
-            background: #f6d365;
-            color: #1a2a1a;
-        }
-        .player-chip .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .player-chip .status-dot.online {
-            background: #4caf50;
-        }
-        .player-chip .status-dot.offline {
-            background: #666;
-        }
-        
-        .sync-status {
-            font-size: 12px;
-            color: #8aaa8a;
-            padding: 4px 12px;
-            background: #1a2a1a;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .sync-status .sync-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .sync-status .sync-dot.active {
-            background: #4caf50;
-            animation: pulse 1s infinite;
-        }
-        .sync-status .sync-dot.inactive {
-            background: #ff6b6b;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 50%;
-            border-top-color: #f6d365;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -547,8 +462,8 @@
 
     <script>
         // ============================================================
-        //   🃏 CARD ARENA — АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ
-        //   Мгновенная загрузка, автосохранение, реальный онлайн
+        //   🃏 CARD ARENA — НАСТОЯЩИЙ ОНЛАЙН ЧЕРЕЗ PEERJS
+        //   P2P соединения между реальными пользователями
         // ============================================================
 
         // ---------- КОНФИГУРАЦИЯ ----------
@@ -577,15 +492,6 @@
             pig: 6,
             twentyone: 6,
             goat: 4
-        };
-
-        const DEFAULT_PLAYERS = {
-            'player1': { name: 'Алексей', coins: 1000, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
-            'player2': { name: 'Мария', coins: 800, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
-            'player3': { name: 'Дмитрий', coins: 600, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
-            'player4': { name: 'Елена', coins: 700, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
-            'player5': { name: 'Сергей', coins: 500, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
-            'player6': { name: 'Анна', coins: 550, cardBack: 'default', suitStyle: 'classic', fontStyle: 'serif' },
         };
 
         // ---------- УТИЛИТЫ КАРТ ----------
@@ -642,200 +548,230 @@
         }
 
         // ============================================================
-        //   🔄 АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ
+        //   🔌 PEERJS — НАСТОЯЩИЙ P2P ОНЛАЙН
         // ============================================================
 
-        const CHANNEL_NAME = 'cardarena_online_channel';
-        let channel = null;
-        let activeTabs = new Set();
-        let isSyncing = false;
-        let lastSyncTime = 0;
-        let syncTimeout = null;
+        let peer = null;
+        let connections = {};
+        let myPeerId = null;
+        let onlinePlayers = {};
+        let roomData = null;
+        let isHost = false;
+        let gameState = null;
 
-        // Инициализация канала
-        function initChannel() {
-            try {
-                channel = new BroadcastChannel(CHANNEL_NAME);
-                channel.onmessage = (event) => {
-                    const data = event.data;
-                    if (data.type === 'sync') {
-                        // Получаем данные от другой вкладки
-                        const remoteDB = data.payload;
-                        // Обновляем локальную БД, сохраняя текущего пользователя
-                        const currentUserData = db.users[currentUser];
-                        const oldRooms = JSON.stringify(db.rooms);
-                        const oldGames = JSON.stringify(db.games);
-                        
-                        db = remoteDB;
-                        
-                        // Восстанавливаем текущего пользователя
-                        if (currentUserData && db.users[currentUser]) {
-                            db.users[currentUser] = currentUserData;
+        // Инициализация Peer
+        function initPeer() {
+            return new Promise((resolve) => {
+                // Генерируем уникальный ID
+                const id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+                peer = new Peer(id, {
+                    debug: 2
+                });
+
+                peer.on('open', (id) => {
+                    myPeerId = id;
+                    console.log('✅ Peer подключен! ID:', id);
+                    // Сохраняем в localStorage для быстрого доступа
+                    localStorage.setItem('myPeerId', id);
+                    resolve(id);
+                });
+
+                peer.on('connection', (conn) => {
+                    console.log('📡 Входящее соединение от:', conn.peer);
+                    setupConnection(conn);
+                });
+
+                peer.on('error', (err) => {
+                    console.error('❌ Peer ошибка:', err);
+                    showToast('❌ Ошибка соединения: ' + err.message);
+                });
+
+                // Если уже есть сохраненный ID, используем его
+                const savedId = localStorage.getItem('myPeerId');
+                if (savedId) {
+                    // Проверяем, не занят ли ID
+                    setTimeout(() => {
+                        if (myPeerId !== savedId) {
+                            // Переподключаемся с сохраненным ID
+                            peer.destroy();
+                            peer = new Peer(savedId, { debug: 2 });
+                            peer.on('open', (id) => {
+                                myPeerId = id;
+                                console.log('✅ Восстановлен Peer ID:', id);
+                                resolve(id);
+                            });
+                            peer.on('connection', (conn) => {
+                                setupConnection(conn);
+                            });
                         }
-                        
-                        // Обновляем онлайн статус
-                        updateOnlineStatus();
-                        saveDB(db, true);
-                        
-                        // Проверяем, изменились ли комнаты или игры
-                        const newRooms = JSON.stringify(db.rooms);
-                        const newGames = JSON.stringify(db.games);
-                        
-                        if (oldRooms !== newRooms || oldGames !== newGames) {
-                            if (!currentRoom || !gameState) {
-                                render();
-                            } else {
-                                refreshGameState();
-                            }
-                        }
-                    } else if (data.type === 'ping') {
-                        // Ответ на пинг
-                        channel.postMessage({ type: 'pong', sender: currentUser });
-                    } else if (data.type === 'pong') {
-                        // Получили ответ - значит есть другие вкладки
-                        activeTabs.add(data.sender);
-                        updateOnlineCount();
-                    } else if (data.type === 'tab_closed') {
-                        activeTabs.delete(data.sender);
-                        updateOnlineCount();
-                        // Проверяем, не вышел ли кто-то из комнаты
-                        if (data.roomId) {
-                            const room = db.rooms.find(r => r.id === data.roomId);
-                            if (room) {
-                                room.players = room.players.filter(p => p !== data.sender);
-                                if (room.players.length === 0) {
-                                    db.rooms = db.rooms.filter(r => r.id !== data.roomId);
-                                }
-                                saveDB(db, true);
-                                render();
-                            }
-                        }
-                    } else if (data.type === 'name_change') {
-                        // Обновляем имя игрока
-                        if (db.users[data.playerId]) {
-                            db.users[data.playerId].name = data.newName;
-                            saveDB(db, true);
+                    }, 100);
+                }
+            });
+        }
+
+        function setupConnection(conn) {
+            connections[conn.peer] = conn;
+            onlinePlayers[conn.peer] = { id: conn.peer, name: 'Игрок', online: true };
+
+            conn.on('data', (data) => {
+                handlePeerData(conn.peer, data);
+            });
+
+            conn.on('close', () => {
+                delete connections[conn.peer];
+                delete onlinePlayers[conn.peer];
+                showToast(`❌ Игрок ${onlinePlayers[conn.peer]?.name || conn.peer} отключился`);
+                updateOnlineUI();
+                render();
+            });
+
+            // Отправляем приветствие
+            conn.send({
+                type: 'handshake',
+                playerId: myPeerId,
+                playerName: myPlayerName,
+                action: 'join'
+            });
+
+            updateOnlineUI();
+            render();
+        }
+
+        function handlePeerData(peerId, data) {
+            console.log('📨 Получено от', peerId, data.type);
+
+            switch (data.type) {
+                case 'handshake':
+                    if (data.playerName) {
+                        onlinePlayers[peerId] = { id: peerId, name: data.playerName, online: true };
+                        updateOnlineUI();
+                        render();
+                    }
+                    break;
+
+                case 'create_room':
+                    roomData = data.room;
+                    isHost = true;
+                    showToast(`✅ Комната "${roomData.name}" создана!`);
+                    render();
+                    break;
+
+                case 'join_room':
+                    if (roomData && roomData.id === data.roomId) {
+                        if (!roomData.players.includes(peerId)) {
+                            roomData.players.push(peerId);
+                            // Обновляем всех
+                            broadcastToAll({
+                                type: 'room_update',
+                                room: roomData
+                            });
+                            showToast(`👤 Игрок ${onlinePlayers[peerId]?.name || peerId} присоединился`);
                             render();
                         }
                     }
-                };
-                
-                // Отправляем пинг для обнаружения других вкладок
-                setTimeout(() => {
-                    channel.postMessage({ type: 'ping', sender: currentUser });
-                }, 300);
-                
-                // Периодический пинг
-                setInterval(() => {
-                    channel.postMessage({ type: 'ping', sender: currentUser });
-                }, 3000);
-            } catch (e) {
-                console.warn('BroadcastChannel не поддерживается, используется localStorage');
+                    break;
+
+                case 'room_update':
+                    if (roomData && roomData.id === data.room.id) {
+                        roomData = data.room;
+                        render();
+                    }
+                    break;
+
+                case 'start_game':
+                    if (roomData && roomData.id === data.roomId) {
+                        gameState = data.game;
+                        roomData.status = 'playing';
+                        showToast('🎮 Игра началась!');
+                        render();
+                    }
+                    break;
+
+                case 'game_action':
+                    if (gameState) {
+                        // Обновляем состояние игры
+                        gameState = data.gameState;
+                        render();
+                    }
+                    break;
+
+                case 'leave_room':
+                    if (roomData) {
+                        roomData.players = roomData.players.filter(p => p !== peerId);
+                        if (roomData.players.length === 0) {
+                            roomData = null;
+                            gameState = null;
+                            isHost = false;
+                            showToast('📭 Комната закрыта');
+                        } else {
+                            broadcastToAll({
+                                type: 'room_update',
+                                room: roomData
+                            });
+                        }
+                        render();
+                    }
+                    break;
+
+                case 'player_name':
+                    if (onlinePlayers[peerId]) {
+                        onlinePlayers[peerId].name = data.name;
+                        updateOnlineUI();
+                        render();
+                    }
+                    break;
             }
         }
 
-        // Обновление онлайн статуса
-        function updateOnlineStatus() {
-            for (const id in db.users) {
-                db.users[id].online = id === currentUser || activeTabs.has(id);
+        function broadcastToAll(data) {
+            for (const [id, conn] of Object.entries(connections)) {
+                try {
+                    conn.send(data);
+                } catch (e) {
+                    console.warn('Ошибка отправки', id, e);
+                }
             }
-            saveDB(db, true);
         }
 
-        function updateOnlineCount() {
-            const onlineCount = Object.values(db.users).filter(u => u.online).length;
+        function sendToPeer(peerId, data) {
+            if (connections[peerId]) {
+                try {
+                    connections[peerId].send(data);
+                } catch (e) {
+                    console.warn('Ошибка отправки', peerId, e);
+                }
+            }
+        }
+
+        function updateOnlineUI() {
+            const count = Object.keys(connections).length + 1; // +1 это мы
             const statusEl = document.querySelector('.online-count');
             if (statusEl) {
-                statusEl.textContent = onlineCount;
+                statusEl.textContent = count;
             }
-            // Обновляем синхронизацию
-            const syncDot = document.querySelector('.sync-dot');
-            if (syncDot) {
-                syncDot.className = 'sync-dot active';
+            // Обновляем список игроков
+            const listEl = document.querySelector('.online-players');
+            if (listEl) {
+                const allPlayers = {
+                    [myPeerId]: { name: myPlayerName, online: true },
+                    ...onlinePlayers
+                };
+                listEl.innerHTML = Object.values(allPlayers)
+                    .filter(p => p.online)
+                    .map(p => `
+                    <span class="player-chip active">
+                      ${p.name}
+                      <span class="status-dot online"></span>
+                    </span>
+                  `).join('');
             }
-        }
-
-        // Отправка данных в другие вкладки
-        function broadcastSync(silent = false) {
-            if (channel && !isSyncing) {
-                try {
-                    isSyncing = true;
-                    channel.postMessage({
-                        type: 'sync',
-                        payload: db,
-                        sender: currentUser,
-                        timestamp: Date.now()
-                    });
-                    setTimeout(() => { isSyncing = false; }, 100);
-                } catch (e) {
-                    isSyncing = false;
-                    console.warn('Ошибка отправки в канал', e);
-                }
-            }
-        }
-
-        // ---------- БАЗА ДАННЫХ ----------
-        const DB_KEY = 'cardarena_online_db';
-
-        function loadDB() {
-            const raw = localStorage.getItem(DB_KEY);
-            if (raw) {
-                try {
-                    const db = JSON.parse(raw);
-                    // Добавляем недостающих игроков
-                    let changed = false;
-                    for (const [id, data] of Object.entries(DEFAULT_PLAYERS)) {
-                        if (!db.users[id]) {
-                            db.users[id] = data;
-                            changed = true;
-                        }
-                    }
-                    if (changed) {
-                        localStorage.setItem(DB_KEY, JSON.stringify(db));
-                    }
-                    return db;
-                } catch (e) {
-                    console.error('Ошибка загрузки БД', e);
-                }
-            }
-            return createDefaultDB();
-        }
-
-        function createDefaultDB() {
-            const db = {
-                users: { ...DEFAULT_PLAYERS },
-                rooms: [],
-                games: [],
-                nextRoomId: 1,
-                gameCounter: 0,
-                lastUpdate: Date.now(),
-            };
-            localStorage.setItem(DB_KEY, JSON.stringify(db));
-            return db;
-        }
-
-        function saveDB(db, silent = false) {
-            db.lastUpdate = Date.now();
-            localStorage.setItem(DB_KEY, JSON.stringify(db));
-            // Отправляем обновление другим вкладкам
-            if (!silent) {
-                broadcastSync();
-            }
-            // Обновляем счетчик онлайн
-            updateOnlineCount();
         }
 
         // ---------- ГЛОБАЛЬНОЕ СОСТОЯНИЕ ----------
-        let db = loadDB();
-        let currentUser = localStorage.getItem('cardarena_user') || 'player1';
-        let currentRoom = null;
-        let gameState = null;
+        let myPlayerName = localStorage.getItem('myPlayerName') || 'Игрок';
         let selectedGameType = 'durak';
 
-        // Сохраняем текущего игрока
-        localStorage.setItem('cardarena_user', currentUser);
-
-        // ---------- ТОСТ УВЕДОМЛЕНИЯ ----------
+        // ---------- ТОСТ ----------
         function showToast(message, duration = 3000) {
             const existing = document.querySelector('.toast');
             if (existing) existing.remove();
@@ -852,8 +788,10 @@
         const app = document.getElementById('app');
 
         function render() {
-            if (currentRoom && gameState) {
+            if (roomData && roomData.status === 'playing' && gameState) {
                 renderGame();
+            } else if (roomData) {
+                renderRoom();
             } else {
                 renderLobby();
             }
@@ -863,431 +801,147 @@
         //   ЛОББИ
         // ============================================================
         function renderLobby() {
-            const user = db.users[currentUser];
-            if (!user) {
-                db.users[currentUser] = { 
-                    name: `Игрок ${currentUser.slice(-1)}`, 
-                    coins: 1000, 
-                    cardBack: 'default',
-                    suitStyle: 'classic', 
-                    fontStyle: 'serif' 
-                };
-                saveDB(db);
-            }
-
-            // Обновляем онлайн статус
-            updateOnlineStatus();
-
-            const rooms = db.rooms.filter(r => r.status === 'waiting' || r.status === 'playing');
-            const onlineCount = Object.values(db.users).filter(u => u.online).length;
+            const onlineCount = Object.keys(connections).length + 1;
 
             let html = `
             <div class="header">
               <div class="logo">🃏 CardArena Online</div>
               <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-                <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;cursor:pointer;" 
-                      onclick="openNameChange()" title="Нажмите чтобы изменить имя">
-                  👤 ${user.name}
-                  <span class="online-dot" style="display:inline-block;margin-left:8px;"></span>
+                <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">
+                  👤 ${myPlayerName}
+                  <span class="online-dot"></span>
                 </span>
                 <div class="wallet">
                   <span>💰</span>
-                  <span class="coins">${user.coins}</span>
+                  <span class="coins">${localStorage.getItem('myCoins') || 1000}</span>
                 </div>
-                <span class="sync-status">
-                  <span class="sync-dot active"></span>
-                  Онлайн: <span class="online-count">${onlineCount}</span>
+                <span class="online-status">
+                  🌐 Онлайн: <span class="online-count">${onlineCount}</span>
                 </span>
-                <button class="btn-primary" onclick="openCreateRoom()">➕ Создать комнату</button>
-                <button class="btn-secondary" onclick="openCustomization()">🎨 Кастомизация</button>
-                <button class="btn-secondary" onclick="switchPlayer()">🔄 Сменить игрока</button>
+                <span class="peer-id" onclick="copyPeerId()" title="Копировать ID">
+                  🆔 ${myPeerId?.substring(0, 8) || '...'}
+                </span>
+                <button class="btn-secondary" onclick="openNameChange()">✏️ Имя</button>
+                <button class="btn-secondary" onclick="connectToPeer()">🔗 Подключиться</button>
               </div>
             </div>
 
-            <div class="game-selector" style="margin-bottom:16px;">
-          `;
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+              <span class="online-players" style="display:flex;gap:8px;flex-wrap:wrap;">
+                ${Object.values(onlinePlayers).filter(p => p.online).map(p => `
+                  <span class="player-chip active">
+                    ${p.name}
+                    <span class="status-dot online"></span>
+                  </span>
+                `).join('')}
+              </span>
+            </div>
 
-            for (const [key, name] of Object.entries(GAME_NAMES)) {
-                const count = rooms.filter(r => r.gameType === key).length;
-                html += `
-              <button class="${selectedGameType === key ? 'active' : ''}" 
-                      onclick="selectedGameType='${key}';render();">
-                ${name} (${count})
+            <div class="game-selector">
+              ${Object.entries(GAME_NAMES).map(([key, name]) => `
+                <button class="${selectedGameType === key ? 'active' : ''}" 
+                        onclick="selectedGameType='${key}';render();">
+                  ${name}
+                </button>
+              `).join('')}
+            </div>
+
+            <div style="margin:20px 0;text-align:center;">
+              <button class="btn-primary" onclick="openCreateRoom()" style="font-size:20px;padding:16px 40px;">
+                🎯 Создать комнату
               </button>
-            `;
-            }
-
-            html += `
+              <div style="color:#8aaa8a;margin-top:12px;font-size:14px;">
+                Или попросите друга подключиться к вам по ID
+              </div>
             </div>
-
-            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
-              <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">
-                🏠 Всего комнат: ${rooms.length}
-              </span>
-              <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">
-                👥 Онлайн: ${onlineCount} игроков
-              </span>
-            </div>
-
-            <div class="rooms-grid">
           `;
 
-            const filteredRooms = rooms.filter(r => r.gameType === selectedGameType);
-
-            if (filteredRooms.length === 0) {
-                html += `<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:#8aaa8a;font-size:18px;">
-                  Нет активных комнат для ${GAME_NAMES[selectedGameType]}. Создай свою! 🎯
-                </div>`;
-            }
-
-            for (const room of filteredRooms) {
-                const isFull = room.players.length >= room.maxPlayers;
-                const canJoin = room.status === 'waiting' && !isFull && !room.players.includes(currentUser);
-                const isInRoom = room.players.includes(currentUser);
-
-                html += `
-              <div class="room-card">
-                <h3>${room.name || 'Комната #' + room.id}</h3>
-                <div class="meta">
-                  <span>${GAME_NAMES[room.gameType]}</span>
-                  <span>👥 ${room.players.length}/${room.maxPlayers}</span>
-                  ${room.subtype ? `<span>${room.subtype}</span>` : ''}
-                </div>
-                <div class="bet">💰 Ставка: ${room.bet} монет</div>
-                <div style="font-size:14px;color:#8aaa8a;margin:8px 0;">
-                  <div class="player-list">
-                    ${room.players.map(id => {
-                      const p = db.users[id];
-                      return `<span class="player-chip ${id === currentUser ? 'active' : ''}">
-                        ${p?.name || id}
-                        <span class="status-dot ${p?.online ? 'online' : 'offline'}"></span>
-                      </span>`;
-                    }).join('')}
-                  </div>
-                </div>
-                ${room.status === 'playing' ? 
-                  `<div style="color:#f6d365;font-weight:700;text-align:center;">🔄 Игра идёт...</div>` :
-                  isInRoom ? 
-                    `<div style="color:#4caf50;text-align:center;font-weight:600;">✅ Вы в комнате</div>` :
-                    `<button class="btn-join" ${!canJoin ? 'disabled' : ''} 
-                             onclick="joinRoom('${room.id}')">
-                      ${isFull ? '❌ Мест нет' : '🎮 Присоединиться'}
-                    </button>`
-                }
-                ${room.players.includes(currentUser) && room.status === 'waiting' ? 
-                  `<button class="btn-danger" style="margin-top:8px;width:100%;" 
-                           onclick="leaveRoom('${room.id}')">Выйти</button>` : ''
-                }
-              </div>
-            `;
-            }
-
-            html += `</div>`;
             app.innerHTML = html;
         }
 
         // ============================================================
-        //   СМЕНА ИМЕНИ
+        //   КОМНАТА
         // ============================================================
-        window.openNameChange = function() {
-            const user = db.users[currentUser];
-            const modal = document.createElement('div');
-            modal.className = 'modal-overlay';
-            modal.innerHTML = `
-            <div class="modal">
-              <h2>✏️ Сменить имя</h2>
-              <div class="field">
-                <label>Новое имя</label>
-                <input id="newName" value="${user.name}" maxlength="20" />
+        function renderRoom() {
+            if (!roomData) return;
+
+            const isPlayer = roomData.players.includes(myPeerId);
+            const isFull = roomData.players.length >= roomData.maxPlayers;
+            const canStart = isHost && roomData.players.length >= 2;
+
+            let html = `
+            <div class="header">
+              <div class="logo">🏠 ${roomData.name}</div>
+              <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">
+                  👤 ${myPlayerName}
+                  <span class="online-dot"></span>
+                </span>
+                <button class="btn-secondary" onclick="leaveRoom()">🚪 Выйти</button>
               </div>
-              <div class="actions">
-                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Отмена</button>
-                <button class="btn-primary" onclick="applyNameChange()">Сохранить 💾</button>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.2);border-radius:20px;padding:24px;margin-bottom:16px;">
+              <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;">
+                <span>🎮 ${GAME_NAMES[roomData.gameType]}</span>
+                <span>💰 Ставка: ${roomData.bet}</span>
+                <span>👥 ${roomData.players.length}/${roomData.maxPlayers}</span>
+                ${roomData.subtype ? `<span>📌 ${roomData.subtype}</span>` : ''}
+                ${isHost ? '<span style="color:#f6d365;">👑 Вы создатель</span>' : ''}
+              </div>
+
+              <div class="player-list">
+                ${roomData.players.map(id => {
+                  const p = onlinePlayers[id] || { name: id, online: true };
+                  return `<span class="player-chip ${id === myPeerId ? 'active' : ''}">
+                    ${p.name || id.substring(0, 8)}
+                    <span class="status-dot ${p.online ? 'online' : 'offline'}"></span>
+                  </span>`;
+                }).join('')}
+                ${Array.from({length: roomData.maxPlayers - roomData.players.length}, (_, i) => `
+                  <span class="player-chip" style="opacity:0.4;">
+                    🪑 Свободно
+                  </span>
+                `).join('')}
+              </div>
+
+              <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+                ${!isPlayer ? `
+                  <button class="btn-primary" onclick="joinRoom()">🎮 Присоединиться</button>
+                ` : ''}
+                ${canStart ? `
+                  <button class="btn-primary" onclick="startGame()">🚀 Начать игру</button>
+                ` : ''}
+                ${isHost ? `
+                  <button class="btn-danger" onclick="closeRoom()">❌ Закрыть комнату</button>
+                ` : ''}
               </div>
             </div>
           `;
-            document.body.appendChild(modal);
 
-            window.applyNameChange = function() {
-                const newName = document.getElementById('newName').value.trim();
-                if (!newName) {
-                    showToast('❌ Имя не может быть пустым');
-                    return;
-                }
-                const oldName = db.users[currentUser].name;
-                db.users[currentUser].name = newName;
-                saveDB(db);
-                document.querySelector('.modal-overlay')?.remove();
-                showToast(`✅ Имя изменено на "${newName}"`);
-                
-                // Уведомляем других о смене имени
-                if (channel) {
-                    try {
-                        channel.postMessage({
-                            type: 'name_change',
-                            playerId: currentUser,
-                            newName: newName
-                        });
-                    } catch (e) {}
-                }
-                render();
-            };
-        };
-
-        // ============================================================
-        //   СОЗДАНИЕ КОМНАТЫ
-        // ============================================================
-        window.openCreateRoom = function() {
-            const modal = document.createElement('div');
-            modal.className = 'modal-overlay';
-            modal.innerHTML = `
-            <div class="modal">
-              <h2>🏗️ Создать комнату</h2>
-              <div class="field">
-                <label>Название комнаты</label>
-                <input id="roomName" placeholder="Моя крутая комната" value="Комната ${db.rooms.length + 1}" />
-              </div>
-              <div class="field">
-                <label>Игра</label>
-                <select id="roomGameType" onchange="updateSubtypes()">
-                  ${Object.entries(GAME_NAMES).map(([key, name]) => 
-                    `<option value="${key}" ${key === selectedGameType ? 'selected' : ''}>${name}</option>`
-                  ).join('')}
-                </select>
-              </div>
-              <div class="field">
-                <label>Тип игры</label>
-                <select id="roomSubtype">
-                  ${GAME_SUBTYPES[selectedGameType].map(s => `<option value="${s}">${s}</option>`).join('')}
-                </select>
-              </div>
-              <div class="field">
-                <label>Ставка (монеты)</label>
-                <input id="roomBet" type="number" value="50" min="10" step="10" />
-              </div>
-              <div class="field">
-                <label>Максимум игроков</label>
-                <select id="roomMaxPlayers">
-                  ${Array.from({length: GAME_MAX_PLAYERS[selectedGameType] - 1}, (_, i) => i + 2).map(n => 
-                    `<option value="${n}" ${n === 4 ? 'selected' : ''}>${n}</option>`
-                  ).join('')}
-                </select>
-              </div>
-              <div class="actions">
-                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Отмена</button>
-                <button class="btn-primary" onclick="createRoomFromModal()">Создать 🚀</button>
-              </div>
-            </div>
-          `;
-            document.body.appendChild(modal);
-
-            window.updateSubtypes = function() {
-                const gameType = document.getElementById('roomGameType').value;
-                const subtypesList = GAME_SUBTYPES[gameType] || ['Классический'];
-                const select = document.getElementById('roomSubtype');
-                select.innerHTML = subtypesList.map(s => `<option value="${s}">${s}</option>`).join('');
-            };
-
-            window.createRoomFromModal = function() {
-                const name = document.getElementById('roomName').value || 'Комната';
-                const gameType = document.getElementById('roomGameType').value;
-                const subtype = document.getElementById('roomSubtype').value;
-                const bet = parseInt(document.getElementById('roomBet').value) || 50;
-                const maxPlayers = parseInt(document.getElementById('roomMaxPlayers').value) || 4;
-
-                const user = db.users[currentUser];
-                if (user.coins < bet) {
-                    showToast('❌ Недостаточно монет!');
-                    return;
-                }
-
-                const room = {
-                    id: 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-                    name,
-                    gameType,
-                    subtype,
-                    bet,
-                    maxPlayers,
-                    players: [currentUser],
-                    status: 'waiting',
-                    createdAt: Date.now(),
-                    creator: currentUser,
-                };
-
-                db.rooms.push(room);
-                user.coins -= bet;
-                saveDB(db);
-                document.querySelector('.modal-overlay')?.remove();
-                showToast(`✅ Комната "${name}" создана! Ожидаем игроков...`);
-                render();
-            };
-        };
-
-        // ============================================================
-        //   ПРИСОЕДИНЕНИЕ К КОМНАТЕ
-        // ============================================================
-        window.joinRoom = function(roomId) {
-            const room = db.rooms.find(r => r.id === roomId);
-            if (!room) {
-                showToast('❌ Комната не найдена');
-                return;
-            }
-
-            const user = db.users[currentUser];
-            if (user.coins < room.bet) {
-                showToast('❌ Недостаточно монет для ставки!');
-                return;
-            }
-
-            if (room.players.includes(currentUser)) {
-                showToast('Вы уже в комнате!');
-                return;
-            }
-
-            if (room.players.length >= room.maxPlayers) {
-                showToast('❌ Комната заполнена!');
-                return;
-            }
-
-            room.players.push(currentUser);
-            user.coins -= room.bet;
-            saveDB(db);
-            showToast(`✅ Вы присоединились к комнате "${room.name}"`);
-
-            if (room.players.length === room.maxPlayers) {
-                startGame(roomId);
-            } else {
-                render();
-            }
-        };
-
-        window.leaveRoom = function(roomId) {
-            const room = db.rooms.find(r => r.id === roomId);
-            if (!room) return;
-
-            const user = db.users[currentUser];
-            user.coins += room.bet;
-
-            room.players = room.players.filter(p => p !== currentUser);
-            if (room.players.length === 0) {
-                db.rooms = db.rooms.filter(r => r.id !== roomId);
-            }
-            saveDB(db);
-            showToast('Вы вышли из комнаты');
-            render();
-        };
-
-        // ============================================================
-        //   ЗАПУСК ИГРЫ
-        // ============================================================
-        function startGame(roomId) {
-            const room = db.rooms.find(r => r.id === roomId);
-            if (!room) return;
-
-            room.status = 'playing';
-            const deck = shuffle(createDeck());
-
-            const game = {
-                roomId: room.id,
-                gameType: room.gameType,
-                subtype: room.subtype,
-                players: room.players,
-                deck: deck,
-                trump: null,
-                hands: {},
-                table: [],
-                turn: 0,
-                phase: 'betting',
-                pot: room.bet * room.players.length,
-                communityCards: [],
-                currentBets: {},
-                folded: [],
-                lastRaise: 0,
-                round: 0,
-                status: 'playing',
-                dealerHand: [],
-                startedAt: Date.now(),
-            };
-
-            // Раздача карт
-            const handsCount = room.gameType === 'poker' ? 2 :
-                room.gameType === 'blackjack' ? 2 :
-                room.gameType === 'durak' ? 6 : 5;
-
-            for (const p of room.players) {
-                game.hands[p] = [];
-                for (let i = 0; i < handsCount; i++) {
-                    if (deck.length > 0) {
-                        game.hands[p].push(deck.pop());
-                    }
-                }
-            }
-
-            // Козырь для Дурака
-            if (room.gameType === 'durak' && deck.length > 0) {
-                game.trump = deck.pop();
-                game.deck.unshift(game.trump);
-            }
-
-            // Покер - флоп
-            if (room.gameType === 'poker') {
-                deck.pop();
-                game.communityCards = [];
-                for (let i = 0; i < 3; i++) {
-                    if (deck.length > 0) game.communityCards.push(deck.pop());
-                }
-            }
-
-            // Блэкджек - дилер
-            if (room.gameType === 'blackjack') {
-                if (deck.length > 0) game.dealerHand.push(deck.pop());
-                if (deck.length > 0) game.dealerHand.push(deck.pop());
-            }
-
-            game.id = 'game_' + Date.now();
-            db.games.push(game);
-            saveDB(db);
-
-            gameState = game;
-            currentRoom = room;
-            showToast(`🎮 Игра "${GAME_NAMES[room.gameType]}" началась!`);
-            render();
+            app.innerHTML = html;
         }
 
         // ============================================================
-        //   ОТОБРАЖЕНИЕ ИГРЫ (упрощено для компактности)
+        //   ИГРА
         // ============================================================
         function renderGame() {
-            if (!gameState || !currentRoom) {
-                renderLobby();
-                return;
-            }
+            if (!gameState || !roomData) return;
 
             const game = gameState;
-            const room = currentRoom;
-            const user = db.users[currentUser];
-            const isPlayer = game.players.includes(currentUser);
-            const playerIndex = game.players.indexOf(currentUser);
-
-            if (game.status === 'finished') {
-                showToast('Игра завершена');
-                leaveGame();
-                return;
-            }
+            const isPlayer = game.players.includes(myPeerId);
+            const playerIndex = game.players.indexOf(myPeerId);
+            const myHand = game.hands[myPeerId] || [];
 
             let html = `
             <div class="header">
               <div class="logo">🃏 ${GAME_NAMES[game.gameType]}</div>
               <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-                <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">👤 ${user.name}</span>
+                <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">👤 ${myPlayerName}</span>
                 <div class="wallet">
                   <span>💰</span>
-                  <span class="coins">${user.coins}</span>
+                  <span class="coins">${localStorage.getItem('myCoins') || 1000}</span>
                 </div>
-                <span class="sync-status">
-                  <span class="sync-dot active"></span>
-                  Онлайн: ${Object.values(db.users).filter(u => u.online).length}
-                </span>
                 <button class="btn-secondary" onclick="leaveGame()">🚪 Выйти</button>
               </div>
             </div>
@@ -1295,38 +949,32 @@
             <div class="game-table">
               <div class="game-top">
                 <div class="game-info">
-                  <span>🏠 ${room.name}</span>
+                  <span>🏠 ${roomData.name}</span>
                   <span>💰 Банк: ${game.pot}</span>
                   <span>👥 ${game.players.length} игроков</span>
-                  ${game.trump ? `<span class="trump">Козырь: <span class="trump-suit">${game.trump.suit}</span></span>` : ''}
+                  ${game.trump ? `<span>Козырь: ${game.trump.suit}</span>` : ''}
                   ${game.subtype ? `<span>Тип: ${game.subtype}</span>` : ''}
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                   ${game.players.map((p, i) => `
                     <span style="background:${i === playerIndex ? '#f6d365' : '#1a2a1a'};padding:4px 12px;border-radius:20px;color:${i === playerIndex ? '#1a2a1a' : '#e8f0e8'};">
-                      ${db.users[p]?.name || p} ${i === game.turn ? '🎯' : ''}
+                      ${onlinePlayers[p]?.name || p.substring(0, 8)} ${i === game.turn ? '🎯' : ''}
                     </span>
                   `).join('')}
                 </div>
               </div>
-          `;
 
-            // Упрощенная отрисовка для всех игр
-            const myHand = game.hands[currentUser] || [];
-            html += `
-            <div class="player-area">
-              <div class="label">🃏 Ваши карты (${myHand.length})</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-                ${myHand.map((c, i) => `
-                  <div onclick="gameAction('${game.gameType}', 'play', ${i})" style="cursor:pointer;">
-                    ${drawCardHTML(c)}
-                  </div>
-                `).join('')}
+              <div class="player-area">
+                <div class="label">🃏 Ваши карты (${myHand.length})</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                  ${myHand.map((c, i) => `
+                    <div onclick="gameAction('${game.gameType}', 'play', ${i})" style="cursor:pointer;">
+                      ${drawCardHTML(c)}
+                    </div>
+                  `).join('')}
+                </div>
               </div>
-            </div>
-          `;
 
-            html += `
               <div class="game-actions">
                 ${renderGameActions(game, playerIndex)}
               </div>
@@ -1336,13 +984,9 @@
             app.innerHTML = html;
         }
 
-        // ============================================================
-        //   ДЕЙСТВИЯ В ИГРЕ (упрощенные)
-        // ============================================================
-
         function renderGameActions(game, playerIndex) {
             const isMyTurn = game.turn === playerIndex;
-            const isPlayer = game.players.includes(currentUser);
+            const isPlayer = game.players.includes(myPeerId);
 
             if (!isPlayer) return '<div style="color:#8aaa8a;">Наблюдатель</div>';
 
@@ -1377,537 +1021,376 @@
               `;
                     break;
 
-                case 'pig':
-                    actions = `
-                <button class="btn-primary" onclick="gameAction('pig','draw')">Взять</button>
-                <button class="btn-secondary" onclick="gameAction('pig','pass')">Пас</button>
-              `;
-                    break;
-
-                case 'twentyone':
-                    actions = `
-                <button class="btn-primary" onclick="gameAction('twentyone','draw')">Взять</button>
-                <button class="btn-secondary" onclick="gameAction('twentyone','stand')">Стоп</button>
-              `;
-                    break;
-
-                case 'goat':
-                    actions = `
-                <button class="btn-primary" onclick="gameAction('goat','play')">Сыграть</button>
-                <button class="btn-secondary" onclick="gameAction('goat','pass')">Пас</button>
-              `;
-                    break;
+                default:
+                    actions = '<span style="color:#8aaa8a;">Игра в разработке</span>';
             }
 
             return actions;
         }
 
         // ============================================================
-        //   ОБОБЩЕННЫЕ ИГРОВЫЕ ДЕЙСТВИЯ
+        //   ИГРОВЫЕ ДЕЙСТВИЯ
         // ============================================================
 
         window.gameAction = function(gameType, action, cardIndex) {
             if (!gameState) return;
             const game = gameState;
 
-            switch (gameType) {
-                case 'durak':
-                    handleDurakAction(game, action, cardIndex);
-                    break;
-                case 'poker':
-                    handlePokerAction(game, action);
-                    break;
-                case 'blackjack':
-                    handleBlackjackAction(game, action);
-                    break;
-                case 'pig':
-                    handlePigAction(game, action);
-                    break;
-                case 'twentyone':
-                    handleTwentyOneAction(game, action);
-                    break;
-                case 'goat':
-                    handleGoatAction(game, action);
-                    break;
-            }
-        };
+            // Логика игры (упрощенная для демо)
+            if (gameType === 'durak') {
+                if (action === 'play' && cardIndex !== undefined) {
+                    const hand = game.hands[myPeerId];
+                    const card = hand[cardIndex];
+                    if (!card) return;
 
-        function handleDurakAction(game, action, cardIndex) {
-            if (action === 'play' && cardIndex !== undefined) {
-                const hand = game.hands[currentUser];
-                const card = hand[cardIndex];
-                if (!card) return;
-
-                if (game.table.length > 0) {
-                    const lastCard = game.table[game.table.length - 1];
-                    if (game.subtype === 'Классический' || game.subtype === 'Подкидной') {
-                        if (card.rank !== lastCard.rank) {
-                            showToast('Можно подкидывать только карты того же номинала!');
-                            return;
-                        }
-                    }
-                }
-
-                hand.splice(cardIndex, 1);
-                game.table.push(card);
-                game.turn = (game.turn + 1) % game.players.length;
-                saveDB(db);
-                render();
-            } else if (action === 'pass') {
-                game.turn = (game.turn + 1) % game.players.length;
-                saveDB(db);
-                render();
-            } else if (action === 'take') {
-                const hand = game.hands[currentUser];
-                while (game.table.length > 0) {
-                    hand.push(game.table.pop());
-                }
-                game.turn = (game.turn + 1) % game.players.length;
-                saveDB(db);
-                render();
-            }
-            checkGameEnd(game);
-        }
-
-        function handlePokerAction(game, action) {
-            const bet = 20;
-
-            if (action === 'fold') {
-                if (!game.folded) game.folded = [];
-                game.folded.push(currentUser);
-                game.turn = (game.turn + 1) % game.players.length;
-            } else if (action === 'check' || action === 'bet') {
-                const amount = action === 'check' ? 0 : bet;
-                if (!game.currentBets) game.currentBets = {};
-                game.currentBets[currentUser] = (game.currentBets[currentUser] || 0) + amount;
-                game.pot += amount;
-                game.turn = (game.turn + 1) % game.players.length;
-            }
-
-            const activePlayers = game.players.filter(p => !game.folded?.includes(p));
-            if (activePlayers.length === 1) {
-                const winner = activePlayers[0];
-                const user = db.users[winner];
-                user.coins += game.pot;
-                game.status = 'finished';
-                showToast(`🏆 Победитель: ${db.users[winner]?.name || winner}!`);
-                saveDB(db);
-                leaveGame();
-                return;
-            }
-
-            saveDB(db);
-            render();
-        }
-
-        function handleBlackjackAction(game, action) {
-            if (action === 'hit') {
-                const hand = game.hands[currentUser];
-                if (game.deck.length > 0) {
-                    hand.push(game.deck.pop());
-                    if (handScore(hand) > 21) {
-                        showToast('💥 Перебор!');
-                        game.phase = 'showdown';
-                        saveDB(db);
-                        render();
-                        return;
-                    }
-                }
-            } else if (action === 'stand') {
-                game.phase = 'showdown';
-                const dealerHand = game.dealerHand || [];
-                while (handScore(dealerHand) < 17 && game.deck.length > 0) {
-                    dealerHand.push(game.deck.pop());
-                }
-                const myScore = handScore(game.hands[currentUser]);
-                const dealerScore = handScore(dealerHand);
-                const user = db.users[currentUser];
-
-                if (dealerScore > 21 || myScore > dealerScore) {
-                    user.coins += game.pot * 2;
-                    showToast(`🎉 Вы выиграли! ${game.pot * 2} монет!`);
-                } else if (myScore === dealerScore) {
-                    user.coins += game.pot;
-                    showToast(`🤝 Ничья! Возврат ${game.pot} монет`);
-                } else {
-                    showToast(`😔 Дилер победил!`);
-                }
-                game.status = 'finished';
-                saveDB(db);
-                leaveGame();
-                return;
-            }
-            saveDB(db);
-            render();
-        }
-
-        function handlePigAction(game, action) {
-            if (action === 'draw') {
-                const hand = game.hands[currentUser];
-                if (game.deck.length > 0) {
-                    hand.push(game.deck.pop());
-                }
-                const values = hand.map(c => c.rank);
-                for (const v of values) {
-                    if (values.filter(x => x === v).length === 4) {
-                        showToast('🐷 У вас 4 одинаковые карты! +100 монет!');
-                        const user = db.users[currentUser];
-                        user.coins += 100;
-                        game.pot -= 100;
-                        game.status = 'finished';
-                        saveDB(db);
-                        leaveGame();
-                        return;
-                    }
-                }
-                game.turn = (game.turn + 1) % game.players.length;
-            } else if (action === 'pass') {
-                game.turn = (game.turn + 1) % game.players.length;
-            }
-            saveDB(db);
-            render();
-        }
-
-        function handleTwentyOneAction(game, action) {
-            if (action === 'draw') {
-                const hand = game.hands[currentUser];
-                if (game.deck.length > 0) {
-                    hand.push(game.deck.pop());
-                }
-                const score = handScore(hand);
-                if (score === 21) {
-                    showToast('🎉 21! Вы выиграли!');
-                    const user = db.users[currentUser];
-                    user.coins += game.pot * 2;
-                    game.status = 'finished';
-                    saveDB(db);
-                    leaveGame();
-                    return;
-                } else if (score > 21) {
-                    showToast('💥 Перебор!');
-                    game.status = 'finished';
-                    saveDB(db);
-                    leaveGame();
-                    return;
-                }
-            } else if (action === 'stand') {
-                let winner = currentUser;
-                let maxScore = handScore(game.hands[currentUser]);
-                for (const p of game.players) {
-                    if (p !== currentUser) {
-                        const score = handScore(game.hands[p] || []);
-                        if (score <= 21 && score > maxScore) {
-                            maxScore = score;
-                            winner = p;
-                        }
-                    }
-                }
-                const user = db.users[winner];
-                user.coins += game.pot;
-                showToast(`🏆 Победитель: ${db.users[winner]?.name || winner}!`);
-                game.status = 'finished';
-                saveDB(db);
-                leaveGame();
-                return;
-            }
-            saveDB(db);
-            render();
-        }
-
-        function handleGoatAction(game, action) {
-            if (action === 'play') {
-                const hand = game.hands[currentUser];
-                if (hand.length > 0) {
-                    const card = hand.pop();
+                    hand.splice(cardIndex, 1);
                     game.table.push(card);
-                    const values = game.table.map(c => c.rank);
-                    const counts = {};
-                    for (const v of values) {
-                        counts[v] = (counts[v] || 0) + 1;
+                    game.turn = (game.turn + 1) % game.players.length;
+                } else if (action === 'pass') {
+                    game.turn = (game.turn + 1) % game.players.length;
+                } else if (action === 'take') {
+                    const hand = game.hands[myPeerId];
+                    while (game.table.length > 0) {
+                        hand.push(game.table.pop());
                     }
-                    for (const [v, count] of Object.entries(counts)) {
-                        if (count >= 3) {
-                            showToast(`🐐 Козёл! +50 монет!`);
-                            const user = db.users[currentUser];
-                            user.coins += 50;
-                            game.pot -= 50;
-                            game.status = 'finished';
-                            saveDB(db);
-                            leaveGame();
-                            return;
-                        }
-                    }
-                }
-                game.turn = (game.turn + 1) % game.players.length;
-            } else if (action === 'pass') {
-                game.turn = (game.turn + 1) % game.players.length;
-            }
-            saveDB(db);
-            render();
-        }
-
-        function checkGameEnd(game) {
-            if (game.gameType !== 'durak') return;
-
-            let emptyHands = 0;
-            let lastPlayer = null;
-            for (const p of game.players) {
-                if (game.hands[p].length === 0) {
-                    emptyHands++;
-                    lastPlayer = p;
+                    game.turn = (game.turn + 1) % game.players.length;
                 }
             }
 
-            if (emptyHands === game.players.length - 1) {
-                const winner = lastPlayer;
-                const user = db.users[winner];
-                user.coins += game.pot;
-                game.status = 'finished';
-                showToast(`🏆 Победитель: ${db.users[winner]?.name || winner}! Выиграно ${game.pot} монет!`);
-                saveDB(db);
-                setTimeout(() => {
-                    if (currentRoom) {
-                        db.rooms = db.rooms.filter(r => r.id !== currentRoom.id);
-                        saveDB(db);
-                    }
-                    leaveGame();
-                }, 3000);
-                return;
-            }
+            // Отправляем обновление всем
+            broadcastToAll({
+                type: 'game_action',
+                gameState: game
+            });
 
-            if (game.deck && game.deck.length > 0) {
-                for (const p of game.players) {
-                    while (game.hands[p].length < 6 && game.deck.length > 0) {
-                        game.hands[p].push(game.deck.pop());
-                    }
-                }
-            }
-            saveDB(db);
-            render();
-        }
-
-        // ============================================================
-        //   ВЫХОД ИЗ ИГРЫ
-        // ============================================================
-        window.leaveGame = function() {
-            if (currentRoom) {
-                const room = db.rooms.find(r => r.id === currentRoom.id);
-                if (room) {
-                    if (room.status === 'finished' || gameState?.status === 'finished') {
-                        db.rooms = db.rooms.filter(r => r.id !== room.id);
-                    } else {
-                        room.players = room.players.filter(p => p !== currentUser);
-                        if (room.players.length === 0) {
-                            db.rooms = db.rooms.filter(r => r.id !== room.id);
-                        } else {
-                            room.status = 'waiting';
-                        }
-                    }
-                    saveDB(db);
-                }
-            }
-            currentRoom = null;
-            gameState = null;
             render();
         };
 
         // ============================================================
-        //   КАСТОМИЗАЦИЯ
+        //   УПРАВЛЕНИЕ КОМНАТАМИ
         // ============================================================
-        window.openCustomization = function() {
-            const user = db.users[currentUser];
+
+        window.openCreateRoom = function() {
             const modal = document.createElement('div');
             modal.className = 'modal-overlay';
             modal.innerHTML = `
             <div class="modal">
-              <h2>🎨 Кастомизация</h2>
+              <h2>🏗️ Создать комнату</h2>
               <div class="field">
-                <label>Рубашка карты</label>
-                <select id="cardBack">
-                  <option value="default" ${user.cardBack === 'default' ? 'selected' : ''}>Классическая</option>
-                  <option value="gold" ${user.cardBack === 'gold' ? 'selected' : ''}>Золотая (100 монет)</option>
-                  <option value="neon" ${user.cardBack === 'neon' ? 'selected' : ''}>Неоновая (150 монет)</option>
-                  <option value="space" ${user.cardBack === 'space' ? 'selected' : ''}>Космическая (200 монет)</option>
+                <label>Название комнаты</label>
+                <input id="roomName" value="Комната ${Date.now().toString().slice(-4)}" />
+              </div>
+              <div class="field">
+                <label>Игра</label>
+                <select id="roomGameType">
+                  ${Object.entries(GAME_NAMES).map(([key, name]) => 
+                    `<option value="${key}" ${key === selectedGameType ? 'selected' : ''}>${name}</option>`
+                  ).join('')}
                 </select>
               </div>
               <div class="field">
-                <label>Вид масти</label>
-                <select id="suitStyle">
-                  <option value="classic" ${user.suitStyle === 'classic' ? 'selected' : ''}>Классический</option>
-                  <option value="gold" ${user.suitStyle === 'gold' ? 'selected' : ''}>Золотой (80 монет)</option>
-                  <option value="neon" ${user.suitStyle === 'neon' ? 'selected' : ''}>Неоновый (120 монет)</option>
+                <label>Тип</label>
+                <select id="roomSubtype">
+                  ${GAME_SUBTYPES[selectedGameType].map(s => `<option value="${s}">${s}</option>`).join('')}
                 </select>
               </div>
               <div class="field">
-                <label>Шрифт</label>
-                <select id="fontStyle">
-                  <option value="serif" ${user.fontStyle === 'serif' ? 'selected' : ''}>Классический</option>
-                  <option value="gothic" ${user.fontStyle === 'gothic' ? 'selected' : ''}>Готический (50 монет)</option>
-                  <option value="cyber" ${user.fontStyle === 'cyber' ? 'selected' : ''}>Кибер (100 монет)</option>
+                <label>Ставка</label>
+                <input id="roomBet" type="number" value="50" />
+              </div>
+              <div class="field">
+                <label>Максимум игроков</label>
+                <select id="roomMaxPlayers">
+                  ${[2,3,4,5,6].map(n => 
+                    `<option value="${n}" ${n === 4 ? 'selected' : ''}>${n}</option>`
+                  ).join('')}
                 </select>
               </div>
               <div class="actions">
                 <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Отмена</button>
-                <button class="btn-primary" onclick="applyCustomization()">Применить 💾</button>
+                <button class="btn-primary" onclick="createRoom()">Создать</button>
               </div>
             </div>
           `;
             document.body.appendChild(modal);
 
-            window.applyCustomization = function() {
-                const user = db.users[currentUser];
-                const cardBack = document.getElementById('cardBack').value;
-                const suitStyle = document.getElementById('suitStyle').value;
-                const fontStyle = document.getElementById('fontStyle').value;
+            window.createRoom = function() {
+                const name = document.getElementById('roomName').value;
+                const gameType = document.getElementById('roomGameType').value;
+                const subtype = document.getElementById('roomSubtype').value;
+                const bet = parseInt(document.getElementById('roomBet').value);
+                const maxPlayers = parseInt(document.getElementById('roomMaxPlayers').value);
 
-                const costs = {
-                    cardBack: { gold: 100, neon: 150, space: 200 },
-                    suitStyle: { gold: 80, neon: 120 },
-                    fontStyle: { gothic: 50, cyber: 100 }
+                roomData = {
+                    id: 'room_' + Date.now(),
+                    name,
+                    gameType,
+                    subtype,
+                    bet,
+                    maxPlayers,
+                    players: [myPeerId],
+                    status: 'waiting',
+                    creator: myPeerId,
                 };
 
-                let totalCost = 0;
-                if (cardBack !== 'default' && user.cardBack !== cardBack) {
-                    totalCost += costs.cardBack[cardBack] || 0;
-                }
-                if (suitStyle !== 'classic' && user.suitStyle !== suitStyle) {
-                    totalCost += costs.suitStyle[suitStyle] || 0;
-                }
-                if (fontStyle !== 'serif' && user.fontStyle !== fontStyle) {
-                    totalCost += costs.fontStyle[fontStyle] || 0;
-                }
+                isHost = true;
 
-                if (totalCost > 0 && user.coins < totalCost) {
-                    showToast(`❌ Недостаточно монет! Нужно ${totalCost}, у вас ${user.coins}`);
+                // Отправляем создание комнаты всем подключенным
+                broadcastToAll({
+                    type: 'create_room',
+                    room: roomData
+                });
+
+                document.querySelector('.modal-overlay')?.remove();
+                showToast(`✅ Комната "${name}" создана!`);
+                render();
+            };
+        };
+
+        window.joinRoom = function() {
+            if (!roomData) return;
+            if (roomData.players.includes(myPeerId)) {
+                showToast('Вы уже в комнате');
+                return;
+            }
+            if (roomData.players.length >= roomData.maxPlayers) {
+                showToast('❌ Комната заполнена');
+                return;
+            }
+
+            roomData.players.push(myPeerId);
+            broadcastToAll({
+                type: 'join_room',
+                roomId: roomData.id
+            });
+
+            showToast('✅ Вы присоединились!');
+            render();
+        };
+
+        window.startGame = function() {
+            if (!roomData || !isHost) return;
+            if (roomData.players.length < 2) {
+                showToast('❌ Нужно минимум 2 игрока');
+                return;
+            }
+
+            // Создаем игру
+            const deck = shuffle(createDeck());
+            const game = {
+                roomId: roomData.id,
+                gameType: roomData.gameType,
+                subtype: roomData.subtype,
+                players: roomData.players,
+                deck: deck,
+                trump: null,
+                hands: {},
+                table: [],
+                turn: 0,
+                pot: roomData.bet * roomData.players.length,
+                communityCards: [],
+                currentBets: {},
+                folded: [],
+                status: 'playing',
+                dealerHand: [],
+                phase: 'betting',
+            };
+
+            // Раздаем карты
+            const count = roomData.gameType === 'durak' ? 6 : 2;
+            for (const p of roomData.players) {
+                game.hands[p] = [];
+                for (let i = 0; i < count; i++) {
+                    if (deck.length > 0) game.hands[p].push(deck.pop());
+                }
+            }
+
+            if (roomData.gameType === 'durak' && deck.length > 0) {
+                game.trump = deck.pop();
+                game.deck.unshift(game.trump);
+            }
+
+            gameState = game;
+            roomData.status = 'playing';
+
+            broadcastToAll({
+                type: 'start_game',
+                roomId: roomData.id,
+                game: game
+            });
+
+            showToast('🎮 Игра началась!');
+            render();
+        };
+
+        window.leaveRoom = function() {
+            if (roomData) {
+                roomData.players = roomData.players.filter(p => p !== myPeerId);
+                if (roomData.players.length === 0) {
+                    roomData = null;
+                    gameState = null;
+                    isHost = false;
+                } else {
+                    broadcastToAll({
+                        type: 'leave_room',
+                        playerId: myPeerId
+                    });
+                }
+                showToast('Вы вышли из комнаты');
+                render();
+            }
+        };
+
+        window.closeRoom = function() {
+            if (isHost && roomData) {
+                roomData = null;
+                gameState = null;
+                isHost = false;
+                broadcastToAll({
+                    type: 'close_room'
+                });
+                showToast('📭 Комната закрыта');
+                render();
+            }
+        };
+
+        window.leaveGame = function() {
+            gameState = null;
+            if (roomData) {
+                roomData.status = 'waiting';
+                broadcastToAll({
+                    type: 'room_update',
+                    room: roomData
+                });
+            }
+            render();
+        };
+
+        // ============================================================
+        //   ПОДКЛЮЧЕНИЕ К ДРУГИМ ИГРОКАМ
+        // ============================================================
+
+        window.connectToPeer = function() {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+            <div class="modal">
+              <h2>🔗 Подключиться к игроку</h2>
+              <div class="field">
+                <label>Peer ID игрока</label>
+                <input id="peerIdInput" placeholder="Введите ID..." />
+              </div>
+              <div style="color:#8aaa8a;font-size:14px;margin-bottom:16px;">
+                Ваш ID: <strong style="color:#f6d365;">${myPeerId}</strong>
+                <button class="btn-secondary" style="padding:4px 12px;font-size:12px;margin-left:8px;" 
+                        onclick="copyPeerId()">📋 Копировать</button>
+              </div>
+              <div class="actions">
+                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Отмена</button>
+                <button class="btn-primary" onclick="connectToId()">Подключиться</button>
+              </div>
+            </div>
+          `;
+            document.body.appendChild(modal);
+
+            window.connectToId = function() {
+                const id = document.getElementById('peerIdInput').value.trim();
+                if (!id) {
+                    showToast('❌ Введите Peer ID');
+                    return;
+                }
+                if (id === myPeerId) {
+                    showToast('❌ Это ваш ID');
                     return;
                 }
 
-                user.coins -= totalCost;
-                user.cardBack = cardBack;
-                user.suitStyle = suitStyle;
-                user.fontStyle = fontStyle;
-                saveDB(db);
+                const conn = peer.connect(id);
+                conn.on('open', () => {
+                    connections[id] = conn;
+                    onlinePlayers[id] = { id, name: 'Игрок', online: true };
+                    showToast(`✅ Подключено к ${id}!`);
+                    document.querySelector('.modal-overlay')?.remove();
+                    setupConnection(conn);
+                    render();
+                });
+
+                conn.on('error', (err) => {
+                    showToast('❌ Ошибка подключения: ' + err.message);
+                });
+            };
+        };
+
+        window.copyPeerId = function() {
+            if (myPeerId) {
+                navigator.clipboard?.writeText(myPeerId);
+                showToast('📋 Peer ID скопирован!');
+            }
+        };
+
+        window.openNameChange = function() {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+            <div class="modal">
+              <h2>✏️ Сменить имя</h2>
+              <div class="field">
+                <label>Новое имя</label>
+                <input id="newName" value="${myPlayerName}" maxlength="20" />
+              </div>
+              <div class="actions">
+                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Отмена</button>
+                <button class="btn-primary" onclick="applyNameChange()">Сохранить</button>
+              </div>
+            </div>
+          `;
+            document.body.appendChild(modal);
+
+            window.applyNameChange = function() {
+                const newName = document.getElementById('newName').value.trim();
+                if (!newName) {
+                    showToast('❌ Имя не может быть пустым');
+                    return;
+                }
+                myPlayerName = newName;
+                localStorage.setItem('myPlayerName', newName);
+
+                // Уведомляем всех
+                broadcastToAll({
+                    type: 'player_name',
+                    name: newName
+                });
+
                 document.querySelector('.modal-overlay')?.remove();
-                showToast(`✅ Кастомизация применена! Потрачено ${totalCost} монет`);
+                showToast(`✅ Имя изменено на "${newName}"`);
                 render();
             };
         };
 
         // ============================================================
-        //   ПЕРЕКЛЮЧЕНИЕ ИГРОКА
-        // ============================================================
-        window.switchPlayer = function() {
-            const players = Object.keys(db.users);
-            const currentIndex = players.indexOf(currentUser);
-            const nextIndex = (currentIndex + 1) % players.length;
-            currentUser = players[nextIndex];
-            localStorage.setItem('cardarena_user', currentUser);
-            if (currentRoom) {
-                leaveGame();
-            } else {
-                render();
-                showToast(`👤 Переключено на ${db.users[currentUser]?.name}`);
-            }
-        };
-
-        // ============================================================
-        //   АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ (фоновая)
-        // ============================================================
-
-        function autoSync() {
-            // Проверяем, не изменилась ли БД
-            const freshDB = loadDB();
-            const oldRooms = JSON.stringify(db.rooms);
-            const oldGames = JSON.stringify(db.games);
-            const newRooms = JSON.stringify(freshDB.rooms);
-            const newGames = JSON.stringify(freshDB.games);
-            
-            if (oldRooms !== newRooms || oldGames !== newGames) {
-                db = freshDB;
-                if (!currentRoom || !gameState) {
-                    render();
-                } else {
-                    refreshGameState();
-                }
-            }
-            
-            // Обновляем онлайн статус
-            updateOnlineStatus();
-            
-            // Обновляем счетчик
-            updateOnlineCount();
-        }
-
-        function refreshGameState() {
-            if (currentRoom && gameState) {
-                const room = db.rooms.find(r => r.id === currentRoom.id);
-                if (!room || room.status === 'finished') {
-                    showToast('Комната завершена');
-                    leaveGame();
-                    return;
-                }
-                const game = db.games.find(g => g.roomId === currentRoom.id);
-                if (game) {
-                    gameState = game;
-                    render();
-                } else {
-                    leaveGame();
-                }
-            }
-        }
-
-        // ============================================================
         //   ЗАПУСК
         // ============================================================
 
-        // Инициализация канала синхронизации
-        initChannel();
-
-        // Обновляем онлайн статус
-        updateOnlineStatus();
-
-        // Автоматическая синхронизация каждые 1.5 секунды
-        setInterval(autoSync, 1500);
-
-        // Мгновенная синхронизация при фокусе вкладки
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                autoSync();
-            }
+        // Инициализируем Peer
+        initPeer().then((id) => {
+            myPeerId = id;
+            render();
+            showToast(`🃏 Ваш ID: ${id}`, 5000);
+            console.log('✅ Peer готов! ID:', id);
         });
 
-        // Обработка закрытия вкладки
+        // Периодическое обновление онлайн статуса
+        setInterval(() => {
+            updateOnlineUI();
+        }, 3000);
+
+        // Обработка закрытия
         window.addEventListener('beforeunload', () => {
-            if (db.users[currentUser]) {
-                db.users[currentUser].online = false;
-                saveDB(db, true);
-                if (channel) {
-                    try {
-                        channel.postMessage({
-                            type: 'tab_closed',
-                            sender: currentUser,
-                            roomId: currentRoom?.id
-                        });
-                    } catch (e) {}
-                }
+            if (peer) {
+                peer.destroy();
             }
         });
 
-        // Первый рендер
-        render();
-        
-        // Показываем приветствие
-        setTimeout(() => {
-            const onlineCount = Object.values(db.users).filter(u => u.online).length;
-            showToast(`🃏 Добро пожаловать, ${db.users[currentUser]?.name}! Онлайн: ${onlineCount} игроков`);
-        }, 500);
-
-        console.log('🃏 CardArena Online с автосинхронизацией загружена!');
-        console.log('👤 Игрок:', currentUser, db.users[currentUser]);
-        console.log('💰 Баланс:', db.users[currentUser]?.coins);
-        console.log('🏠 Комнат:', db.rooms.length);
-        console.log('👥 Онлайн:', Object.values(db.users).filter(u => u.online).length);
-        console.log('📡 Автосинхронизация активна (каждые 1.5с)');
+        console.log('🃏 CardArena с настоящим P2P онлайн запущена!');
     </script>
 
 </body>
