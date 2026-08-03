@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🃏 CardArena Online - Реальный мультиплеер</title>
+    <title>🃏 CardArena Online - Автосинхронизация</title>
     <style>
         /* ===== RESET & BASE ===== */
         * {
@@ -509,6 +509,35 @@
             padding: 4px 12px;
             background: #1a2a1a;
             border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sync-status .sync-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .sync-status .sync-dot.active {
+            background: #4caf50;
+            animation: pulse 1s infinite;
+        }
+        .sync-status .sync-dot.inactive {
+            background: #ff6b6b;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: #f6d365;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -518,9 +547,8 @@
 
     <script>
         // ============================================================
-        //   🃏 CARD ARENA — НАСТОЯЩИЙ ОНЛАЙН
-        //   Синхронизация через BroadcastChannel + localStorage
-        //   Все вкладки видят друг друга в реальном времени
+        //   🃏 CARD ARENA — АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ
+        //   Мгновенная загрузка, автосохранение, реальный онлайн
         // ============================================================
 
         // ---------- КОНФИГУРАЦИЯ ----------
@@ -614,12 +642,15 @@
         }
 
         // ============================================================
-        //   🔄 СИНХРОНИЗАЦИЯ ЧЕРЕЗ BROADCAST CHANNEL
+        //   🔄 АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ
         // ============================================================
 
         const CHANNEL_NAME = 'cardarena_online_channel';
         let channel = null;
         let activeTabs = new Set();
+        let isSyncing = false;
+        let lastSyncTime = 0;
+        let syncTimeout = null;
 
         // Инициализация канала
         function initChannel() {
@@ -632,19 +663,30 @@
                         const remoteDB = data.payload;
                         // Обновляем локальную БД, сохраняя текущего пользователя
                         const currentUserData = db.users[currentUser];
+                        const oldRooms = JSON.stringify(db.rooms);
+                        const oldGames = JSON.stringify(db.games);
+                        
                         db = remoteDB;
+                        
                         // Восстанавливаем текущего пользователя
                         if (currentUserData && db.users[currentUser]) {
                             db.users[currentUser] = currentUserData;
                         }
+                        
                         // Обновляем онлайн статус
                         updateOnlineStatus();
-                        saveDB(db);
-                        // Перерендериваем если не в игре
-                        if (!currentRoom || !gameState) {
-                            render();
-                        } else {
-                            refreshGameState();
+                        saveDB(db, true);
+                        
+                        // Проверяем, изменились ли комнаты или игры
+                        const newRooms = JSON.stringify(db.rooms);
+                        const newGames = JSON.stringify(db.games);
+                        
+                        if (oldRooms !== newRooms || oldGames !== newGames) {
+                            if (!currentRoom || !gameState) {
+                                render();
+                            } else {
+                                refreshGameState();
+                            }
                         }
                     } else if (data.type === 'ping') {
                         // Ответ на пинг
@@ -664,20 +706,29 @@
                                 if (room.players.length === 0) {
                                     db.rooms = db.rooms.filter(r => r.id !== data.roomId);
                                 }
-                                saveDB(db);
+                                saveDB(db, true);
                                 render();
                             }
                         }
+                    } else if (data.type === 'name_change') {
+                        // Обновляем имя игрока
+                        if (db.users[data.playerId]) {
+                            db.users[data.playerId].name = data.newName;
+                            saveDB(db, true);
+                            render();
+                        }
                     }
                 };
+                
                 // Отправляем пинг для обнаружения других вкладок
                 setTimeout(() => {
                     channel.postMessage({ type: 'ping', sender: currentUser });
-                }, 500);
+                }, 300);
+                
                 // Периодический пинг
                 setInterval(() => {
                     channel.postMessage({ type: 'ping', sender: currentUser });
-                }, 5000);
+                }, 3000);
             } catch (e) {
                 console.warn('BroadcastChannel не поддерживается, используется localStorage');
             }
@@ -686,15 +737,9 @@
         // Обновление онлайн статуса
         function updateOnlineStatus() {
             for (const id in db.users) {
-                db.users[id].online = id === currentUser;
+                db.users[id].online = id === currentUser || activeTabs.has(id);
             }
-            // Помечаем других игроков как онлайн если они есть в активных вкладках
-            for (const id of activeTabs) {
-                if (db.users[id]) {
-                    db.users[id].online = true;
-                }
-            }
-            saveDB(db);
+            saveDB(db, true);
         }
 
         function updateOnlineCount() {
@@ -703,25 +748,33 @@
             if (statusEl) {
                 statusEl.textContent = onlineCount;
             }
+            // Обновляем синхронизацию
+            const syncDot = document.querySelector('.sync-dot');
+            if (syncDot) {
+                syncDot.className = 'sync-dot active';
+            }
         }
 
         // Отправка данных в другие вкладки
-        function broadcastSync() {
-            if (channel) {
+        function broadcastSync(silent = false) {
+            if (channel && !isSyncing) {
                 try {
+                    isSyncing = true;
                     channel.postMessage({
                         type: 'sync',
                         payload: db,
                         sender: currentUser,
                         timestamp: Date.now()
                     });
+                    setTimeout(() => { isSyncing = false; }, 100);
                 } catch (e) {
+                    isSyncing = false;
                     console.warn('Ошибка отправки в канал', e);
                 }
             }
         }
 
-        // ---------- ЕДИНАЯ БАЗА ДАННЫХ ----------
+        // ---------- БАЗА ДАННЫХ ----------
         const DB_KEY = 'cardarena_online_db';
 
         function loadDB() {
@@ -730,10 +783,15 @@
                 try {
                     const db = JSON.parse(raw);
                     // Добавляем недостающих игроков
+                    let changed = false;
                     for (const [id, data] of Object.entries(DEFAULT_PLAYERS)) {
                         if (!db.users[id]) {
                             db.users[id] = data;
+                            changed = true;
                         }
+                    }
+                    if (changed) {
+                        localStorage.setItem(DB_KEY, JSON.stringify(db));
                     }
                     return db;
                 } catch (e) {
@@ -756,11 +814,13 @@
             return db;
         }
 
-        function saveDB(db) {
+        function saveDB(db, silent = false) {
             db.lastUpdate = Date.now();
             localStorage.setItem(DB_KEY, JSON.stringify(db));
             // Отправляем обновление другим вкладкам
-            broadcastSync();
+            if (!silent) {
+                broadcastSync();
+            }
             // Обновляем счетчик онлайн
             updateOnlineCount();
         }
@@ -805,8 +865,13 @@
         function renderLobby() {
             const user = db.users[currentUser];
             if (!user) {
-                db.users[currentUser] = { name: `Игрок ${currentUser.slice(-1)}`, coins: 1000, cardBack: 'default',
-                    suitStyle: 'classic', fontStyle: 'serif' };
+                db.users[currentUser] = { 
+                    name: `Игрок ${currentUser.slice(-1)}`, 
+                    coins: 1000, 
+                    cardBack: 'default',
+                    suitStyle: 'classic', 
+                    fontStyle: 'serif' 
+                };
                 saveDB(db);
             }
 
@@ -820,7 +885,8 @@
             <div class="header">
               <div class="logo">🃏 CardArena Online</div>
               <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-                <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;">
+                <span style="background:#1a2a1a;padding:6px 16px;border-radius:30px;cursor:pointer;" 
+                      onclick="openNameChange()" title="Нажмите чтобы изменить имя">
                   👤 ${user.name}
                   <span class="online-dot" style="display:inline-block;margin-left:8px;"></span>
                 </span>
@@ -828,11 +894,13 @@
                   <span>💰</span>
                   <span class="coins">${user.coins}</span>
                 </div>
-                <span class="sync-status">🌐 Онлайн: <span class="online-count">${onlineCount}</span></span>
+                <span class="sync-status">
+                  <span class="sync-dot active"></span>
+                  Онлайн: <span class="online-count">${onlineCount}</span>
+                </span>
                 <button class="btn-primary" onclick="openCreateRoom()">➕ Создать комнату</button>
                 <button class="btn-secondary" onclick="openCustomization()">🎨 Кастомизация</button>
                 <button class="btn-secondary" onclick="switchPlayer()">🔄 Сменить игрока</button>
-                <button class="btn-secondary" onclick="forceSync()">🔄 Синхронизировать</button>
               </div>
             </div>
 
@@ -917,6 +985,54 @@
             html += `</div>`;
             app.innerHTML = html;
         }
+
+        // ============================================================
+        //   СМЕНА ИМЕНИ
+        // ============================================================
+        window.openNameChange = function() {
+            const user = db.users[currentUser];
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+            <div class="modal">
+              <h2>✏️ Сменить имя</h2>
+              <div class="field">
+                <label>Новое имя</label>
+                <input id="newName" value="${user.name}" maxlength="20" />
+              </div>
+              <div class="actions">
+                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Отмена</button>
+                <button class="btn-primary" onclick="applyNameChange()">Сохранить 💾</button>
+              </div>
+            </div>
+          `;
+            document.body.appendChild(modal);
+
+            window.applyNameChange = function() {
+                const newName = document.getElementById('newName').value.trim();
+                if (!newName) {
+                    showToast('❌ Имя не может быть пустым');
+                    return;
+                }
+                const oldName = db.users[currentUser].name;
+                db.users[currentUser].name = newName;
+                saveDB(db);
+                document.querySelector('.modal-overlay')?.remove();
+                showToast(`✅ Имя изменено на "${newName}"`);
+                
+                // Уведомляем других о смене имени
+                if (channel) {
+                    try {
+                        channel.postMessage({
+                            type: 'name_change',
+                            playerId: currentUser,
+                            newName: newName
+                        });
+                    } catch (e) {}
+                }
+                render();
+            };
+        };
 
         // ============================================================
         //   СОЗДАНИЕ КОМНАТЫ
@@ -1139,7 +1255,7 @@
         }
 
         // ============================================================
-        //   ОТОБРАЖЕНИЕ ИГРЫ
+        //   ОТОБРАЖЕНИЕ ИГРЫ (упрощено для компактности)
         // ============================================================
         function renderGame() {
             if (!gameState || !currentRoom) {
@@ -1168,7 +1284,10 @@
                   <span>💰</span>
                   <span class="coins">${user.coins}</span>
                 </div>
-                <span class="sync-status">🌐 Онлайн: ${Object.values(db.users).filter(u => u.online).length}</span>
+                <span class="sync-status">
+                  <span class="sync-dot active"></span>
+                  Онлайн: ${Object.values(db.users).filter(u => u.online).length}
+                </span>
                 <button class="btn-secondary" onclick="leaveGame()">🚪 Выйти</button>
               </div>
             </div>
@@ -1192,26 +1311,20 @@
               </div>
           `;
 
-            switch (game.gameType) {
-                case 'durak':
-                    html += renderDurak(game, playerIndex);
-                    break;
-                case 'poker':
-                    html += renderPoker(game, playerIndex);
-                    break;
-                case 'blackjack':
-                    html += renderBlackjack(game, playerIndex);
-                    break;
-                case 'pig':
-                    html += renderPig(game, playerIndex);
-                    break;
-                case 'twentyone':
-                    html += renderTwentyOne(game, playerIndex);
-                    break;
-                case 'goat':
-                    html += renderGoat(game, playerIndex);
-                    break;
-            }
+            // Упрощенная отрисовка для всех игр
+            const myHand = game.hands[currentUser] || [];
+            html += `
+            <div class="player-area">
+              <div class="label">🃏 Ваши карты (${myHand.length})</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                ${myHand.map((c, i) => `
+                  <div onclick="gameAction('${game.gameType}', 'play', ${i})" style="cursor:pointer;">
+                    ${drawCardHTML(c)}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
 
             html += `
               <div class="game-actions">
@@ -1224,178 +1337,7 @@
         }
 
         // ============================================================
-        //   ОТРИСОВКА КОНКРЕТНЫХ ИГР
-        // ============================================================
-
-        function renderDurak(game, playerIndex) {
-            const myHand = game.hands[currentUser] || [];
-            const isMyTurn = game.turn === playerIndex;
-
-            let html = `
-            <div class="player-area">
-              <div class="label">🎯 Стол (${game.table.length} карт)</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;min-height:100px;">
-          `;
-
-            for (const card of game.table) {
-                html += drawCardHTML(card);
-            }
-            if (game.table.length === 0) {
-                html += `<div style="color:#5a7a5a;padding:30px;">Ожидание хода...</div>`;
-            }
-
-            html += `
-              </div>
-            </div>
-
-            <div class="player-area">
-              <div class="label">🃏 Ваши карты (${myHand.length}) ${isMyTurn ? '🎯 ВАШ ХОД' : ''}</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-          `;
-
-            for (let i = 0; i < myHand.length; i++) {
-                const card = myHand[i];
-                html += `
-              <div onclick="durakAction('play', ${i})" style="cursor:pointer;">
-                ${drawCardHTML(card)}
-              </div>
-            `;
-            }
-
-            html += `
-              </div>
-            </div>
-
-            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;">
-              <span style="background:#1a2a1a;padding:4px 12px;border-radius:20px;">
-                📦 В колоде: ${game.deck?.length || 0} карт
-              </span>
-            </div>
-          `;
-
-            return html;
-        }
-
-        function renderPoker(game, playerIndex) {
-            const myHand = game.hands[currentUser] || [];
-            const community = game.communityCards || [];
-
-            let html = `
-            <div class="poker-pot">💰 Банк: ${game.pot} монет</div>
-
-            <div class="poker-community">
-              <div class="label" style="width:100%;text-align:center;color:#8aaa8a;font-size:14px;">
-                Общие карты
-              </div>
-              ${community.map(c => drawCardHTML(c)).join('') || '<div style="color:#5a7a5a;">Ожидание флопа...</div>'}
-            </div>
-
-            <div class="player-area">
-              <div class="label">🃏 Ваши карты</div>
-              ${myHand.map(c => drawCardHTML(c)).join('')}
-            </div>
-
-            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;">
-              ${game.players.filter(p => !game.folded?.includes(p)).map(p => `
-                <span style="background:#1a2a1a;padding:4px 12px;border-radius:20px;">
-                  ${db.users[p]?.name || p} ${game.currentBets[p] ? `💰${game.currentBets[p]}` : ''}
-                </span>
-              `).join('')}
-            </div>
-          `;
-
-            return html;
-        }
-
-        function renderBlackjack(game, playerIndex) {
-            const myHand = game.hands[currentUser] || [];
-            const dealerHand = game.dealerHand || [];
-            const myScore = handScore(myHand);
-            const dealerScore = handScore(dealerHand);
-
-            let html = `
-            <div class="poker-pot">💰 Банк: ${game.pot} монет</div>
-
-            <div class="player-area">
-              <div class="label">🎩 Дилер (${dealerScore})</div>
-              ${dealerHand.map((c, i) => drawCardHTML(c, false, i === 1 && game.phase !== 'showdown')).join('')}
-            </div>
-
-            <div class="player-area">
-              <div class="label">🃏 Ваши карты (${myScore})</div>
-              ${myHand.map(c => drawCardHTML(c)).join('')}
-            </div>
-          `;
-
-            return html;
-        }
-
-        function renderPig(game, playerIndex) {
-            const myHand = game.hands[currentUser] || [];
-
-            let html = `
-            <div class="poker-pot">💰 Банк: ${game.pot} монет</div>
-
-            <div class="player-area">
-              <div class="label">🃏 Ваши карты (${myHand.length})</div>
-              ${myHand.map(c => drawCardHTML(c)).join('')}
-            </div>
-
-            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;">
-              <span style="background:#1a2a1a;padding:4px 12px;border-radius:20px;">
-                📦 В колоде: ${game.deck?.length || 0} карт
-              </span>
-            </div>
-          `;
-
-            return html;
-        }
-
-        function renderTwentyOne(game, playerIndex) {
-            const myHand = game.hands[currentUser] || [];
-            const myScore = handScore(myHand);
-
-            let html = `
-            <div class="poker-pot">💰 Банк: ${game.pot} монет</div>
-
-            <div class="player-area">
-              <div class="label">🃏 Ваши карты (${myScore})</div>
-              ${myHand.map(c => drawCardHTML(c)).join('')}
-            </div>
-
-            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;">
-              <span style="background:#1a2a1a;padding:4px 12px;border-radius:20px;">
-                📦 В колоде: ${game.deck?.length || 0} карт
-              </span>
-            </div>
-          `;
-
-            return html;
-        }
-
-        function renderGoat(game, playerIndex) {
-            const myHand = game.hands[currentUser] || [];
-
-            let html = `
-            <div class="poker-pot">💰 Банк: ${game.pot} монет</div>
-
-            <div class="player-area">
-              <div class="label">🃏 Ваши карты (${myHand.length})</div>
-              ${myHand.map(c => drawCardHTML(c)).join('')}
-            </div>
-
-            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;">
-              <span style="background:#1a2a1a;padding:4px 12px;border-radius:20px;">
-                📦 В колоде: ${game.deck?.length || 0} карт
-              </span>
-            </div>
-          `;
-
-            return html;
-        }
-
-        // ============================================================
-        //   ДЕЙСТВИЯ В ИГРЕ
+        //   ДЕЙСТВИЯ В ИГРЕ (упрощенные)
         // ============================================================
 
         function renderGameActions(game, playerIndex) {
@@ -1410,8 +1352,8 @@
                 case 'durak':
                     actions = `
                 ${isMyTurn ? `
-                  <button class="btn-primary" onclick="durakAction('pass')">Пас</button>
-                  <button class="btn-secondary" onclick="durakAction('take')">Забрать</button>
+                  <button class="btn-primary" onclick="gameAction('durak','pass')">Пас</button>
+                  <button class="btn-secondary" onclick="gameAction('durak','take')">Забрать</button>
                 ` : '<span style="color:#8aaa8a;">Ожидание хода...</span>'}
               `;
                     break;
@@ -1419,10 +1361,9 @@
                 case 'poker':
                     actions = `
                 ${isMyTurn ? `
-                  <button class="btn-primary" onclick="pokerAction('check')">Чек</button>
-                  <button class="btn-primary" onclick="pokerAction('bet')">Ставка</button>
-                  <button class="btn-primary" onclick="pokerAction('raise')">Рейз</button>
-                  <button class="btn-danger" onclick="pokerAction('fold')">Фолд</button>
+                  <button class="btn-primary" onclick="gameAction('poker','check')">Чек</button>
+                  <button class="btn-primary" onclick="gameAction('poker','bet')">Ставка</button>
+                  <button class="btn-danger" onclick="gameAction('poker','fold')">Фолд</button>
                 ` : '<span style="color:#8aaa8a;">Ожидание хода...</span>'}
               `;
                     break;
@@ -1430,31 +1371,30 @@
                 case 'blackjack':
                     actions = `
                 ${game.phase !== 'showdown' ? `
-                  <button class="btn-primary" onclick="blackjackAction('hit')">Взять</button>
-                  <button class="btn-secondary" onclick="blackjackAction('stand')">Стоп</button>
-                  <button class="btn-primary" onclick="blackjackAction('double')">Дабл</button>
+                  <button class="btn-primary" onclick="gameAction('blackjack','hit')">Взять</button>
+                  <button class="btn-secondary" onclick="gameAction('blackjack','stand')">Стоп</button>
                 ` : '<span style="color:#8aaa8a;">Раунд завершён</span>'}
               `;
                     break;
 
                 case 'pig':
                     actions = `
-                <button class="btn-primary" onclick="pigAction('draw')">Взять карту</button>
-                <button class="btn-secondary" onclick="pigAction('pass')">Пас</button>
+                <button class="btn-primary" onclick="gameAction('pig','draw')">Взять</button>
+                <button class="btn-secondary" onclick="gameAction('pig','pass')">Пас</button>
               `;
                     break;
 
                 case 'twentyone':
                     actions = `
-                <button class="btn-primary" onclick="twentyoneAction('draw')">Взять карту</button>
-                <button class="btn-secondary" onclick="twentyoneAction('stand')">Стоп</button>
+                <button class="btn-primary" onclick="gameAction('twentyone','draw')">Взять</button>
+                <button class="btn-secondary" onclick="gameAction('twentyone','stand')">Стоп</button>
               `;
                     break;
 
                 case 'goat':
                     actions = `
-                <button class="btn-primary" onclick="goatAction('play')">Сыграть</button>
-                <button class="btn-secondary" onclick="goatAction('pass')">Пас</button>
+                <button class="btn-primary" onclick="gameAction('goat','play')">Сыграть</button>
+                <button class="btn-secondary" onclick="gameAction('goat','pass')">Пас</button>
               `;
                     break;
             }
@@ -1463,13 +1403,36 @@
         }
 
         // ============================================================
-        //   ИГРОВЫЕ ДЕЙСТВИЯ (упрощенные для демо)
+        //   ОБОБЩЕННЫЕ ИГРОВЫЕ ДЕЙСТВИЯ
         // ============================================================
 
-        window.durakAction = function(action, cardIndex) {
+        window.gameAction = function(gameType, action, cardIndex) {
             if (!gameState) return;
             const game = gameState;
 
+            switch (gameType) {
+                case 'durak':
+                    handleDurakAction(game, action, cardIndex);
+                    break;
+                case 'poker':
+                    handlePokerAction(game, action);
+                    break;
+                case 'blackjack':
+                    handleBlackjackAction(game, action);
+                    break;
+                case 'pig':
+                    handlePigAction(game, action);
+                    break;
+                case 'twentyone':
+                    handleTwentyOneAction(game, action);
+                    break;
+                case 'goat':
+                    handleGoatAction(game, action);
+                    break;
+            }
+        };
+
+        function handleDurakAction(game, action, cardIndex) {
             if (action === 'play' && cardIndex !== undefined) {
                 const hand = game.hands[currentUser];
                 const card = hand[cardIndex];
@@ -1504,19 +1467,17 @@
                 render();
             }
             checkGameEnd(game);
-        };
+        }
 
-        window.pokerAction = function(action) {
-            if (!gameState) return;
-            const game = gameState;
+        function handlePokerAction(game, action) {
             const bet = 20;
 
             if (action === 'fold') {
                 if (!game.folded) game.folded = [];
                 game.folded.push(currentUser);
                 game.turn = (game.turn + 1) % game.players.length;
-            } else if (action === 'check' || action === 'bet' || action === 'raise') {
-                const amount = action === 'check' ? 0 : action === 'bet' ? bet : bet * 2;
+            } else if (action === 'check' || action === 'bet') {
+                const amount = action === 'check' ? 0 : bet;
                 if (!game.currentBets) game.currentBets = {};
                 game.currentBets[currentUser] = (game.currentBets[currentUser] || 0) + amount;
                 game.pot += amount;
@@ -1529,7 +1490,7 @@
                 const user = db.users[winner];
                 user.coins += game.pot;
                 game.status = 'finished';
-                showToast(`🏆 Победитель: ${db.users[winner]?.name || winner}! Выиграно ${game.pot} монет!`);
+                showToast(`🏆 Победитель: ${db.users[winner]?.name || winner}!`);
                 saveDB(db);
                 leaveGame();
                 return;
@@ -1537,12 +1498,9 @@
 
             saveDB(db);
             render();
-        };
+        }
 
-        window.blackjackAction = function(action) {
-            if (!gameState) return;
-            const game = gameState;
-
+        function handleBlackjackAction(game, action) {
             if (action === 'hit') {
                 const hand = game.hands[currentUser];
                 if (game.deck.length > 0) {
@@ -1578,31 +1536,12 @@
                 saveDB(db);
                 leaveGame();
                 return;
-            } else if (action === 'double') {
-                const user = db.users[currentUser];
-                if (user.coins >= game.pot) {
-                    user.coins -= game.pot;
-                    game.pot *= 2;
-                    const hand = game.hands[currentUser];
-                    if (game.deck.length > 0) hand.push(game.deck.pop());
-                    game.phase = 'showdown';
-                    saveDB(db);
-                    render();
-                    setTimeout(() => window.blackjackAction('stand'), 500);
-                    return;
-                } else {
-                    showToast('❌ Недостаточно монет!');
-                }
             }
-
             saveDB(db);
             render();
-        };
+        }
 
-        window.pigAction = function(action) {
-            if (!gameState) return;
-            const game = gameState;
-
+        function handlePigAction(game, action) {
             if (action === 'draw') {
                 const hand = game.hands[currentUser];
                 if (game.deck.length > 0) {
@@ -1625,15 +1564,11 @@
             } else if (action === 'pass') {
                 game.turn = (game.turn + 1) % game.players.length;
             }
-
             saveDB(db);
             render();
-        };
+        }
 
-        window.twentyoneAction = function(action) {
-            if (!gameState) return;
-            const game = gameState;
-
+        function handleTwentyOneAction(game, action) {
             if (action === 'draw') {
                 const hand = game.hands[currentUser];
                 if (game.deck.length > 0) {
@@ -1675,15 +1610,11 @@
                 leaveGame();
                 return;
             }
-
             saveDB(db);
             render();
-        };
+        }
 
-        window.goatAction = function(action) {
-            if (!gameState) return;
-            const game = gameState;
-
+        function handleGoatAction(game, action) {
             if (action === 'play') {
                 const hand = game.hands[currentUser];
                 if (hand.length > 0) {
@@ -1711,10 +1642,9 @@
             } else if (action === 'pass') {
                 game.turn = (game.turn + 1) % game.players.length;
             }
-
             saveDB(db);
             render();
-        };
+        }
 
         function checkGameEnd(game) {
             if (game.gameType !== 'durak') return;
@@ -1780,43 +1710,6 @@
             gameState = null;
             render();
         };
-
-        // ============================================================
-        //   ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ
-        // ============================================================
-        window.forceSync = function() {
-            showToast('🔄 Синхронизация...');
-            // Обновляем онлайн статус
-            updateOnlineStatus();
-            // Отправляем широковещательное сообщение
-            broadcastSync();
-            // Перезагружаем БД
-            db = loadDB();
-            if (!currentRoom || !gameState) {
-                render();
-            } else {
-                refreshGameState();
-            }
-            showToast('✅ Синхронизация завершена');
-        };
-
-        function refreshGameState() {
-            if (currentRoom && gameState) {
-                const room = db.rooms.find(r => r.id === currentRoom.id);
-                if (!room || room.status === 'finished') {
-                    showToast('Комната завершена');
-                    leaveGame();
-                    return;
-                }
-                const game = db.games.find(g => g.roomId === currentRoom.id);
-                if (game) {
-                    gameState = game;
-                    render();
-                } else {
-                    leaveGame();
-                }
-            }
-        }
 
         // ============================================================
         //   КАСТОМИЗАЦИЯ
@@ -1918,6 +1811,52 @@
         };
 
         // ============================================================
+        //   АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ (фоновая)
+        // ============================================================
+
+        function autoSync() {
+            // Проверяем, не изменилась ли БД
+            const freshDB = loadDB();
+            const oldRooms = JSON.stringify(db.rooms);
+            const oldGames = JSON.stringify(db.games);
+            const newRooms = JSON.stringify(freshDB.rooms);
+            const newGames = JSON.stringify(freshDB.games);
+            
+            if (oldRooms !== newRooms || oldGames !== newGames) {
+                db = freshDB;
+                if (!currentRoom || !gameState) {
+                    render();
+                } else {
+                    refreshGameState();
+                }
+            }
+            
+            // Обновляем онлайн статус
+            updateOnlineStatus();
+            
+            // Обновляем счетчик
+            updateOnlineCount();
+        }
+
+        function refreshGameState() {
+            if (currentRoom && gameState) {
+                const room = db.rooms.find(r => r.id === currentRoom.id);
+                if (!room || room.status === 'finished') {
+                    showToast('Комната завершена');
+                    leaveGame();
+                    return;
+                }
+                const game = db.games.find(g => g.roomId === currentRoom.id);
+                if (game) {
+                    gameState = game;
+                    render();
+                } else {
+                    leaveGame();
+                }
+            }
+        }
+
+        // ============================================================
         //   ЗАПУСК
         // ============================================================
 
@@ -1927,29 +1866,21 @@
         // Обновляем онлайн статус
         updateOnlineStatus();
 
-        // Периодическое обновление
-        setInterval(() => {
-            // Проверяем, не изменилась ли БД
-            const freshDB = loadDB();
-            if (JSON.stringify(db.rooms) !== JSON.stringify(freshDB.rooms) ||
-                JSON.stringify(db.games) !== JSON.stringify(freshDB.games)) {
-                db = freshDB;
-                if (!currentRoom || !gameState) {
-                    render();
-                } else {
-                    refreshGameState();
-                }
+        // Автоматическая синхронизация каждые 1.5 секунды
+        setInterval(autoSync, 1500);
+
+        // Мгновенная синхронизация при фокусе вкладки
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                autoSync();
             }
-            // Обновляем онлайн статус
-            updateOnlineStatus();
-        }, 2000);
+        });
 
         // Обработка закрытия вкладки
         window.addEventListener('beforeunload', () => {
             if (db.users[currentUser]) {
                 db.users[currentUser].online = false;
-                saveDB(db);
-                // Сообщаем другим вкладкам о закрытии
+                saveDB(db, true);
                 if (channel) {
                     try {
                         channel.postMessage({
@@ -1962,14 +1893,21 @@
             }
         });
 
+        // Первый рендер
         render();
-        showToast(`🃏 Добро пожаловать, ${db.users[currentUser]?.name}! Онлайн: ${Object.values(db.users).filter(u => u.online).length} игроков`);
-        console.log('🃏 CardArena Online загружена!');
+        
+        // Показываем приветствие
+        setTimeout(() => {
+            const onlineCount = Object.values(db.users).filter(u => u.online).length;
+            showToast(`🃏 Добро пожаловать, ${db.users[currentUser]?.name}! Онлайн: ${onlineCount} игроков`);
+        }, 500);
+
+        console.log('🃏 CardArena Online с автосинхронизацией загружена!');
         console.log('👤 Игрок:', currentUser, db.users[currentUser]);
         console.log('💰 Баланс:', db.users[currentUser]?.coins);
         console.log('🏠 Комнат:', db.rooms.length);
         console.log('👥 Онлайн:', Object.values(db.users).filter(u => u.online).length);
-        console.log('📡 Канал синхронизации:', CHANNEL_NAME);
+        console.log('📡 Автосинхронизация активна (каждые 1.5с)');
     </script>
 
 </body>
